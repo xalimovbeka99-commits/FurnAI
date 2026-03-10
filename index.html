@@ -36,28 +36,82 @@
 
 <!-- Hero Section -->
 <section id="home" class="hero">
+    <div class="hero-bg-video">
+        <video autoplay muted loop class="hero-video">
+            <source src="https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4" type="video/mp4">
+        </video>
+        <div class="hero-overlay"></div>
+        <div class="hero-bg-shapes">
+            <div class="shape shape-1"></div>
+            <div class="shape shape-2"></div>
+            <div class="shape shape-3"></div>
+            <div class="shape shape-4"></div>
+        </div>
+    </div>
     <div class="hero-container">
         <div class="hero-content">
-            <h1 class="hero-title">Design Your Perfect Space</h1>
-            <p class="hero-subtitle">Experience the future of furniture design with our AI-powered assistant. Create custom pieces that fit your vision and measurements perfectly.</p>
+            <div class="hero-badge">
+                <span class="badge-text">✨ AI-Powered Design</span>
+            </div>
+            <h1 class="hero-title">
+                <span class="title-main">Design Your</span>
+                <span class="title-accent">Perfect Space</span>
+            </h1>
+            <p class="hero-subtitle">Transform your home with intelligent furniture design. Our AI creates custom pieces that perfectly match your measurements and style preferences.</p>
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <span class="stat-number">500+</span>
+                    <span class="stat-label">Designs Created</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">98%</span>
+                    <span class="stat-label">Customer Satisfaction</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">24/7</span>
+                    <span class="stat-label">AI Support</span>
+                </div>
+            </div>
             <div class="hero-buttons">
-                <a href="#products" class="btn btn-primary">Explore Designs</a>
-                <a href="#ai-assistant" class="btn btn-secondary">Try AI Assistant</a>
+                <a href="#ai-assistant" class="btn btn-primary btn-large">
+                    <i class="fas fa-robot"></i>
+                    Start Designing
+                </a>
+                <a href="#products" class="btn btn-secondary btn-outline">
+                    <i class="fas fa-eye"></i>
+                    View Collections
+                </a>
             </div>
         </div>
         <div class="hero-image">
             <div class="hero-image-container">
-                <img src="images/sofa1.jpg" alt="Modern Furniture Design" class="hero-main-img">
-                <div class="floating-card card-1">
-                    <img src="images/wardrobe1.jpg" alt="Wardrobe">
+                <div class="hero-main-card">
+                    <img src="images/sofa1.jpg" alt="Modern Sofa Design" class="hero-main-img">
+                    <div class="card-glow"></div>
                 </div>
-                <div class="floating-card card-2">
-                    <img src="images/kitchen1.jpg" alt="Kitchen">
+                <div class="floating-cards">
+                    <div class="floating-card card-1" data-tooltip="Wardrobe Collection">
+                        <img src="images/wardrobe1.jpg" alt="Wardrobe">
+                        <div class="card-pulse"></div>
+                    </div>
+                    <div class="floating-card card-2" data-tooltip="Kitchen Collection">
+                        <img src="images/kitchen1.jpg" alt="Kitchen">
+                        <div class="card-pulse"></div>
+                    </div>
+                    <div class="floating-card card-3" data-tooltip="Panel Collection">
+                        <img src="images/panel1.jpg" alt="Panel">
+                        <div class="card-pulse"></div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="hero-bg-pattern"></div>
+    <div class="hero-scroll-indicator">
+        <div class="scroll-mouse">
+            <div class="scroll-wheel"></div>
+        </div>
+        <span>Scroll to explore</span>
+    </div>
 </section>
 
 <!-- Products Section -->

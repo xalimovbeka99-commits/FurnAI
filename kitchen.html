@@ -1,48 +1,384 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Kitchen Styles</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Kitchens - FurniAI</title>
     <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body class="kitchen-page">
 
-<nav>
-    <div class="nav-container">
-        <h2 class="logo">FurniAI</h2>
-        <div>
-            <a href="index.html">Home</a>
-            <a href="wardrobe.html">Wardrobe</a>
-            <a href="sofa.html">Sofa</a>
-            <a href="panel.html">Panel</a>
+<!-- Navigation -->
+<header class="header">
+    <nav class="nav">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <h1 class="logo">FurniAI</h1>
+                <span class="tagline">AI-Powered Design</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="wardrobe.html">Wardrobes</a></li>
+                <li><a href="kitchen.html" class="active">Kitchens</a></li>
+                <li><a href="sofa.html">Sofas</a></li>
+                <li><a href="panel.html">Panels</a></li>
+            </ul>
+            <div class="nav-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero-bg-kitchen">
+        <div class="hero-overlay-kitchen"></div>
+        <div class="kitchen-pattern">
+            <div class="pattern-line line-1"></div>
+            <div class="pattern-line line-2"></div>
+            <div class="pattern-line line-3"></div>
+            <div class="pattern-circle circle-1"></div>
+            <div class="pattern-circle circle-2"></div>
         </div>
     </div>
-</nav>
+    <div class="hero-container">
+        <div class="hero-content">
+            <div class="hero-badge">
+                <span class="badge-text">👨‍🍳 Kitchen Collection</span>
+            </div>
+            <h1 class="hero-title">
+                <span class="title-main">Custom</span>
+                <span class="title-accent">Kitchens</span>
+            </h1>
+            <p class="hero-subtitle">Design the heart of your home with our AI-powered kitchen solutions. Perfect functionality meets stunning aesthetics for your culinary space.</p>
+            <div class="hero-features">
+                <div class="hero-feature">
+                    <i class="fas fa-utensils"></i>
+                    <span>Smart Layout</span>
+                </div>
+                <div class="hero-feature">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Durable Materials</span>
+                </div>
+                <div class="hero-feature">
+                    <i class="fas fa-lightbulb"></i>
+                    <span>Modern Lighting</span>
+                </div>
+            </div>
+            <div class="hero-buttons">
+                <a href="#styles" class="btn btn-primary btn-large">
+                    <i class="fas fa-eye"></i>
+                    Explore Styles
+                </a>
+                <a href="#customize" class="btn btn-secondary btn-outline">
+                    <i class="fas fa-drafting-compass"></i>
+                    Design Now
+                </a>
+            </div>
+        </div>
+        <div class="hero-image">
+            <div class="hero-kitchen-showcase">
+                <div class="kitchen-main">
+                    <img src="images/kitchen1.jpg" alt="Premium Kitchen Design" class="kitchen-hero-img">
+                    <div class="kitchen-glow"></div>
+                </div>
+                <div class="kitchen-details">
+                    <div class="detail-item">
+                        <span class="detail-label">Materials</span>
+                        <span class="detail-value">Premium Grade</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Storage</span>
+                        <span class="detail-value">Maximized</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Warranty</span>
+                        <span class="detail-value">15 Years</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
-<div class="container card-container">
-    <a href="kitchen-style1.html" class="card">
-        <img src="images/kitchen1.jpg" alt="Kitchen Style 1">
-        <h3>Style 1</h3>
-    </a>
-    <a href="kitchen-style2.html" class="card">
-        <img src="images/kitchen2.jpg" alt="Kitchen Style 2">
-        <h3>Style 2</h3>
-    </a>
-    <a href="kitchen-style3.html" class="card">
-        <img src="images/kitchen3.jpg" alt="Kitchen Style 3">
-        <h3>Style 3</h3>
-    </a>
-    <a href="kitchen-style4.html" class="card">
-        <img src="images/kitchen4.jpg" alt="Kitchen Style 4">
-        <h3>Style 4</h3>
-    </a>
-    <a href="kitchen-style5.html" class="card">
-        <img src="images/kitchen5.jpg" alt="Kitchen Style 5">
-        <h3>Style 5</h3>
-    </a>
-</div>
+<!-- Kitchen Styles Section -->
+<section id="styles" class="kitchen-styles-section">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">Kitchen Styles</h2>
+            <p class="section-subtitle">Transform your cooking space with our modern kitchen designs</p>
+        </div>
+        <div class="kitchen-styles-grid">
+            <div class="kitchen-style-card">
+                <div class="style-image">
+                    <img src="images/kitchen1.jpg" alt="Modern Kitchen Style 1">
+                    <div class="style-overlay">
+                        <a href="kitchen-style1.html" class="style-link">
+                            <i class="fas fa-eye"></i>
+                            View Details
+                        </a>
+                    </div>
+                    <div class="style-badge">Trending</div>
+                </div>
+                <div class="style-info">
+                    <h3>Modern Minimalist</h3>
+                    <p>Clean lines and sleek surfaces for contemporary kitchens</p>
+                    <div class="style-features">
+                        <span class="feature-tag">Handleless</span>
+                        <span class="feature-tag">LED Strip</span>
+                        <span class="feature-tag">Soft Close</span>
+                    </div>
+                </div>
+            </div>
+            <div class="kitchen-style-card">
+                <div class="style-image">
+                    <img src="images/kitchen2.jpg" alt="Classic Kitchen Style 2">
+                    <div class="style-overlay">
+                        <a href="kitchen-style2.html" class="style-link">
+                            <i class="fas fa-eye"></i>
+                            View Details
+                        </a>
+                    </div>
+                </div>
+                <div class="style-info">
+                    <h3>Rustic Elegance</h3>
+                    <p>Warm woods and natural materials for cozy kitchens</p>
+                    <div class="style-features">
+                        <span class="feature-tag">Natural Wood</span>
+                        <span class="feature-tag">Stone Counter</span>
+                        <span class="feature-tag">Brass Hardware</span>
+                    </div>
+                </div>
+            </div>
+            <div class="kitchen-style-card">
+                <div class="style-image">
+                    <img src="images/kitchen3.jpg" alt="Industrial Kitchen Style 3">
+                    <div class="style-overlay">
+                        <a href="kitchen-style3.html" class="style-link">
+                            <i class="fas fa-eye"></i>
+                            View Details
+                        </a>
+                    </div>
+                </div>
+                <div class="style-info">
+                    <h3>Industrial Chic</h3>
+                    <p>Urban style with exposed elements and metal accents</p>
+                    <div class="style-features">
+                        <span class="feature-tag">Metal Frames</span>
+                        <span class="feature-tag">Concrete Tops</span>
+                        <span class="feature-tag">Track Lighting</span>
+                    </div>
+                </div>
+            </div>
+            <div class="kitchen-style-card">
+                <div class="style-image">
+                    <img src="images/kitchen4.jpg" alt="Luxury Kitchen Style 4">
+                    <div class="style-overlay">
+                        <a href="kitchen-style4.html" class="style-link">
+                            <i class="fas fa-eye"></i>
+                            View Details
+                        </a>
+                    </div>
+                    <div class="style-badge">Premium</div>
+                </div>
+                <div class="style-info">
+                    <h3>Luxury Statement</h3>
+                    <p>High-end finishes and premium materials</p>
+                    <div class="style-features">
+                        <span class="feature-tag">Marble Tops</span>
+                        <span class="feature-tag">Gold Accents</span>
+                        <span class="feature-tag">Smart Appliances</span>
+                    </div>
+                </div>
+            </div>
+            <div class="kitchen-style-card">
+                <div class="style-image">
+                    <img src="images/kitchen5.jpg" alt="Scandinavian Kitchen Style 5">
+                    <div class="style-overlay">
+                        <a href="kitchen-style5.html" class="style-link">
+                            <i class="fas fa-eye"></i>
+                            View Details
+                        </a>
+                    </div>
+                </div>
+                <div class="style-info">
+                    <h3>Scandinavian Light</h3>
+                    <p>Bright and functional design inspired by Nordic style</p>
+                    <div class="style-features">
+                        <span class="feature-tag">White Cabinets</span>
+                        <span class="feature-tag">Natural Light</span>
+                        <span class="feature-tag">Simple Lines</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
-<footer>
-    © 2026 FurniAI | Designed by Bekzod Khalimov
+<!-- Customization Section -->
+<section id="customize" class="customization-section">
+    <div class="container">
+        <div class="customization-container">
+            <div class="customization-content">
+                <h2>Design Your Dream Kitchen</h2>
+                <p>Our AI assistant helps you create the perfect kitchen layout that maximizes functionality and style.</p>
+                <div class="customization-steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h4>Measure Your Space</h4>
+                            <p>Input your kitchen dimensions</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h4>Choose Appliances</h4>
+                            <p>Select your preferred appliances</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h4>Design Layout</h4>
+                            <p>Optimize workflow and storage</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h4>Get Your Plan</h4>
+                            <p>Receive detailed specifications</p>
+                        </div>
+                    </div>
+                </div>
+                <a href="index.html#ai-assistant" class="btn btn-primary">
+                    <i class="fas fa-robot"></i>
+                    Start Kitchen Design
+                </a>
+            </div>
+            <div class="customization-visual">
+                <div class="customization-mockup">
+                    <img src="images/kitchen1.jpg" alt="Kitchen Customization Preview">
+                    <div class="customization-tools">
+                        <div class="tool tool-1">
+                            <i class="fas fa-ruler-combined"></i>
+                        </div>
+                        <div class="tool tool-2">
+                            <i class="fas fa-utensils"></i>
+                        </div>
+                        <div class="tool tool-3">
+                            <i class="fas fa-lightbulb"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features-section">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">Why Choose Our Kitchens</h2>
+            <p class="section-subtitle">Quality craftsmanship meets innovative design</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <h3>AI Optimized Layout</h3>
+                <p>Every kitchen is designed for maximum efficiency using advanced algorithms that consider workflow and ergonomics.</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <i class="fas fa-tools"></i>
+                </div>
+                <h3>Professional Installation</h3>
+                <p>Expert installation by certified technicians with attention to detail and quality assurance.</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h3>Premium Materials</h3>
+                <p>High-quality materials that withstand daily use and maintain their beauty for years to come.</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <i class="fas fa-recycle"></i>
+                </div>
+                <h3>Eco-Friendly Options</h3>
+                <p>Sustainable materials and finishes that are safe for your family and kind to the environment.</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <h3>Quick Turnaround</h3>
+                <p>Efficient manufacturing and installation process to get your dream kitchen ready faster.</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <i class="fas fa-headset"></i>
+                </div>
+                <h3>Dedicated Support</h3>
+                <p>Personal project manager and 24/7 support throughout your kitchen transformation journey.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <h3>FurniAI</h3>
+                <p>Revolutionizing furniture design with artificial intelligence.</p>
+            </div>
+            <div class="footer-links">
+                <div class="footer-column">
+                    <h4>Products</h4>
+                    <ul>
+                        <li><a href="wardrobe.html">Wardrobes</a></li>
+                        <li><a href="kitchen.html">Kitchens</a></li>
+                        <li><a href="sofa.html">Sofas</a></li>
+                        <li><a href="panel.html">Panels</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="index.html#ai-assistant">AI Assistant</a></li>
+                        <li><a href="index.html#contact">Contact Us</a></li>
+                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#">FAQ</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="#">About Us</a></li>
+                        <li><a href="#">Careers</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 FurniAI. All rights reserved. | Designed by Bekzod Khalimov</p>
+        </div>
+    </div>
 </footer>
 
 </body>

@@ -1,48 +1,384 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Wardrobe Styles</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Wardrobes - FurniAI</title>
     <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body class="wardrobe-page">
 
-<nav>
-    <div class="nav-container">
-        <h2 class="logo">FurniAI</h2>
-        <div>
-            <a href="index.html">Home</a>
-            <a href="kitchen.html">Kitchen</a>
-            <a href="sofa.html">Sofa</a>
-            <a href="panel.html">Panel</a>
+<!-- Navigation -->
+<header class="header">
+    <nav class="nav">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <h1 class="logo">FurniAI</h1>
+                <span class="tagline">AI-Powered Design</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="wardrobe.html" class="active">Wardrobes</a></li>
+                <li><a href="kitchen.html">Kitchens</a></li>
+                <li><a href="sofa.html">Sofas</a></li>
+                <li><a href="panel.html">Panels</a></li>
+            </ul>
+            <div class="nav-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero-bg-wardrobe">
+        <div class="hero-overlay-wardrobe"></div>
+        <div class="wardrobe-pattern">
+            <div class="pattern-line line-1"></div>
+            <div class="pattern-line line-2"></div>
+            <div class="pattern-line line-3"></div>
+            <div class="pattern-circle circle-1"></div>
+            <div class="pattern-circle circle-2"></div>
         </div>
     </div>
-</nav>
+    <div class="hero-container">
+        <div class="hero-content">
+            <div class="hero-badge">
+                <span class="badge-text">🏠 Wardrobe Collection</span>
+            </div>
+            <h1 class="hero-title">
+                <span class="title-main">Custom</span>
+                <span class="title-accent">Wardrobes</span>
+            </h1>
+            <p class="hero-subtitle">Transform your storage space with our AI-designed wardrobes. Perfect fit, maximum organization, and stunning aesthetics for your bedroom.</p>
+            <div class="hero-features">
+                <div class="hero-feature">
+                    <i class="fas fa-ruler-combined"></i>
+                    <span>Custom Dimensions</span>
+                </div>
+                <div class="hero-feature">
+                    <i class="fas fa-cogs"></i>
+                    <span>Smart Organization</span>
+                </div>
+                <div class="hero-feature">
+                    <i class="fas fa-palette"></i>
+                    <span>Premium Finishes</span>
+                </div>
+            </div>
+            <div class="hero-buttons">
+                <a href="#styles" class="btn btn-primary btn-large">
+                    <i class="fas fa-eye"></i>
+                    Explore Styles
+                </a>
+                <a href="#customize" class="btn btn-secondary btn-outline">
+                    <i class="fas fa-magic"></i>
+                    Customize Now
+                </a>
+            </div>
+        </div>
+        <div class="hero-image">
+            <div class="hero-wardrobe-showcase">
+                <div class="wardrobe-main">
+                    <img src="images/wardrobe1.jpg" alt="Premium Wardrobe Design" class="wardrobe-hero-img">
+                    <div class="wardrobe-glow"></div>
+                </div>
+                <div class="wardrobe-details">
+                    <div class="detail-item">
+                        <span class="detail-label">Materials</span>
+                        <span class="detail-value">Premium Wood</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Capacity</span>
+                        <span class="detail-value">200+ Items</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Warranty</span>
+                        <span class="detail-value">10 Years</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
-<div class="container card-container">
-    <a href="wardrobe-style1.html" class="card">
-        <img src="images/wardrobe1.jpg" alt="Wardrobe Style 1">
-        <h3>Style 1</h3>
-    </a>
-    <a href="wardrobe-style2.html" class="card">
-        <img src="images/wardrobe2.jpg" alt="Wardrobe Style 2">
-        <h3>Style 2</h3>
-    </a>
-    <a href="wardrobe-style3.html" class="card">
-        <img src="images/wardrobe3.jpg" alt="Wardrobe Style 3">
-        <h3>Style 3</h3>
-    </a>
-    <a href="wardrobe-style4.html" class="card">
-        <img src="images/wardrobe4.jpg" alt="Wardrobe Style 4">
-        <h3>Style 4</h3>
-    </a>
-    <a href="wardrobe-style5.html" class="card">
-        <img src="images/wardrobe5.jpg" alt="Wardrobe Style 5">
-        <h3>Style 5</h3>
-    </a>
-</div>
+<!-- Wardrobe Styles Section -->
+<section id="styles" class="wardrobe-styles-section">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">Wardrobe Styles</h2>
+            <p class="section-subtitle">Choose from our curated collection of modern wardrobe designs</p>
+        </div>
+        <div class="wardrobe-styles-grid">
+            <div class="wardrobe-style-card">
+                <div class="style-image">
+                    <img src="images/wardrobe1.jpg" alt="Modern Wardrobe Style 1">
+                    <div class="style-overlay">
+                        <a href="wardrobe-style1.html" class="style-link">
+                            <i class="fas fa-eye"></i>
+                            View Details
+                        </a>
+                    </div>
+                    <div class="style-badge">Popular</div>
+                </div>
+                <div class="style-info">
+                    <h3>Modern Minimalist</h3>
+                    <p>Clean lines and sleek design for contemporary spaces</p>
+                    <div class="style-features">
+                        <span class="feature-tag">Sliding Doors</span>
+                        <span class="feature-tag">LED Lighting</span>
+                        <span class="feature-tag">Soft Close</span>
+                    </div>
+                </div>
+            </div>
+            <div class="wardrobe-style-card">
+                <div class="style-image">
+                    <img src="images/wardrobe2.jpg" alt="Classic Wardrobe Style 2">
+                    <div class="style-overlay">
+                        <a href="wardrobe-style2.html" class="style-link">
+                            <i class="fas fa-eye"></i>
+                            View Details
+                        </a>
+                    </div>
+                </div>
+                <div class="style-info">
+                    <h3>Classic Elegance</h3>
+                    <p>Timeless design with premium craftsmanship</p>
+                    <div class="style-features">
+                        <span class="feature-tag">Solid Wood</span>
+                        <span class="feature-tag">Mirror Panels</span>
+                        <span class="feature-tag">Custom Hardware</span>
+                    </div>
+                </div>
+            </div>
+            <div class="wardrobe-style-card">
+                <div class="style-image">
+                    <img src="images/wardrobe3.jpg" alt="Contemporary Wardrobe Style 3">
+                    <div class="style-overlay">
+                        <a href="wardrobe-style3.html" class="style-link">
+                            <i class="fas fa-eye"></i>
+                            View Details
+                        </a>
+                    </div>
+                </div>
+                <div class="style-info">
+                    <h3>Contemporary Fusion</h3>
+                    <p>Blend of modern and traditional elements</p>
+                    <div class="style-features">
+                        <span class="feature-tag">Mixed Materials</span>
+                        <span class="feature-tag">Smart Storage</span>
+                        <span class="feature-tag">Acoustic Panels</span>
+                    </div>
+                </div>
+            </div>
+            <div class="wardrobe-style-card">
+                <div class="style-image">
+                    <img src="images/wardrobe4.jpg" alt="Luxury Wardrobe Style 4">
+                    <div class="style-overlay">
+                        <a href="wardrobe-style4.html" class="style-link">
+                            <i class="fas fa-eye"></i>
+                            View Details
+                        </a>
+                    </div>
+                    <div class="style-badge">Premium</div>
+                </div>
+                <div class="style-info">
+                    <h3>Luxury Statement</h3>
+                    <p>High-end design for discerning tastes</p>
+                    <div class="style-features">
+                        <span class="feature-tag">Gold Accents</span>
+                        <span class="feature-tag">Leather Panels</span>
+                        <span class="feature-tag">Custom Lighting</span>
+                    </div>
+                </div>
+            </div>
+            <div class="wardrobe-style-card">
+                <div class="style-image">
+                    <img src="images/wardrobe5.jpg" alt="Scandinavian Wardrobe Style 5">
+                    <div class="style-overlay">
+                        <a href="wardrobe-style5.html" class="style-link">
+                            <i class="fas fa-eye"></i>
+                            View Details
+                        </a>
+                    </div>
+                </div>
+                <div class="style-info">
+                    <h3>Scandinavian Light</h3>
+                    <p>Light, airy design inspired by Nordic aesthetics</p>
+                    <div class="style-features">
+                        <span class="feature-tag">Natural Wood</span>
+                        <span class="feature-tag">Minimal Hardware</span>
+                        <span class="feature-tag">Light Colors</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
-<footer>
-    © 2026 FurniAI | Designed by Bekzod Khalimov
+<!-- Customization Section -->
+<section id="customize" class="customization-section">
+    <div class="container">
+        <div class="customization-container">
+            <div class="customization-content">
+                <h2>Design Your Perfect Wardrobe</h2>
+                <p>Our AI assistant helps you create a wardrobe that fits your space, style, and storage needs perfectly.</p>
+                <div class="customization-steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h4>Measure Your Space</h4>
+                            <p>Input your room dimensions</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h4>Choose Your Style</h4>
+                            <p>Select from our design collection</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h4>Customize Details</h4>
+                            <p>Add your personal touches</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h4>Get Your Plan</h4>
+                            <p>Receive detailed specifications</p>
+                        </div>
+                    </div>
+                </div>
+                <a href="index.html#ai-assistant" class="btn btn-primary">
+                    <i class="fas fa-robot"></i>
+                    Start Customizing
+                </a>
+            </div>
+            <div class="customization-visual">
+                <div class="customization-mockup">
+                    <img src="images/wardrobe1.jpg" alt="Wardrobe Customization Preview">
+                    <div class="customization-tools">
+                        <div class="tool tool-1">
+                            <i class="fas fa-ruler"></i>
+                        </div>
+                        <div class="tool tool-2">
+                            <i class="fas fa-palette"></i>
+                        </div>
+                        <div class="tool tool-3">
+                            <i class="fas fa-cog"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features-section">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">Why Choose Our Wardrobes</h2>
+            <p class="section-subtitle">Built with quality, designed for life</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h3>Premium Quality</h3>
+                <p>Constructed with the finest materials and expert craftsmanship for lasting durability.</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <h3>AI Optimized</h3>
+                <p>Every design is optimized by our AI for maximum functionality and space utilization.</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <i class="fas fa-tools"></i>
+                </div>
+                <h3>Easy Installation</h3>
+                <p>Professional installation service with detailed assembly instructions included.</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <i class="fas fa-leaf"></i>
+                </div>
+                <h3>Eco-Friendly</h3>
+                <p>Sustainable materials and finishes that are safe for your family and the environment.</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <i class="fas fa-star"></i>
+                </div>
+                <h3>5-Star Rated</h3>
+                <p>Join thousands of satisfied customers who love their custom FurniAI wardrobes.</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <i class="fas fa-headset"></i>
+                </div>
+                <h3>24/7 Support</h3>
+                <p>Our team is always here to help with any questions or modifications you need.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <h3>FurniAI</h3>
+                <p>Revolutionizing furniture design with artificial intelligence.</p>
+            </div>
+            <div class="footer-links">
+                <div class="footer-column">
+                    <h4>Products</h4>
+                    <ul>
+                        <li><a href="wardrobe.html">Wardrobes</a></li>
+                        <li><a href="kitchen.html">Kitchens</a></li>
+                        <li><a href="sofa.html">Sofas</a></li>
+                        <li><a href="panel.html">Panels</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="index.html#ai-assistant">AI Assistant</a></li>
+                        <li><a href="index.html#contact">Contact Us</a></li>
+                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#">FAQ</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="#">About Us</a></li>
+                        <li><a href="#">Careers</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 FurniAI. All rights reserved. | Designed by Bekzod Khalimov</p>
+        </div>
+    </div>
 </footer>
 
 </body>
