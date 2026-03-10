@@ -2,17 +2,85 @@ function generateList() {
     let width = parseFloat(document.getElementById("width").value);
     let height = parseFloat(document.getElementById("height").value);
     let depth = parseFloat(document.getElementById("depth").value);
+    let shelfCount = parseInt(document.getElementById("shelfCount")?.value) || 3;
 
     if (!width || !height || !depth) {
-        alert("Please enter all dimensions");
+        alert("Please enter all required dimensions (Width, Height, Depth)");
         return;
     }
 
+    // Convert to millimeters for precision
+    let widthMM = width * 10;
+    let heightMM = height * 10;
+    let depthMM = depth * 10;
+
+    // Calculate material requirements with detailed breakdown
+    let sidePanelArea = (heightMM * depthMM) / 1000000; // m²
+    let topBottomArea = (widthMM * depthMM) / 1000000; // m²
+    let backPanelArea = (widthMM * heightMM) / 1000000; // m²
+    let shelfArea = ((widthMM - 40) * (depthMM - 20) * shelfCount) / 1000000; // m²
+
+    let totalArea = (sidePanelArea * 2) + (topBottomArea * 2) + backPanelArea + shelfArea;
+
+    // Hardware calculations
+    let hingeCount = 4; // per door
+    let drawerRunnerCount = shelfCount * 2; // if drawers
+    let shelfSupportCount = shelfCount * 4;
+
+    // Edge banding requirements (perimeter of all panels)
+    let totalPerimeter = (2 * (heightMM + depthMM)) + (2 * (widthMM + depthMM)) + (widthMM + heightMM) + (shelfCount * 2 * ((widthMM - 40) + (depthMM - 20)));
+    let edgeBandingLength = totalPerimeter / 1000; // meters
+
     let result = `
-    Side Panels: 2 pieces - ${height} x ${depth}
-    Top & Bottom: 2 pieces - ${width} x ${depth}
-    Back Panel: 1 piece - ${width} x ${height}
-    Shelves: 3 pieces - ${width - 40} x ${depth - 20}
+╔══════════════════════════════════════════════════════════════╗
+║                    MATERIAL REQUIREMENTS                     ║
+╠══════════════════════════════════════════════════════════════╣
+
+📏 DIMENSIONS ENTERED:
+   • Width: ${width}cm (${widthMM}mm)
+   • Height: ${height}cm (${heightMM}mm)
+   • Depth: ${depth}cm (${depthMM}mm)
+   • Shelves: ${shelfCount}
+
+📐 PANEL CUTTING LIST:
+   ┌─────────────────────────────────────────────────────────┐
+   │ SIDE PANELS:     2 pieces - ${height}cm × ${depth}cm     │
+   │ TOP/BOTTOM:      2 pieces - ${width}cm × ${depth}cm      │
+   │ BACK PANEL:      1 piece  - ${width}cm × ${height}cm     │
+   │ SHELVES:         ${shelfCount} pieces - ${(width-4).toFixed(1)}cm × ${(depth-2).toFixed(1)}cm │
+   └─────────────────────────────────────────────────────────┘
+
+📊 MATERIAL CALCULATIONS:
+   • Total Panel Area: ${totalArea.toFixed(2)} m²
+   • Side Panels: ${(sidePanelArea * 2).toFixed(3)} m²
+   • Top/Bottom: ${(topBottomArea * 2).toFixed(3)} m²
+   • Back Panel: ${backPanelArea.toFixed(3)} m²
+   • Shelves: ${shelfArea.toFixed(3)} m²
+
+🔧 HARDWARE REQUIREMENTS:
+   • Hinges: ${hingeCount} (2 per door × 2 doors)
+   • Shelf Supports: ${shelfSupportCount} (4 per shelf × ${shelfCount} shelves)
+   • Drawer Runners: ${drawerRunnerCount} (if drawers needed)
+
+🎨 FINISHING MATERIALS:
+   • Edge Banding: ${edgeBandingLength.toFixed(1)} meters
+   • Wood Filler: ~${(totalArea * 50).toFixed(0)} grams
+   • Sandpaper: 120, 180, 240 grit (one sheet each)
+
+⚠️  IMPORTANT NOTES:
+   • All measurements include 2cm clearance for shelves
+   • Add 1.5cm to all dimensions for trimming
+   • Consider door swing clearance (add 5-10cm)
+   • Check local building codes for wall mounting
+   • Allow 2-3mm tolerance for manufacturing
+
+💡 DESIGN TIPS:
+   • Maximum shelf span: ${(width-4).toFixed(1)}cm (consider reinforcement for heavy loads)
+   • Door clearance needed: ${depth + 5}cm minimum
+   • Standard door width: ${(width/2).toFixed(1)}cm per door
+   • Weight capacity: ~30kg per shelf (depending on material)
+
+╚══════════════════════════════════════════════════════════════╝
     `;
 
     document.getElementById("result").innerText = result;
