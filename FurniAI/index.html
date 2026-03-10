@@ -3,6 +3,7 @@
 <head>
     <title>FurniAI - Home</title>
     <link rel="stylesheet" href="style.css">
+    <script src="script.js"></script>
 </head>
 <body class="index-page">
 
@@ -40,6 +41,26 @@
         <img src="images/panel1.jpg" alt="Panel">
         <h3>Panel</h3>
     </a>
+</div>
+
+<div class="container">
+    <div class="ai-assistant-section">
+        <h2 style="text-align: center; margin-bottom: 30px; color: #333;">AI Design Assistant</h2>
+        <div class="ai-chat-container">
+            <div id="chat-messages" class="chat-messages">
+                <div class="message bot-message">
+                    <div class="message-avatar">🤖</div>
+                    <div class="message-content">
+                        <p>Hello! I'm your FurniAI design assistant. I can help you with furniture ideas, measurements, and design tips. What would you like to know?</p>
+                    </div>
+                </div>
+            </div>
+            <div class="chat-input-container">
+                <input type="text" id="ai-input" placeholder="Ask me about furniture design..." class="ai-input">
+                <button onclick="sendAIMessage()" class="ai-send-btn">Send</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <footer>
