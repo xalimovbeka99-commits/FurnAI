@@ -1,70 +1,295 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>FurniAI - Home</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FurniAI - AI-Powered Furniture Design</title>
     <link rel="stylesheet" href="style.css">
-    <script src="script.js"></script>
+    <script src="script.js" defer></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body class="index-page">
 
-<nav>
-    <div class="nav-container">
-        <h2 class="logo">FurniAI</h2>
-        <div>
-            <a href="wardrobe.html">Wardrobe</a>
-            <a href="kitchen.html">Kitchen</a>
-            <a href="sofa.html">Sofa</a>
-            <a href="panel.html">Panel</a>
+<!-- Navigation -->
+<header class="header">
+    <nav class="nav">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <h1 class="logo">FurniAI</h1>
+                <span class="tagline">AI-Powered Design</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#products">Products</a></li>
+                <li><a href="#ai-assistant">AI Assistant</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+            <div class="nav-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<!-- Hero Section -->
+<section id="home" class="hero">
+    <div class="hero-container">
+        <div class="hero-content">
+            <h1 class="hero-title">Design Your Perfect Space</h1>
+            <p class="hero-subtitle">Experience the future of furniture design with our AI-powered assistant. Create custom pieces that fit your vision and measurements perfectly.</p>
+            <div class="hero-buttons">
+                <a href="#products" class="btn btn-primary">Explore Designs</a>
+                <a href="#ai-assistant" class="btn btn-secondary">Try AI Assistant</a>
+            </div>
+        </div>
+        <div class="hero-image">
+            <div class="hero-image-container">
+                <img src="images/sofa1.jpg" alt="Modern Furniture Design" class="hero-main-img">
+                <div class="floating-card card-1">
+                    <img src="images/wardrobe1.jpg" alt="Wardrobe">
+                </div>
+                <div class="floating-card card-2">
+                    <img src="images/kitchen1.jpg" alt="Kitchen">
+                </div>
+            </div>
         </div>
     </div>
-</nav>
+    <div class="hero-bg-pattern"></div>
+</section>
 
-<div class="hero">
-    <h1>Welcome to FurniAI</h1>
-    <p>Your AI-powered furniture design assistant. Explore, choose, and enter your measurements to generate cutting lists instantly!</p>
-</div>
+<!-- Products Section -->
+<section id="products" class="products-section">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">Our Collections</h2>
+            <p class="section-subtitle">Discover our range of customizable furniture pieces</p>
+        </div>
+        <div class="products-grid">
+            <div class="product-card">
+                <div class="product-image">
+                    <img src="images/wardrobe1.jpg" alt="Wardrobe Collection">
+                    <div class="product-overlay">
+                        <a href="wardrobe.html" class="product-link">Explore Wardrobes</a>
+                    </div>
+                </div>
+                <div class="product-info">
+                    <h3>Wardrobes</h3>
+                    <p>Custom storage solutions for every space</p>
+                </div>
+            </div>
+            <div class="product-card">
+                <div class="product-image">
+                    <img src="images/kitchen1.jpg" alt="Kitchen Collection">
+                    <div class="product-overlay">
+                        <a href="kitchen.html" class="product-link">Explore Kitchens</a>
+                    </div>
+                </div>
+                <div class="product-info">
+                    <h3>Kitchens</h3>
+                    <p>Functional and stylish kitchen designs</p>
+                </div>
+            </div>
+            <div class="product-card">
+                <div class="product-image">
+                    <img src="images/sofa1.jpg" alt="Sofa Collection">
+                    <div class="product-overlay">
+                        <a href="sofa.html" class="product-link">Explore Sofas</a>
+                    </div>
+                </div>
+                <div class="product-info">
+                    <h3>Sofas</h3>
+                    <p>Comfortable seating for modern living</p>
+                </div>
+            </div>
+            <div class="product-card">
+                <div class="product-image">
+                    <img src="images/panel1.jpg" alt="Panel Collection">
+                    <div class="product-overlay">
+                        <a href="panel.html" class="product-link">Explore Panels</a>
+                    </div>
+                </div>
+                <div class="product-info">
+                    <h3>Panels</h3>
+                    <p>Versatile wall and room dividers</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
-<div class="container card-container">
-    <a href="wardrobe.html" class="card">
-        <img src="images/wardrobe1.jpg" alt="Wardrobe">
-        <h3>Wardrobe</h3>
-    </a>
-    <a href="kitchen.html" class="card">
-        <img src="images/kitchen1.jpg" alt="Kitchen">
-        <h3>Kitchen</h3>
-    </a>
-    <a href="sofa.html" class="card">
-        <img src="images/sofa1.jpg" alt="Sofa">
-        <h3>Sofa</h3>
-    </a>
-    <a href="panel.html" class="card">
-        <img src="images/panel1.jpg" alt="Panel">
-        <h3>Panel</h3>
-    </a>
-</div>
+<!-- Features Section -->
+<section class="features-section">
+    <div class="container">
+        <div class="features-grid">
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <h3>AI-Powered Design</h3>
+                <p>Get personalized recommendations and design suggestions from our intelligent assistant.</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <i class="fas fa-ruler-combined"></i>
+                </div>
+                <h3>Precise Measurements</h3>
+                <p>Input your exact dimensions to generate accurate cutting lists and material requirements.</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <i class="fas fa-infinity"></i>
+                </div>
+                <h3>Endless Possibilities</h3>
+                <p>Customize every aspect of your furniture with our flexible design system.</p>
+            </div>
+        </div>
+    </div>
+</section>
 
-<div class="container">
-    <div class="ai-assistant-section">
-        <h2 style="text-align: center; margin-bottom: 30px; color: #333;">AI Design Assistant</h2>
-        <div class="ai-chat-container">
-            <div id="chat-messages" class="chat-messages">
-                <div class="message bot-message">
-                    <div class="message-avatar">🤖</div>
-                    <div class="message-content">
-                        <p>Hello! I'm your FurniAI design assistant. I can help you with furniture ideas, measurements, and design tips. What would you like to know?</p>
+<!-- AI Assistant Section -->
+<section id="ai-assistant" class="ai-section">
+    <div class="container">
+        <div class="ai-container">
+            <div class="ai-content">
+                <h2>Meet Your AI Design Assistant</h2>
+                <p>Get instant help with design ideas, measurements, and furniture recommendations. Our AI understands your needs and provides expert guidance.</p>
+                <div class="ai-features">
+                    <div class="ai-feature">
+                        <i class="fas fa-lightbulb"></i>
+                        <span>Design Ideas</span>
+                    </div>
+                    <div class="ai-feature">
+                        <i class="fas fa-calculator"></i>
+                        <span>Measurement Help</span>
+                    </div>
+                    <div class="ai-feature">
+                        <i class="fas fa-palette"></i>
+                        <span>Style Suggestions</span>
                     </div>
                 </div>
             </div>
-            <div class="chat-input-container">
-                <input type="text" id="ai-input" placeholder="Ask me about furniture design..." class="ai-input">
-                <button onclick="sendAIMessage()" class="ai-send-btn">Send</button>
+            <div class="ai-chat-widget">
+                <div class="chat-header">
+                    <div class="chat-avatar">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="chat-info">
+                        <h4>FurniAI Assistant</h4>
+                        <span>Online</span>
+                    </div>
+                </div>
+                <div id="chat-messages" class="chat-messages">
+                    <div class="message bot-message">
+                        <div class="message-content">
+                            <p>Hello! I'm your FurniAI design assistant. I can help you with furniture ideas, measurements, and design tips. What would you like to know?</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="chat-input-container">
+                    <input type="text" id="ai-input" placeholder="Ask me about furniture design..." class="ai-input">
+                    <button onclick="sendAIMessage()" class="ai-send-btn">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
-</div>
+</section>
 
-<footer>
-    © 2026 FurniAI | Designed by Bekzod Khalimov
+<!-- Contact Section -->
+<section id="contact" class="contact-section">
+    <div class="container">
+        <div class="contact-container">
+            <div class="contact-info">
+                <h2>Get In Touch</h2>
+                <p>Have questions about our AI-powered design tools? We're here to help you create the perfect furniture for your space.</p>
+                <div class="contact-details">
+                    <div class="contact-item">
+                        <i class="fas fa-envelope"></i>
+                        <span>hello@furniai.com</span>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-phone"></i>
+                        <span>+1 (555) 123-4567</span>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>123 Design Street, Creativity City</span>
+                    </div>
+                </div>
+                <div class="social-links">
+                    <a href="#" class="social-link"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+            </div>
+            <div class="contact-form">
+                <form id="contactForm">
+                    <div class="form-group">
+                        <input type="text" id="name" name="name" required placeholder="Your Name">
+                    </div>
+                    <div class="form-group">
+                        <input type="email" id="email" name="email" required placeholder="Your Email">
+                    </div>
+                    <div class="form-group">
+                        <input type="text" id="subject" name="subject" required placeholder="Subject">
+                    </div>
+                    <div class="form-group">
+                        <textarea id="message" name="message" required placeholder="Your Message"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Send Message</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <h3>FurniAI</h3>
+                <p>Revolutionizing furniture design with artificial intelligence.</p>
+            </div>
+            <div class="footer-links">
+                <div class="footer-column">
+                    <h4>Products</h4>
+                    <ul>
+                        <li><a href="wardrobe.html">Wardrobes</a></li>
+                        <li><a href="kitchen.html">Kitchens</a></li>
+                        <li><a href="sofa.html">Sofas</a></li>
+                        <li><a href="panel.html">Panels</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="#ai-assistant">AI Assistant</a></li>
+                        <li><a href="#contact">Contact Us</a></li>
+                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#">FAQ</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="#">About Us</a></li>
+                        <li><a href="#">Careers</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 FurniAI. All rights reserved. | Designed by Bekzod Khalimov</p>
+        </div>
+    </div>
 </footer>
 
 </body>
