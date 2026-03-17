@@ -33,7 +33,7 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop links */}
-        <div className="hidden md:flex items-center gap-1">
+        <div className="hidden lg:flex items-center gap-0.5">
           {links.map((link) => (
             <Link
               key={link.href}
@@ -46,7 +46,7 @@ export default function Navbar() {
         </div>
 
         {/* CTA + Theme toggle */}
-        <div className="hidden md:flex items-center gap-3">
+        <div className="hidden lg:flex items-center gap-3">
           {/* Theme toggle */}
           <button
             onClick={toggle}

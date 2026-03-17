@@ -169,7 +169,7 @@ export default function BuilderPage() {
       <div className="flex flex-col lg:flex-row h-[calc(100vh-4rem)]">
         {/* ─── Left Panel ─── */}
         <motion.div initial={{ x: -40, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 0.5 }}
-          className="w-full lg:w-[440px] flex-shrink-0 border-r border-white/5 overflow-y-auto bg-background">
+          className="w-full lg:w-[440px] flex-shrink-0 border-r border-border overflow-y-auto bg-background">
           <div className="p-6 space-y-5">
             <div>
               <h1 className="text-2xl font-bold mb-1">AI Builder</h1>
