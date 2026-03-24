@@ -59,6 +59,7 @@ export default function BuilderPage() {
   const [activeTab, setActiveTab] = useState("controls");
   const [selectedTexture, setSelectedTexture] = useState(null);
   const [activeScene, setActiveScene] = useState("studio");
+  const [isExploded, setIsExploded] = useState(false);
   const { theme } = useTheme();
 
   const handleTextureSelect = useCallback((texture) => {
@@ -131,7 +132,9 @@ export default function BuilderPage() {
   const handleFactoryExport = async () => {
     if (!store.generatedDesign) return;
     setExportLoading(true);
+    setIsExploded(true); // Trigger "Wow" Export Animation
     try {
+      await new Promise(resolve => setTimeout(resolve, 2000));
       const res = await fetch("/api/export", { method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify(store.generatedDesign) });
       const spec = await res.json();
@@ -143,12 +146,14 @@ export default function BuilderPage() {
       a.click();
       URL.revokeObjectURL(url);
     } catch (err) { console.error("Export failed:", err); }
-    finally { setExportLoading(false); }
+    finally { setExportLoading(false); setIsExploded(false); }
   };
 
   // Quick JSON Export
-  const handleExportJSON = () => {
+  const handleExportJSON = async () => {
     if (store.generatedDesign) {
+      setIsExploded(true);
+      await new Promise(resolve => setTimeout(resolve, 2000));
       const spec = {
         name: store.generatedDesign.name, type: store.type, style: store.style,
         material: store.material, color: store.color, texture: selectedTexture?.label || null,
@@ -161,16 +166,17 @@ export default function BuilderPage() {
       a.download = `${spec.name.replace(/\s+/g, "-").toLowerCase()}-spec.json`;
       a.click();
       URL.revokeObjectURL(url);
+      setIsExploded(false);
     }
   };
 
   return (
     <div className="min-h-screen pt-16">
-      <div className="flex flex-col lg:flex-row h-[calc(100vh-4rem)]">
-        {/* ─── Left Panel ─── */}
+      <div className="relative h-[calc(100vh-4rem)] overflow-hidden bg-background">
+        {/* ─── Left Panel (Glass Island) ─── */}
         <motion.div initial={{ x: -40, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 0.5 }}
-          className="w-full lg:w-[440px] flex-shrink-0 border-r border-border overflow-y-auto bg-background">
-          <div className="p-6 space-y-5">
+          className="absolute left-0 top-0 lg:left-6 lg:top-6 lg:bottom-6 w-full lg:w-[440px] z-20 glass-pro lg:rounded-[2rem] overflow-y-auto flex flex-col pointer-events-auto">
+          <div className="p-8 space-y-6">
             <div>
               <h1 className="text-2xl font-bold mb-1">AI Builder</h1>
               <p className="text-xs text-muted">Design furniture with AI or manual controls • 100% Free</p>
@@ -361,28 +367,28 @@ export default function BuilderPage() {
           </div>
         </motion.div>
 
-        {/* ─── Right Panel — 3D Preview ─── */}
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3, duration: 0.5 }} className="flex-1 relative">
+        {/* ─── Right Panel — 3D Preview (Infinite Canvas) ─── */}
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3, duration: 0.5 }} className="absolute inset-0 z-0 bg-background">
           {/* Loading overlay */}
           <AnimatePresence>
             {(store.isGenerating || aiLoading) && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                className="absolute inset-0 z-20 bg-black/60 backdrop-blur-sm flex items-center justify-center">
+                className="absolute inset-0 z-30 bg-black/40 backdrop-blur-md flex items-center justify-center">
                 <div className="text-center">
-                  <div className="w-12 h-12 border-3 border-accent/30 border-t-accent rounded-full animate-spin mx-auto mb-4" />
-                  <p className="text-sm text-muted">{aiLoading ? "AI is designing..." : "Generating 3D model..."}</p>
+                  <div className="w-12 h-12 border-3 border-accent/50 border-t-accent rounded-full animate-spin mx-auto mb-4" />
+                  <p className="text-sm font-medium text-white shadow-sm glow-text">{aiLoading ? "AI is designing..." : "Generating 3D model..."}</p>
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
 
-          <FurnitureCanvas design={design3D} scene={activeScene} theme={theme} />
+          <FurnitureCanvas design={design3D} scene={activeScene} theme={theme} isExploded={isExploded} />
 
-          {/* Scene Selector */}
-          <div className="absolute top-4 right-4 flex gap-1.5 z-10">
+          {/* Scene Selector (Glass Toolbar) */}
+          <div className="absolute top-6 right-6 flex gap-1 z-10 glass-pro p-1.5 rounded-2xl">
             {scenes.map((s) => (
               <button key={s.id} onClick={() => setActiveScene(s.id)}
-                className={`px-3 py-1.5 text-[10px] font-medium rounded-lg transition-all ${activeScene === s.id ? "bg-accent text-white" : "glass text-muted hover:text-white"}`}>
+                className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all ${activeScene === s.id ? "bg-accent text-white shadow-lg shadow-accent/20" : "text-muted hover:text-white"}`}>
                 {s.label}
               </button>
             ))}
@@ -390,9 +396,9 @@ export default function BuilderPage() {
 
           {/* Info overlay */}
           {store.generatedDesign && (
-            <div className="absolute bottom-4 left-4 glass rounded-xl px-4 py-3">
-              <p className="text-sm font-medium">{store.generatedDesign.name}</p>
-              <p className="text-xs text-muted">{store.width} × {store.height} × {store.depth} cm · {store.material}{selectedTexture ? ` · ${selectedTexture.label}` : ""}</p>
+            <div className="absolute bottom-6 right-6 glass-pro rounded-2xl px-5 py-4 z-10 max-w-[300px]">
+              <p className="text-sm font-semibold tracking-tight">{store.generatedDesign.name}</p>
+              <p className="text-xs text-muted mt-1">{store.width} × {store.height} × {store.depth} cm · {store.material}{selectedTexture ? ` · ${selectedTexture.label}` : ""}</p>
             </div>
           )}
         </motion.div>
