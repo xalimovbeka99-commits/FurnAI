@@ -445,8 +445,8 @@ export default function BuilderPage() {
 
     // Scene setup
     app.scene = new THREE.Scene();
-    app.scene.background = new THREE.Color(0x0d0d10);
-    app.scene.fog = new THREE.Fog(0x0d0d10, 12, 24);
+    app.scene.background = new THREE.Color(0x1e1e24);
+    app.scene.fog = new THREE.Fog(0x1e1e24, 12, 28);
 
     // Camera setup
     app.camera = new THREE.PerspectiveCamera(40, wrap.clientWidth / wrap.clientHeight, 0.05, 40);
@@ -462,9 +462,9 @@ export default function BuilderPage() {
     moveCam();
 
     // Lighting
-    app.scene.add(new THREE.HemisphereLight(0x1e1c28, 0x080808, 0.55));
+    app.scene.add(new THREE.HemisphereLight(0xffffff, 0x1a1a24, 0.85));
 
-    const sun = new THREE.DirectionalLight(0xfff0e0, 1.5);
+    const sun = new THREE.DirectionalLight(0xffffff, 2.4);
     sun.position.set(3.5, 7, 4.5);
     sun.castShadow = true;
     sun.shadow.mapSize.set(2048, 2048);
@@ -472,11 +472,11 @@ export default function BuilderPage() {
     sun.shadow.bias = -0.001;
     app.scene.add(sun);
 
-    const fill = new THREE.PointLight(0x6080c0, 0.45, 14);
+    const fill = new THREE.PointLight(0x70a0ff, 0.7, 14);
     fill.position.set(-4, 2.5, 2);
     app.scene.add(fill);
 
-    const spot = new THREE.SpotLight(0xc8a96e, 0.6, 16, Math.PI / 7, 0.5);
+    const spot = new THREE.SpotLight(0xffecd1, 1.0, 16, Math.PI / 6, 0.4);
     spot.position.set(0, 7, -3);
     spot.target.position.set(0, 1.5, 0);
     app.scene.add(spot, spot.target);
@@ -484,13 +484,13 @@ export default function BuilderPage() {
     // Floor Planes
     const floor = new THREE.Mesh(
       new THREE.PlaneGeometry(22, 22),
-      new THREE.MeshStandardMaterial({ color: 0x0d0d10, roughness: 0.9, metalness: 0.08 })
+      new THREE.MeshStandardMaterial({ color: 0x1a1a20, roughness: 0.9, metalness: 0.08 })
     );
     floor.rotation.x = -Math.PI / 2;
     floor.receiveShadow = true;
     app.scene.add(floor);
 
-    const grid = new THREE.GridHelper(20, 20, 0x1a1a22, 0x1a1a22);
+    const grid = new THREE.GridHelper(20, 20, 0x3a3a46, 0x3a3a46);
     grid.position.y = 0.001;
     grid.material.opacity = 0.5;
     grid.material.transparent = true;
