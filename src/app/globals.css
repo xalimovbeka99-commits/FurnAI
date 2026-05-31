@@ -1,37 +1,37 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
 
-/* ─── DARK THEME (Space Gray + Purple accents) ─── */
+/* ─── DARK THEME (Charcoal + Premium Gold accents) ─── */
 @theme inline {
-  --color-background: #000000;
-  --color-foreground: #F5F5F7;
-  --color-accent: #0071E3;
-  --color-accent-light: #47A1FF;
-  --color-accent-dark: #0056B3;
-  --color-surface: #1D1D1F;
-  --color-surface-light: #2D2D2F;
-  --color-border: rgba(255, 255, 255, 0.1);
-  --color-muted: #86868B;
-  --color-card-bg: rgba(29, 29, 31, 0.6);
-  --color-card-border: rgba(255, 255, 255, 0.1);
-  --color-nav-bg: rgba(0, 0, 0, 0.82);
+  --color-background: #0c0c0e;
+  --color-foreground: #f0ede8;
+  --color-accent: #c8a96e;
+  --color-accent-light: #e8c98e;
+  --color-accent-dark: #a88d55;
+  --color-surface: #111114;
+  --color-surface-light: #18181d;
+  --color-border: rgba(255, 255, 255, 0.07);
+  --color-muted: #8a8880;
+  --color-card-bg: rgba(17, 17, 20, 0.85);
+  --color-card-border: rgba(255, 255, 255, 0.08);
+  --color-nav-bg: rgba(12, 12, 14, 0.88);
   --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
-/* ─── LIGHT THEME (Paper White) ─── */
+/* ─── LIGHT THEME (Warm Light Paper) ─── */
 :root[data-theme="light"] {
-  --color-background: #F5F5F7;
-  --color-foreground: #1D1D1F;
-  --color-accent: #0071E3;
-  --color-accent-light: #47A1FF;
-  --color-accent-dark: #0056B3;
-  --color-surface: #FFFFFF;
-  --color-surface-light: #F5F5F7;
-  --color-border: rgba(0, 0, 0, 0.1);
-  --color-muted: #86868B;
-  --color-card-bg: rgba(255, 255, 255, 0.7);
-  --color-card-border: rgba(255, 255, 255, 0.4);
-  --color-nav-bg: rgba(245, 245, 247, 0.82);
+  --color-background: #fbfaf8;
+  --color-foreground: #1c1c1f;
+  --color-accent: #b89553;
+  --color-accent-light: #d4b574;
+  --color-accent-dark: #8c6e33;
+  --color-surface: #ffffff;
+  --color-surface-light: #f7f5f2;
+  --color-border: rgba(0, 0, 0, 0.08);
+  --color-muted: #807e78;
+  --color-card-bg: rgba(255, 255, 255, 0.85);
+  --color-card-border: rgba(0, 0, 0, 0.05);
+  --color-nav-bg: rgba(251, 250, 248, 0.88);
 }
 
 * {
@@ -54,21 +54,21 @@ body {
   letter-spacing: -0.015em;
 }
 
-/* Dark mode wallpaper — enhanced with purple tints */
+/* Dark mode wallpaper — enhanced with gold/amber tints */
 :root:not([data-theme="light"]) body {
   background:
-    radial-gradient(ellipse 80% 50% at 20% 80%, rgba(99, 60, 200, 0.08) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 40% at 80% 20%, rgba(0, 113, 227, 0.06) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 50% at 50% 0%, rgba(99, 60, 200, 0.04) 0%, transparent 50%),
-    linear-gradient(160deg, #000000 0%, #0a0a12 30%, #1D1D1F 50%, #0a0a12 70%, #000000 100%);
+    radial-gradient(ellipse 80% 50% at 20% 80%, rgba(200, 169, 110, 0.05) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 20%, rgba(232, 201, 142, 0.03) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 50% at 50% 0%, rgba(200, 169, 110, 0.02) 0%, transparent 50%),
+    linear-gradient(160deg, #0c0c0e 0%, #111114 30%, #18181d 50%, #111114 70%, #0c0c0e 100%);
 }
 
 /* Light mode wallpaper */
 :root[data-theme="light"] body {
   background:
-    radial-gradient(ellipse 80% 50% at 30% 80%, rgba(0, 113, 227, 0.04) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 40% at 70% 20%, rgba(134, 134, 139, 0.06) 0%, transparent 60%),
-    linear-gradient(160deg, #F5F5F7 0%, #FFFFFF 50%, #F5F5F7 100%);
+    radial-gradient(ellipse 80% 50% at 30% 80%, rgba(200, 169, 110, 0.03) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 70% 20%, rgba(134, 134, 139, 0.04) 0%, transparent 60%),
+    linear-gradient(160deg, #f7f5f2 0%, #ffffff 50%, #f7f5f2 100%);
 }
 
 /* ─── Glass utilities ─── */
@@ -83,12 +83,12 @@ body {
   background: var(--color-card-bg);
   backdrop-filter: blur(40px) saturate(180%);
   -webkit-backdrop-filter: blur(40px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
 }
 :root[data-theme="light"] .glass-pro {
-  border: 1px solid rgba(255, 255, 255, 0.8);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.04);
 }
 
 /* Nav glass */
@@ -101,27 +101,27 @@ nav.glass {
 
 /* ─── Glow Effects ─── */
 .glow {
-  box-shadow: 0 0 20px rgba(0, 113, 227, 0.25), 0 0 60px rgba(0, 113, 227, 0.08);
+  box-shadow: 0 0 20px rgba(200, 169, 110, 0.2), 0 0 60px rgba(200, 169, 110, 0.05);
 }
 .glow-text {
-  text-shadow: 0 0 40px rgba(0, 113, 227, 0.4);
+  text-shadow: 0 0 40px rgba(200, 169, 110, 0.3);
 }
 .glow-purple {
-  box-shadow: 0 0 20px rgba(139, 92, 246, 0.3), 0 0 60px rgba(139, 92, 246, 0.1);
+  box-shadow: 0 0 20px rgba(200, 169, 110, 0.2), 0 0 60px rgba(200, 169, 110, 0.05);
 }
 .glow-purple-text {
-  text-shadow: 0 0 40px rgba(139, 92, 246, 0.5);
+  text-shadow: 0 0 40px rgba(200, 169, 110, 0.35);
 }
 
 /* ─── Gradient Text ─── */
 .gradient-text {
-  background: linear-gradient(135deg, #47A1FF 0%, #818CF8 50%, #C084FC 100%);
+  background: linear-gradient(135deg, #c8a96e 0%, #e8c98e 50%, #a88d55 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 .gradient-text-warm {
-  background: linear-gradient(135deg, #47A1FF 0%, #A78BFA 50%, #F472B6 100%);
+  background: linear-gradient(135deg, #c8a96e 0%, #e8c98e 50%, #f7dca4 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -129,18 +129,18 @@ nav.glass {
 
 /* ─── Gradient Backgrounds ─── */
 .gradient-bg-hero {
-  background: radial-gradient(ellipse 120% 80% at 50% 0%, rgba(99, 60, 200, 0.15) 0%, transparent 60%),
-              radial-gradient(ellipse 80% 60% at 20% 100%, rgba(0, 113, 227, 0.1) 0%, transparent 60%),
-              radial-gradient(ellipse 60% 40% at 90% 30%, rgba(139, 92, 246, 0.08) 0%, transparent 50%);
+  background: radial-gradient(ellipse 120% 80% at 50% 0%, rgba(200, 169, 110, 0.08) 0%, transparent 60%),
+              radial-gradient(ellipse 80% 60% at 20% 100%, rgba(200, 169, 110, 0.04) 0%, transparent 60%),
+              radial-gradient(ellipse 60% 40% at 90% 30%, rgba(232, 201, 142, 0.03) 0%, transparent 50%);
 }
 
 .gradient-bg-section {
-  background: radial-gradient(ellipse 80% 50% at 50% 50%, rgba(99, 60, 200, 0.06) 0%, transparent 70%);
+  background: radial-gradient(ellipse 80% 50% at 50% 50%, rgba(200, 169, 110, 0.03) 0%, transparent 70%);
 }
 
 .gradient-bg-cta {
-  background: radial-gradient(ellipse 100% 80% at 50% 100%, rgba(0, 113, 227, 0.12) 0%, transparent 60%),
-              radial-gradient(ellipse 60% 40% at 50% 0%, rgba(139, 92, 246, 0.08) 0%, transparent 50%);
+  background: radial-gradient(ellipse 100% 80% at 50% 100%, rgba(200, 169, 110, 0.07) 0%, transparent 60%),
+              radial-gradient(ellipse 60% 40% at 50% 0%, rgba(232, 201, 142, 0.03) 0%, transparent 50%);
 }
 
 /* ─── Animated Gradient Border ─── */
@@ -154,7 +154,7 @@ nav.glass {
   position: absolute;
   inset: -1px;
   border-radius: inherit;
-  background: linear-gradient(135deg, rgba(0, 113, 227, 0.3), rgba(139, 92, 246, 0.3), rgba(236, 72, 153, 0.2));
+  background: linear-gradient(135deg, rgba(200, 169, 110, 0.3), rgba(232, 201, 142, 0.3), rgba(168, 141, 85, 0.2));
   z-index: -1;
   opacity: 0;
   transition: opacity 0.4s;
@@ -172,13 +172,13 @@ nav.glass {
   animation: orbFloat 8s ease-in-out infinite;
 }
 .orb-blue {
-  background: rgba(0, 113, 227, 0.12);
+  background: rgba(200, 169, 110, 0.06);
 }
 .orb-purple {
-  background: rgba(139, 92, 246, 0.1);
+  background: rgba(232, 201, 142, 0.05);
 }
 .orb-pink {
-  background: rgba(236, 72, 153, 0.08);
+  background: rgba(168, 141, 85, 0.04);
 }
 
 @keyframes orbFloat {
@@ -200,9 +200,9 @@ nav.glass {
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(255, 255, 255, 0.03) 45%,
-    rgba(255, 255, 255, 0.06) 50%,
-    rgba(255, 255, 255, 0.03) 55%,
+    rgba(255, 255, 255, 0.02) 45%,
+    rgba(255, 255, 255, 0.04) 50%,
+    rgba(255, 255, 255, 0.02) 55%,
     transparent 100%
   );
   animation: shimmerSlide 4s ease-in-out infinite;
@@ -214,16 +214,16 @@ nav.glass {
 
 /* ─── Pulse Glow Animation ─── */
 @keyframes pulseGlow {
-  0%, 100% { box-shadow: 0 0 20px rgba(0, 113, 227, 0.2), 0 4px 15px rgba(0, 0, 0, 0.1); }
-  50% { box-shadow: 0 0 35px rgba(0, 113, 227, 0.35), 0 4px 20px rgba(0, 0, 0, 0.15); }
+  0%, 100% { box-shadow: 0 0 20px rgba(200, 169, 110, 0.15), 0 4px 15px rgba(0, 0, 0, 0.1); }
+  50% { box-shadow: 0 0 35px rgba(200, 169, 110, 0.28), 0 4px 20px rgba(0, 0, 0, 0.15); }
 }
 .pulse-glow {
   animation: pulseGlow 3s ease-in-out infinite;
 }
 
 @keyframes pulseGlowPurple {
-  0%, 100% { box-shadow: 0 0 20px rgba(139, 92, 246, 0.2), 0 4px 15px rgba(0, 0, 0, 0.1); }
-  50% { box-shadow: 0 0 35px rgba(139, 92, 246, 0.35), 0 4px 20px rgba(0, 0, 0, 0.15); }
+  0%, 100% { box-shadow: 0 0 20px rgba(200, 169, 110, 0.15), 0 4px 15px rgba(0, 0, 0, 0.1); }
+  50% { box-shadow: 0 0 35px rgba(200, 169, 110, 0.28), 0 4px 20px rgba(0, 0, 0, 0.15); }
 }
 .pulse-glow-purple {
   animation: pulseGlowPurple 3s ease-in-out infinite;
@@ -231,13 +231,13 @@ nav.glass {
 
 /* ─── Gradient Button ─── */
 .btn-gradient {
-  background: linear-gradient(135deg, #0071E3 0%, #6366F1 50%, #8B5CF6 100%);
+  background: linear-gradient(135deg, #c8a96e 0%, #e8c98e 50%, #a88d55 100%);
   background-size: 200% 200%;
   animation: gradientShift 3s ease infinite;
   transition: all 0.3s;
 }
 .btn-gradient:hover {
-  box-shadow: 0 0 30px rgba(99, 102, 241, 0.4), 0 8px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 0 30px rgba(200, 169, 110, 0.3), 0 8px 20px rgba(0, 0, 0, 0.15);
   transform: translateY(-2px);
 }
 @keyframes gradientShift {
@@ -393,22 +393,22 @@ select {
   justify-content: center;
   padding: 0.875rem 2.25rem;
   border-radius: 9999px;
-  background: linear-gradient(135deg, #0071E3 0%, #47A1FF 50%, #8B5CF6 100%);
+  background: linear-gradient(135deg, #c8a96e 0%, #e8c98e 50%, #a88d55 100%);
   background-size: 200% auto;
-  color: #FFFFFF !important;
-  font-weight: 600;
+  color: #0c0c0e !important;
+  font-weight: 700;
   font-size: 0.875rem;
   letter-spacing: -0.01em;
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  box-shadow: 0 10px 25px -5px rgba(0, 113, 227, 0.4), 0 8px 16px -6px rgba(139, 92, 246, 0.3);
+  box-shadow: 0 10px 25px -5px rgba(200, 169, 110, 0.35), 0 8px 16px -6px rgba(168, 141, 85, 0.25);
   cursor: pointer;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   overflow: hidden;
 }
 
 .btn-premium-primary:hover {
   transform: translateY(-3px) scale(1.03);
-  box-shadow: 0 15px 35px -5px rgba(0, 113, 227, 0.5), 0 12px 24px -6px rgba(139, 92, 246, 0.4);
+  box-shadow: 0 15px 35px -5px rgba(200, 169, 110, 0.45), 0 12px 24px -6px rgba(168, 141, 85, 0.35);
   background-position: right center;
 }
 
@@ -444,7 +444,7 @@ select {
   transform: translateY(-3px) scale(1.03);
   background: rgba(255, 255, 255, 0.1);
   border-color: var(--color-accent-light);
-  box-shadow: 0 10px 25px -5px rgba(0, 113, 227, 0.2), 0 8px 16px -6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 25px -5px rgba(200, 169, 110, 0.15), 0 8px 16px -6px rgba(0, 0, 0, 0.1);
 }
 
 :root[data-theme="light"] .btn-premium-secondary:hover {

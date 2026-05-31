@@ -24,7 +24,7 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm group-hover:scale-110 transition-transform shadow-lg shadow-indigo-500/25 pulse-glow-purple">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-600 via-yellow-500 to-amber-500 flex items-center justify-center text-[#0c0c0e] font-extrabold text-sm group-hover:scale-110 transition-transform shadow-lg shadow-amber-500/20 pulse-glow">
             F
           </div>
           <span className="text-lg font-bold tracking-tight text-white">
