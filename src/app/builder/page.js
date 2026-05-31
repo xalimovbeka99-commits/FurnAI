@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import * as THREE from "three";
+import { useTheme } from "../../components/ThemeProvider";
 
 // ─── COLOUR PALETTE DEFINITIONS ───
 const PALETTE = {
@@ -33,6 +34,7 @@ const PRESETS = {
 export default function BuilderPage() {
   const canvasRef = useRef(null);
   const wrapRef = useRef(null);
+  const { theme } = useTheme();
 
   // ─── React states mirroring active options ───
   const [activeCategory, setActiveCategory] = useState("wardrobe");
@@ -445,8 +447,9 @@ export default function BuilderPage() {
 
     // Scene setup
     app.scene = new THREE.Scene();
-    app.scene.background = new THREE.Color(0x1e1e24);
-    app.scene.fog = new THREE.Fog(0x1e1e24, 12, 28);
+    const initBg = theme === "light" ? 0xfbfaf8 : 0x1e1e24;
+    app.scene.background = new THREE.Color(initBg);
+    app.scene.fog = new THREE.Fog(initBg, 12, 28);
 
     // Camera setup
     app.camera = new THREE.PerspectiveCamera(40, wrap.clientWidth / wrap.clientHeight, 0.05, 40);
@@ -462,7 +465,7 @@ export default function BuilderPage() {
     moveCam();
 
     // Lighting
-    app.scene.add(new THREE.HemisphereLight(0xffffff, 0x1a1a24, 0.85));
+    app.scene.add(new THREE.HemisphereLight(0xffffff, theme === "light" ? 0xdddddf : 0x1a1a24, 0.85));
 
     const sun = new THREE.DirectionalLight(0xffffff, 2.4);
     sun.position.set(3.5, 7, 4.5);
@@ -484,13 +487,14 @@ export default function BuilderPage() {
     // Floor Planes
     const floor = new THREE.Mesh(
       new THREE.PlaneGeometry(22, 22),
-      new THREE.MeshStandardMaterial({ color: 0x1a1a20, roughness: 0.9, metalness: 0.08 })
+      new THREE.MeshStandardMaterial({ color: theme === "light" ? 0xeeeeee : 0x1a1a20, roughness: 0.9, metalness: 0.08 })
     );
     floor.rotation.x = -Math.PI / 2;
     floor.receiveShadow = true;
     app.scene.add(floor);
 
-    const grid = new THREE.GridHelper(20, 20, 0x3a3a46, 0x3a3a46);
+    const gridCol = theme === "light" ? 0xd8d8df : 0x3a3a46;
+    const grid = new THREE.GridHelper(20, 20, gridCol, gridCol);
     grid.position.y = 0.001;
     grid.material.opacity = 0.5;
     grid.material.transparent = true;
@@ -632,6 +636,33 @@ export default function BuilderPage() {
     };
   }, [buildWardrobe, triggerNotification, triggerHud]);
 
+  // Update Three.js scene dynamically when the theme changes
+  useEffect(() => {
+    const app = appRef.current;
+    if (!app.scene || !app.renderer) return;
+
+    const isLight = theme === "light";
+    const bgCol = isLight ? 0xfbfaf8 : 0x1e1e24;
+    const floorCol = isLight ? 0xeeeeee : 0x1a1a20;
+    const gridCol = isLight ? 0xd8d8df : 0x3a3a46;
+
+    app.scene.background.setHex(bgCol);
+    if (app.scene.fog) {
+      app.scene.fog.color.setHex(bgCol);
+    }
+    
+    app.scene.traverse((child) => {
+      if (child.isMesh && child.geometry && child.geometry.type === "PlaneGeometry") {
+        child.material.color.setHex(floorCol);
+        child.material.needsUpdate = true;
+      }
+      if (child.isGridHelper) {
+        child.material.color.setHex(gridCol);
+        child.material.needsUpdate = true;
+      }
+    });
+  }, [theme]);
+
   // Apply Views
   const changeView = (view) => {
     setActiveView(view);
@@ -752,16 +783,16 @@ export default function BuilderPage() {
       {/* Dynamic CSS Styling Injector */}
       <style dangerouslySetInnerHTML={{ __html: `
         .builder-root-container {
-          --bg: #0c0c0e;
-          --bg2: #111114;
-          --bg3: #18181d;
-          --border: rgba(255, 255, 255, 0.07);
-          --border2: rgba(255, 255, 255, 0.13);
-          --accent: #c8a96e;
-          --accent2: #e8c98e;
-          --text: #f0ede8;
-          --muted: #8a8880;
-          --muted2: #5a5855;
+          --bg: ${theme === "light" ? "#fbfaf8" : "#0c0c0e"};
+          --bg2: ${theme === "light" ? "#f5f3f0" : "#111114"};
+          --bg3: ${theme === "light" ? "#ebe8e2" : "#18181d"};
+          --border: ${theme === "light" ? "rgba(0, 0, 0, 0.08)" : "rgba(255, 255, 255, 0.07)"};
+          --border2: ${theme === "light" ? "rgba(0, 0, 0, 0.13)" : "rgba(255, 255, 255, 0.13)"};
+          --accent: ${theme === "light" ? "#b89553" : "#c8a96e"};
+          --accent2: ${theme === "light" ? "#d4b574" : "#e8c98e"};
+          --text: ${theme === "light" ? "#1c1c1f" : "#f0ede8"};
+          --muted: ${theme === "light" ? "#6b6a65" : "#8a8880"};
+          --muted2: ${theme === "light" ? "#a3a19b" : "#5a5855"};
           
           background: var(--bg);
           color: var(--text);
