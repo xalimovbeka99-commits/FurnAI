@@ -43,33 +43,36 @@ const stats = [
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen pt-24 pb-20">
-      <div className="max-w-5xl mx-auto px-6">
+    <div className="min-h-screen pt-28 pb-20 bg-img-about relative">
+      {/* Background opacity overlay */}
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-xs pointer-events-none" />
+
+      <div className="relative z-10 max-w-5xl mx-auto px-6">
         {/* Header */}
         <motion.div initial="hidden" animate="visible" className="text-center mb-20">
-          <motion.p variants={fadeUp} custom={0} className="text-accent text-sm font-semibold tracking-widest uppercase mb-4">
+          <motion.p variants={fadeUp} custom={0} className="text-accent-light text-xs font-semibold tracking-widest uppercase mb-4">
             About Us
           </motion.p>
-          <motion.h1 variants={fadeUp} custom={1} className="text-4xl md:text-6xl font-bold mb-6">
+          <motion.h1 variants={fadeUp} custom={1} className="text-4xl md:text-6xl font-bold mb-6 tracking-tight text-white leading-tight">
             Reimagining Furniture Design with AI
           </motion.h1>
-          <motion.p variants={fadeUp} custom={2} className="text-lg text-muted max-w-2xl mx-auto leading-relaxed">
+          <motion.p variants={fadeUp} custom={2} className="text-base md:text-lg text-muted max-w-2xl mx-auto leading-relaxed">
             Furni AI was born from a simple belief: everyone deserves beautiful, 
             perfectly-fitted furniture — and designing it should be effortless.
           </motion.p>
         </motion.div>
 
-        {/* Mission */}
+        {/* Mission - styled as a floating deep glass console */}
         <motion.div
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="glass rounded-2xl p-10 md:p-14 mb-20"
+          className="glass-pro rounded-3xl p-10 md:p-14 mb-20 border border-white/10 floating-layer-deep"
         >
-          <motion.h2 variants={fadeUp} custom={0} className="text-2xl md:text-3xl font-bold mb-4">
+          <motion.h2 variants={fadeUp} custom={0} className="text-2xl md:text-3xl font-bold mb-4 text-white tracking-tight">
             Our Mission
           </motion.h2>
-          <motion.p variants={fadeUp} custom={1} className="text-muted leading-relaxed text-lg">
+          <motion.p variants={fadeUp} custom={1} className="text-muted leading-relaxed text-sm md:text-base">
             We are building the future of furniture design. By combining artificial intelligence 
             with real-time 3D visualization, we empower designers, makers, and homeowners to create 
             furniture that perfectly fits their space, style, and budget. Our platform turns ideas 
@@ -77,29 +80,29 @@ export default function AboutPage() {
           </motion.p>
         </motion.div>
 
-        {/* Stats */}
+        {/* Stats - redesigned as independent floating plates */}
         <motion.div
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-20"
+          className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-24"
         >
           {stats.map((stat, i) => (
             <motion.div
               key={stat.label}
               variants={fadeUp}
               custom={i}
-              className="glass rounded-2xl p-6 text-center"
+              className="glass rounded-3xl p-6 text-center border border-white/5 floating-layer hover:bg-white/[0.08]"
             >
-              <p className="text-3xl md:text-4xl font-bold text-accent mb-1">{stat.num}</p>
-              <p className="text-xs text-muted">{stat.label}</p>
+              <p className="text-3xl md:text-4xl font-extrabold text-accent-light mb-1.5">{stat.num}</p>
+              <p className="text-[10px] uppercase tracking-wider text-muted font-medium">{stat.label}</p>
             </motion.div>
           ))}
         </motion.div>
 
         {/* Values */}
         <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }}>
-          <motion.h2 variants={fadeUp} custom={0} className="text-2xl md:text-3xl font-bold mb-10 text-center">
+          <motion.h2 variants={fadeUp} custom={0} className="text-2xl md:text-3xl font-bold mb-12 text-center text-white tracking-tight">
             Our Values
           </motion.h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -108,10 +111,10 @@ export default function AboutPage() {
                 key={v.title}
                 variants={fadeUp}
                 custom={i}
-                className="glass rounded-2xl p-8 hover:bg-white/[0.07] transition-all"
+                className="glass rounded-3xl p-8 border border-white/5 floating-layer hover:bg-white/[0.08]"
               >
-                <div className="text-3xl mb-4">{v.icon}</div>
-                <h3 className="text-lg font-semibold mb-2">{v.title}</h3>
+                <div className="text-4xl mb-6">{v.icon}</div>
+                <h3 className="text-lg font-semibold mb-3 text-white">{v.title}</h3>
                 <p className="text-sm text-muted leading-relaxed">{v.desc}</p>
               </motion.div>
             ))}

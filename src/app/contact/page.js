@@ -40,14 +40,17 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="min-h-screen pt-24 pb-20">
-      <div className="max-w-3xl mx-auto px-6">
+    <div className="min-h-screen pt-28 pb-20 bg-img-about relative">
+      {/* Background opacity overlay */}
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-xs pointer-events-none" />
+
+      <div className="relative z-10 max-w-3xl mx-auto px-6">
         {/* Header */}
-        <motion.div initial="hidden" animate="visible" className="text-center mb-12">
-          <motion.p variants={fadeUp} custom={0} className="text-accent text-sm font-semibold tracking-widest uppercase mb-4">
+        <motion.div initial="hidden" animate="visible" className="text-center mb-16">
+          <motion.p variants={fadeUp} custom={0} className="text-accent-light text-xs font-semibold tracking-widest uppercase mb-4">
             Contact
           </motion.p>
-          <motion.h1 variants={fadeUp} custom={1} className="text-4xl md:text-5xl font-bold mb-4">
+          <motion.h1 variants={fadeUp} custom={1} className="text-4xl md:text-5xl font-bold mb-4 tracking-tight text-white leading-tight">
             Get in Touch
           </motion.h1>
           <motion.p variants={fadeUp} custom={2} className="text-muted max-w-lg mx-auto">
@@ -55,7 +58,7 @@ export default function ContactPage() {
           </motion.p>
         </motion.div>
 
-        {/* Form */}
+        {/* Form - styled as a floating console */}
         <motion.div
           initial="hidden"
           animate="visible"
@@ -64,26 +67,26 @@ export default function ContactPage() {
         >
           {submitted ? (
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
+              initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="glass rounded-2xl p-12 text-center"
+              className="glass-pro rounded-3xl p-12 text-center border border-white/10 floating-layer-deep"
             >
-              <div className="text-5xl mb-4">✓</div>
-              <h3 className="text-2xl font-bold mb-2">Message Sent!</h3>
-              <p className="text-sm text-muted mb-6">
+              <div className="text-5xl mb-6 text-accent-light">✓</div>
+              <h3 className="text-2xl font-bold mb-3 text-white">Message Sent!</h3>
+              <p className="text-sm text-muted mb-8 max-w-md mx-auto">
                 Thank you for reaching out. We will get back to you within 24 hours.
               </p>
               <button
                 onClick={() => setSubmitted(false)}
-                className="px-8 py-3 glass hover:bg-white/10 rounded-full text-sm font-medium transition-all"
+                className="btn-premium-secondary"
               >
-                Send Another Message
+                <span>Send Another Message</span>
               </button>
             </motion.div>
           ) : (
-            <form onSubmit={handleSubmit} className="glass rounded-2xl p-8 md:p-10 space-y-6">
+            <form onSubmit={handleSubmit} className="glass-pro rounded-3xl p-8 md:p-12 space-y-6 border border-white/10 floating-layer">
               <div>
-                <label className="text-xs font-medium text-muted uppercase tracking-wider mb-2 block">
+                <label className="text-[10px] font-bold text-muted uppercase tracking-wider mb-2.5 block">
                   Name
                 </label>
                 <input
@@ -91,15 +94,15 @@ export default function ContactPage() {
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                   placeholder="Your name"
-                  className={`w-full bg-surface border rounded-xl px-4 py-3 text-sm text-white placeholder:text-muted/50 focus:outline-none focus:border-accent/50 transition-colors ${
-                    errors.name ? "border-red-500" : "border-border"
+                  className={`w-full bg-black/45 backdrop-blur-md border rounded-2xl px-4 py-3 text-sm text-white placeholder:text-muted/40 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all duration-300 ${
+                    errors.name ? "border-red-500/60" : "border-white/10"
                   }`}
                 />
-                {errors.name && <p className="text-red-400 text-xs mt-1">{errors.name}</p>}
+                {errors.name && <p className="text-red-400 text-xs mt-1.5">{errors.name}</p>}
               </div>
 
               <div>
-                <label className="text-xs font-medium text-muted uppercase tracking-wider mb-2 block">
+                <label className="text-[10px] font-bold text-muted uppercase tracking-wider mb-2.5 block">
                   Email
                 </label>
                 <input
@@ -107,15 +110,15 @@ export default function ContactPage() {
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                   placeholder="you@example.com"
-                  className={`w-full bg-surface border rounded-xl px-4 py-3 text-sm text-white placeholder:text-muted/50 focus:outline-none focus:border-accent/50 transition-colors ${
-                    errors.email ? "border-red-500" : "border-border"
+                  className={`w-full bg-black/45 backdrop-blur-md border rounded-2xl px-4 py-3 text-sm text-white placeholder:text-muted/40 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all duration-300 ${
+                    errors.email ? "border-red-500/60" : "border-white/10"
                   }`}
                 />
-                {errors.email && <p className="text-red-400 text-xs mt-1">{errors.email}</p>}
+                {errors.email && <p className="text-red-400 text-xs mt-1.5">{errors.email}</p>}
               </div>
 
               <div>
-                <label className="text-xs font-medium text-muted uppercase tracking-wider mb-2 block">
+                <label className="text-[10px] font-bold text-muted uppercase tracking-wider mb-2.5 block">
                   Message
                 </label>
                 <textarea
@@ -123,25 +126,25 @@ export default function ContactPage() {
                   onChange={(e) => setForm({ ...form, message: e.target.value })}
                   placeholder="Tell us what you're thinking..."
                   rows={5}
-                  className={`w-full bg-surface border rounded-xl px-4 py-3 text-sm text-white placeholder:text-muted/50 focus:outline-none focus:border-accent/50 resize-none transition-colors ${
-                    errors.message ? "border-red-500" : "border-border"
+                  className={`w-full bg-black/45 backdrop-blur-md border rounded-2xl px-4 py-3 text-sm text-white placeholder:text-muted/40 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent resize-none transition-all duration-300 ${
+                    errors.message ? "border-red-500/60" : "border-white/10"
                   }`}
                 />
-                {errors.message && <p className="text-red-400 text-xs mt-1">{errors.message}</p>}
+                {errors.message && <p className="text-red-400 text-xs mt-1.5">{errors.message}</p>}
               </div>
 
               <motion.button
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.99 }}
                 type="submit"
-                className="w-full py-4 bg-accent hover:bg-accent-dark text-white font-semibold rounded-xl transition-all shadow-lg shadow-accent/20"
+                className="w-full btn-premium-primary py-4 cursor-pointer"
               >
-                Send Message →
+                <span>Send Message →</span>
               </motion.button>
 
-              <p className="text-xs text-muted text-center">
+              <p className="text-xs text-muted text-center pt-2">
                 You can also reach us at{" "}
-                <span className="text-accent">hello@furniai.com</span>
+                <span className="text-accent-light font-medium">hello@furniai.com</span>
               </p>
             </form>
           )}

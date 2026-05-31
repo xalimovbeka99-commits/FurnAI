@@ -175,18 +175,18 @@ export default function BuilderPage() {
       <div className="relative h-[calc(100vh-4rem)] overflow-hidden bg-background">
         {/* ─── Left Panel (Glass Island) ─── */}
         <motion.div initial={{ x: -40, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 0.5 }}
-          className="absolute left-0 top-0 lg:left-6 lg:top-6 lg:bottom-6 w-full lg:w-[440px] z-20 glass-pro lg:rounded-[2rem] overflow-y-auto flex flex-col pointer-events-auto shimmer">
+          className="absolute left-0 top-0 lg:left-6 lg:top-6 lg:bottom-6 w-full lg:w-[440px] z-20 glass-pro lg:rounded-[2rem] overflow-y-auto flex flex-col pointer-events-auto shimmer border border-white/10 floating-layer">
           <div className="p-8 space-y-6">
             <div>
-              <h1 className="text-2xl font-bold mb-1">AI Builder</h1>
+              <h1 className="text-2xl font-bold mb-1 text-white">AI Builder</h1>
               <p className="text-xs text-muted">Design furniture with AI or manual controls • 100% Free</p>
             </div>
 
             {/* Tabs */}
-            <div className="flex gap-1 bg-surface rounded-xl p-1">
+            <div className="flex gap-1 bg-black/45 backdrop-blur-md border border-white/5 rounded-2xl p-1">
               {[{ id: "controls", label: "Controls" }, { id: "ai", label: "✨ AI" }, { id: "export", label: "🏭 Export" }].map((tab) => (
                 <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-                  className={`flex-1 py-2 text-xs font-medium rounded-lg transition-all ${activeTab === tab.id ? "bg-accent text-white shadow-lg" : "text-muted hover:text-white"}`}>
+                  className={`flex-1 py-2 text-xs font-semibold rounded-xl transition-all cursor-pointer ${activeTab === tab.id ? "bg-gradient-to-r from-accent to-accent-light text-white shadow-md border border-white/10" : "text-muted hover:text-white"}`}>
                   {tab.label}
                 </button>
               ))}
@@ -199,11 +199,11 @@ export default function BuilderPage() {
                   <label className="text-xs font-medium text-muted uppercase tracking-wider mb-2 block">Describe your furniture</label>
                   <textarea value={store.prompt} onChange={(e) => store.setPrompt(e.target.value)}
                     placeholder="e.g., modern luxury wardrobe with glass doors, white kitchen with marble countertop..."
-                    className="w-full h-28 bg-surface border border-border rounded-xl px-4 py-3 text-sm text-white placeholder:text-muted/50 focus:outline-none focus:border-accent/50 resize-none" />
+                    className="w-full h-28 bg-black/45 backdrop-blur-md border border-white/10 rounded-2xl px-4 py-3 text-sm text-white placeholder:text-muted/40 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent resize-none transition-all duration-300" />
                 </div>
-                <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
                   onClick={handleAIGenerate} disabled={aiLoading || !store.prompt.trim()}
-                  className="w-full py-4 btn-gradient text-white font-semibold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg">
+                  className="w-full btn-premium-primary py-4 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
                   {aiLoading ? (<><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />AI is thinking...</>) : "🧠 Generate with AI"}
                 </motion.button>
                 <AnimatePresence>
@@ -260,19 +260,19 @@ export default function BuilderPage() {
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
                 {/* Prompt */}
                 <div>
-                  <label className="text-xs font-medium text-muted uppercase tracking-wider mb-2 block">Description (optional)</label>
+                  <label className="text-xs font-semibold text-muted uppercase tracking-wider mb-2 block">Description (optional)</label>
                   <textarea value={store.prompt} onChange={(e) => store.setPrompt(e.target.value)}
                     placeholder="e.g., A sleek modern wardrobe with 3 shelves..."
-                    className="w-full h-16 bg-surface border border-border rounded-xl px-4 py-3 text-sm text-white placeholder:text-muted/50 focus:outline-none focus:border-accent/50 resize-none" />
+                    className="w-full h-16 bg-black/45 backdrop-blur-md border border-white/10 rounded-2xl px-4 py-3 text-sm text-white placeholder:text-muted/40 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent resize-none transition-all duration-300" />
                 </div>
 
                 {/* Type */}
                 <div>
-                  <label className="text-xs font-medium text-muted uppercase tracking-wider mb-2 block">Type</label>
+                  <label className="text-xs font-semibold text-muted uppercase tracking-wider mb-2 block">Type</label>
                   <div className="grid grid-cols-3 gap-2">
                     {furnitureTypes.map((t) => (
                       <button key={t.value} onClick={() => store.setType(t.value)}
-                        className={`px-3 py-2.5 rounded-xl text-xs font-medium transition-all flex flex-col items-center gap-1 ${store.type === t.value ? "bg-accent text-white shadow-lg shadow-accent/20" : "bg-surface text-muted hover:text-white border border-border"}`}>
+                        className={`px-3 py-2.5 rounded-2xl text-xs font-semibold uppercase tracking-wider transition-all duration-300 flex flex-col items-center gap-1.5 cursor-pointer ${store.type === t.value ? "bg-gradient-to-br from-accent to-accent-light text-white shadow-md border border-white/20" : "bg-black/35 backdrop-blur-md text-muted hover:text-white hover:bg-white/5 border border-white/10"}`}>
                         <span className="text-base">{t.icon}</span>{t.label}
                       </button>
                     ))}
@@ -281,11 +281,11 @@ export default function BuilderPage() {
 
                 {/* Style */}
                 <div>
-                  <label className="text-xs font-medium text-muted uppercase tracking-wider mb-2 block">Style</label>
+                  <label className="text-xs font-semibold text-muted uppercase tracking-wider mb-2 block">Style</label>
                   <div className="grid grid-cols-2 gap-2">
                     {styleOptions.map((s) => (
                       <button key={s.value} onClick={() => store.setStyle(s.value)}
-                        className={`px-4 py-2.5 rounded-xl text-xs font-medium transition-all ${store.style === s.value ? "bg-accent text-white shadow-lg shadow-accent/20" : "bg-surface text-muted hover:text-white border border-border"}`}>
+                        className={`px-4 py-2.5 rounded-2xl text-xs font-semibold uppercase tracking-wider transition-all duration-300 cursor-pointer ${store.style === s.value ? "bg-gradient-to-br from-accent to-accent-light text-white shadow-md border border-white/20" : "bg-black/35 backdrop-blur-md text-muted hover:text-white hover:bg-white/5 border border-white/10"}`}>
                         {s.label}
                       </button>
                     ))}
@@ -294,11 +294,11 @@ export default function BuilderPage() {
 
                 {/* Material */}
                 <div>
-                  <label className="text-xs font-medium text-muted uppercase tracking-wider mb-2 block">Material</label>
+                  <label className="text-xs font-semibold text-muted uppercase tracking-wider mb-2 block">Material</label>
                   <div className="grid grid-cols-3 gap-2">
                     {materialOptions.map((m) => (
                       <button key={m.value} onClick={() => store.setMaterial(m.value)}
-                        className={`px-3 py-2.5 rounded-xl text-xs font-medium transition-all ${store.material === m.value ? "bg-accent text-white shadow-lg shadow-accent/20" : "bg-surface text-muted hover:text-white border border-border"}`}>
+                        className={`px-3 py-2.5 rounded-2xl text-xs font-semibold uppercase tracking-wider transition-all duration-300 cursor-pointer ${store.material === m.value ? "bg-gradient-to-br from-accent to-accent-light text-white shadow-md border border-white/20" : "bg-black/35 backdrop-blur-md text-muted hover:text-white hover:bg-white/5 border border-white/10"}`}>
                         {m.label}
                       </button>
                     ))}
@@ -346,9 +346,9 @@ export default function BuilderPage() {
                 )}
 
                 {/* Generate */}
-                <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
                   onClick={handleGenerate} disabled={store.isGenerating}
-                  className="w-full py-4 bg-accent hover:bg-accent-dark text-white font-semibold rounded-xl disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-accent/20">
+                  className="btn-premium-primary w-full py-4 cursor-pointer disabled:opacity-50">
                   {store.isGenerating ? (<><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Generating...</>) : "✨ Generate Design"}
                 </motion.button>
 
@@ -356,9 +356,9 @@ export default function BuilderPage() {
                 <AnimatePresence>
                   {store.generatedDesign && (
                     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="grid grid-cols-3 gap-2">
-                      <button onClick={handleSave} className="py-2.5 glass hover:bg-white/10 text-xs font-medium rounded-xl">{saved ? "✓ Saved!" : "💾 Save"}</button>
-                      <button onClick={handleExportJSON} className="py-2.5 glass hover:bg-white/10 text-xs font-medium rounded-xl">📄 Export</button>
-                      <button onClick={() => setActiveTab("export")} className="py-2.5 glass hover:bg-white/10 text-xs font-medium rounded-xl">🏭 Factory</button>
+                      <button onClick={handleSave} className="py-2.5 bg-white/5 border border-white/10 hover:bg-white/10 text-white text-xs font-semibold rounded-2xl transition-all cursor-pointer">{saved ? "✓ Saved!" : "💾 Save"}</button>
+                      <button onClick={handleExportJSON} className="py-2.5 bg-white/5 border border-white/10 hover:bg-white/10 text-white text-xs font-semibold rounded-2xl transition-all cursor-pointer">📄 Export</button>
+                      <button onClick={() => setActiveTab("export")} className="py-2.5 bg-white/5 border border-white/10 hover:bg-white/10 text-white text-xs font-semibold rounded-2xl transition-all cursor-pointer">🏭 Factory</button>
                     </motion.div>
                   )}
                 </AnimatePresence>

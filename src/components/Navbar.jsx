@@ -20,37 +20,37 @@ export default function Navbar() {
   const { theme, toggle } = useTheme();
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 glass">
+    <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-white/10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 group">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm group-hover:scale-110 transition-transform shadow-lg shadow-indigo-500/25 pulse-glow-purple">
             F
           </div>
-          <span className="text-lg font-bold tracking-tight">
-            Furni<span className="gradient-text">AI</span>
+          <span className="text-lg font-bold tracking-tight text-white">
+            Furni<span className="gradient-text-warm font-extrabold">AI</span>
           </span>
         </Link>
 
-        {/* Desktop links */}
-        <div className="hidden lg:flex items-center gap-0.5">
+        {/* Desktop links - redesigned with premium capsule pill style */}
+        <div className="hidden lg:flex items-center gap-1.5 bg-white/5 border border-white/10 rounded-full px-1.5 py-1">
           {links.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="px-3 py-2 text-sm text-muted hover:text-foreground transition-colors rounded-lg hover:bg-foreground/5"
+              className="px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider text-muted hover:text-white transition-all duration-300 rounded-full hover:bg-white/10"
             >
               {link.label}
             </Link>
           ))}
         </div>
 
-        {/* CTA + Theme toggle */}
+        {/* CTA + Theme toggle - redesigned premium button */}
         <div className="hidden lg:flex items-center gap-3">
           {/* Theme toggle */}
           <button
             onClick={toggle}
-            className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-foreground/5 transition-colors"
+            className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/5 transition-colors border border-white/5 cursor-pointer text-white"
             aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
           >
             {theme === "dark" ? (
@@ -67,11 +67,8 @@ export default function Navbar() {
             )}
           </button>
 
-          <Link
-            href="/builder"
-            className="px-5 py-2 btn-gradient text-white text-sm font-medium rounded-full transition-all hover:scale-105"
-          >
-            Start Designing
+          <Link href="/builder" className="btn-premium-primary !py-2 !px-5 text-xs">
+            <span>Start Designing</span>
           </Link>
         </div>
 
@@ -79,7 +76,7 @@ export default function Navbar() {
         <div className="md:hidden flex items-center gap-2">
           <button
             onClick={toggle}
-            className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-foreground/5 transition-colors"
+            className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/5 transition-colors text-white"
             aria-label="Toggle theme"
           >
             {theme === "dark" ? (
@@ -96,7 +93,7 @@ export default function Navbar() {
           </button>
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="flex flex-col gap-1.5 p-2"
+            className="flex flex-col gap-1.5 p-2 text-white"
             aria-label="Menu"
           >
             <motion.span
@@ -122,7 +119,7 @@ export default function Navbar() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden glass-strong border-t border-border"
+            className="md:hidden glass-strong border-t border-white/10"
           >
             <div className="px-6 py-4 flex flex-col gap-1">
               {links.map((link) => (
@@ -130,7 +127,7 @@ export default function Navbar() {
                   key={link.href}
                   href={link.href}
                   onClick={() => setMobileOpen(false)}
-                  className="px-4 py-3 text-sm text-muted hover:text-foreground transition-colors rounded-lg hover:bg-foreground/5"
+                  className="px-4 py-3 text-sm text-muted hover:text-white transition-colors rounded-lg hover:bg-white/5"
                 >
                   {link.label}
                 </Link>
@@ -138,9 +135,9 @@ export default function Navbar() {
               <Link
                 href="/builder"
                 onClick={() => setMobileOpen(false)}
-                className="mt-2 px-5 py-3 btn-gradient text-white text-sm font-medium rounded-full text-center"
+                className="mt-2 btn-premium-primary w-full text-center"
               >
-                Start Designing
+                <span>Start Designing</span>
               </Link>
             </div>
           </motion.div>

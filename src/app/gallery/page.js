@@ -35,41 +35,44 @@ export default function GalleryPage() {
     : galleryItems.filter((item) => item.type === filter.toLowerCase());
 
   return (
-    <div className="min-h-screen pt-24 pb-20 gradient-bg-hero">
-      <div className="max-w-7xl mx-auto px-6">
+    <div className="min-h-screen pt-28 pb-20 bg-img-materials relative">
+      {/* Visual dark backdrop for high legibility */}
+      <div className="absolute inset-0 bg-black/55 backdrop-blur-xs pointer-events-none" />
+
+      <div className="relative z-10 max-w-7xl mx-auto px-6">
         {/* Header */}
         <motion.div
           initial="hidden"
           animate="visible"
-          className="text-center mb-12"
+          className="text-center mb-16"
         >
           <motion.p variants={fadeUp} custom={0} className="text-sm font-semibold tracking-widest uppercase mb-4 gradient-text">
             Gallery
           </motion.p>
-          <motion.h1 variants={fadeUp} custom={1} className="text-4xl md:text-5xl font-bold mb-4">
+          <motion.h1 variants={fadeUp} custom={1} className="text-4xl md:text-5xl font-bold mb-4 tracking-tight text-white">
             Design Inspiration
           </motion.h1>
-          <motion.p variants={fadeUp} custom={2} className="text-muted max-w-xl mx-auto">
+          <motion.p variants={fadeUp} custom={2} className="text-muted max-w-xl mx-auto leading-relaxed text-sm md:text-base">
             Explore our collection of AI-generated furniture designs. Click any design for details.
           </motion.p>
         </motion.div>
 
-        {/* Filters */}
+        {/* Filters - redesigned with floating backdrop glass buttons */}
         <motion.div
           initial="hidden"
           animate="visible"
           variants={fadeUp}
           custom={3}
-          className="flex items-center justify-center gap-2 mb-12"
+          className="flex flex-wrap items-center justify-center gap-3 mb-16"
         >
           {filters.map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${
+              className={`px-6 py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-all duration-300 cursor-pointer ${
                 filter === f
-                  ? "bg-accent text-white shadow-lg shadow-accent/20"
-                  : "bg-surface text-muted hover:text-white hover:bg-surface-light border border-border"
+                  ? "bg-gradient-to-r from-accent to-accent-light text-white shadow-lg shadow-accent/20 scale-105 border border-white/20"
+                  : "bg-black/35 backdrop-blur-md text-muted hover:text-white hover:bg-white/10 border border-white/10"
               }`}
             >
               {f}
@@ -77,8 +80,8 @@ export default function GalleryPage() {
           ))}
         </motion.div>
 
-        {/* Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Grid of floating cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filtered.map((item, i) => (
             <motion.div
               key={item.id}
@@ -87,32 +90,33 @@ export default function GalleryPage() {
               variants={fadeUp}
               custom={i}
               onClick={() => setSelected(item)}
-              className="glass rounded-2xl overflow-hidden cursor-pointer group hover:border-accent/30 transition-all card-glow"
+              className="glass rounded-3xl overflow-hidden cursor-pointer group border border-white/5 transition-all floating-layer relative"
             >
               {/* Preview placeholder */}
-              <div className="h-56 relative overflow-hidden" style={{ background: `linear-gradient(135deg, ${item.color}22, ${item.color}44)` }}>
+              <div className="h-60 relative overflow-hidden" style={{ background: `linear-gradient(135deg, ${item.color}15, ${item.color}35)` }}>
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div
-                    className="rounded-lg shadow-2xl transition-transform group-hover:scale-105"
+                    className="rounded-xl shadow-2xl transition-transform duration-500 group-hover:scale-110"
                     style={{
-                      width: Math.min(item.width * 0.5, 120),
-                      height: Math.min(item.height * 0.5, 100),
+                      width: Math.min(item.width * 0.5, 130),
+                      height: Math.min(item.height * 0.5, 110),
                       backgroundColor: item.color,
-                      opacity: 0.6,
+                      opacity: 0.7,
+                      border: '1px solid rgba(255,255,255,0.1)'
                     }}
                   />
                 </div>
-                <div className="absolute top-3 left-3 flex gap-1.5">
-                  <span className="px-2 py-1 rounded-md glass text-[10px] font-medium uppercase tracking-wider">
+                <div className="absolute top-4 left-4 flex gap-1.5 z-10">
+                  <span className="px-2.5 py-1 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-[9px] font-bold uppercase tracking-wider text-muted-foreground text-white">
                     {item.type}
                   </span>
-                  <span className="px-2 py-1 rounded-md glass text-[10px] font-medium uppercase tracking-wider">
+                  <span className="px-2.5 py-1 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-[9px] font-bold uppercase tracking-wider text-muted-foreground text-white">
                     {item.style}
                   </span>
                 </div>
               </div>
-              <div className="p-5">
-                <h3 className="font-semibold mb-1 group-hover:text-accent transition-colors">{item.name}</h3>
+              <div className="p-6 relative z-10 bg-black/20">
+                <h3 className="font-semibold text-base mb-1 group-hover:text-accent-light transition-colors text-white">{item.name}</h3>
                 <p className="text-xs text-muted">
                   {item.width} × {item.height} × {item.depth} cm · {item.material}
                 </p>
@@ -129,67 +133,67 @@ export default function GalleryPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-6"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-6"
             onClick={() => setSelected(null)}
           >
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
+              initial={{ scale: 0.93, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
+              exit={{ scale: 0.93, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="glass-strong rounded-2xl max-w-lg w-full p-8"
+              className="glass-strong rounded-3xl max-w-lg w-full p-8 border border-white/15 floating-layer-deep"
             >
               <div className="flex items-start justify-between mb-6">
                 <div>
-                  <h2 className="text-2xl font-bold mb-1">{selected.name}</h2>
-                  <div className="flex gap-2">
-                    <span className="px-2 py-1 rounded-md bg-accent/10 text-accent text-xs font-medium">{selected.type}</span>
-                    <span className="px-2 py-1 rounded-md bg-white/5 text-muted text-xs font-medium">{selected.style}</span>
-                    <span className="px-2 py-1 rounded-md bg-white/5 text-muted text-xs font-medium">{selected.material}</span>
+                  <h2 className="text-2xl font-bold mb-2 text-white">{selected.name}</h2>
+                  <div className="flex flex-wrap gap-2">
+                    <span className="px-2.5 py-1 rounded-md bg-accent/10 border border-accent/20 text-accent-light text-xs font-semibold">{selected.type}</span>
+                    <span className="px-2.5 py-1 rounded-md bg-white/5 border border-white/10 text-muted text-xs font-semibold">{selected.style}</span>
+                    <span className="px-2.5 py-1 rounded-md bg-white/5 border border-white/10 text-muted text-xs font-semibold">{selected.material}</span>
                   </div>
                 </div>
                 <button
                   onClick={() => setSelected(null)}
-                  className="text-muted hover:text-white transition-colors text-xl"
+                  className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 transition-colors flex items-center justify-center text-muted hover:text-white cursor-pointer"
                 >
                   ✕
                 </button>
               </div>
 
               {/* Preview */}
-              <div className="h-48 rounded-xl mb-6 flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${selected.color}22, ${selected.color}44)` }}>
+              <div className="h-56 rounded-2xl mb-6 flex items-center justify-center border border-white/5" style={{ background: `linear-gradient(135deg, ${selected.color}22, ${selected.color}44)` }}>
                 <div
-                  className="rounded-lg shadow-2xl"
+                  className="rounded-xl shadow-2xl border border-white/15"
                   style={{
-                    width: Math.min(selected.width * 0.6, 140),
-                    height: Math.min(selected.height * 0.5, 120),
+                    width: Math.min(selected.width * 0.6, 150),
+                    height: Math.min(selected.height * 0.5, 130),
                     backgroundColor: selected.color,
-                    opacity: 0.7,
+                    opacity: 0.75,
                   }}
                 />
               </div>
 
               {/* Specs */}
-              <div className="grid grid-cols-3 gap-3 mb-6">
-                <div className="bg-surface rounded-xl p-3 text-center">
-                  <p className="text-xs text-muted mb-1">Width</p>
-                  <p className="font-semibold text-accent">{selected.width} cm</p>
+              <div className="grid grid-cols-3 gap-4 mb-8">
+                <div className="bg-black/35 border border-white/5 rounded-2xl p-4 text-center">
+                  <p className="text-[10px] uppercase tracking-wider text-muted mb-1">Width</p>
+                  <p className="font-bold text-accent-light text-sm md:text-base">{selected.width} cm</p>
                 </div>
-                <div className="bg-surface rounded-xl p-3 text-center">
-                  <p className="text-xs text-muted mb-1">Height</p>
-                  <p className="font-semibold text-accent">{selected.height} cm</p>
+                <div className="bg-black/35 border border-white/5 rounded-2xl p-4 text-center">
+                  <p className="text-[10px] uppercase tracking-wider text-muted mb-1">Height</p>
+                  <p className="font-bold text-accent-light text-sm md:text-base">{selected.height} cm</p>
                 </div>
-                <div className="bg-surface rounded-xl p-3 text-center">
-                  <p className="text-xs text-muted mb-1">Depth</p>
-                  <p className="font-semibold text-accent">{selected.depth} cm</p>
+                <div className="bg-black/35 border border-white/5 rounded-2xl p-4 text-center">
+                  <p className="text-[10px] uppercase tracking-wider text-muted mb-1">Depth</p>
+                  <p className="font-bold text-accent-light text-sm md:text-base">{selected.depth} cm</p>
                 </div>
               </div>
 
               <a
                 href="/builder"
-                className="block w-full py-3 btn-gradient text-white text-center font-semibold rounded-xl transition-all"
+                className="btn-premium-primary w-full text-center"
               >
-                Open in Builder →
+                <span>Open in Builder →</span>
               </a>
             </motion.div>
           </motion.div>

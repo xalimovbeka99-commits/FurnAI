@@ -57,75 +57,78 @@ const plans = [
 
 export default function PricingPage() {
   return (
-    <div className="min-h-screen pt-32 pb-20 px-4 gradient-bg-hero">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen pt-28 pb-20 px-4 bg-img-materials relative">
+      {/* Background opacity layer */}
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-xs pointer-events-none" />
+
+      <div className="relative z-10 max-w-6xl mx-auto">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-16"
+          className="text-center mb-20"
         >
           <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-6 pulse-glow">
-            <span className="text-xs font-medium text-emerald-400">100% Free & Open</span>
+            <span className="text-xs font-semibold text-emerald-400">100% Free & Open</span>
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            Completely <span className="gradient-text">Free</span>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight text-white">
+            Completely <span className="gradient-text-warm font-extrabold">Free</span>
           </h1>
-          <p className="text-muted max-w-lg mx-auto">
+          <p className="text-muted max-w-lg mx-auto leading-relaxed text-sm md:text-base">
             Furni AI is a free platform. No hidden fees, no subscriptions, no limits.
             Design, export, and build your furniture for free.
           </p>
         </motion.div>
 
-        {/* Plans */}
-        <div className="grid md:grid-cols-3 gap-6">
+        {/* Plans - redesigned as floating cards of varying depths */}
+        <div className="grid md:grid-cols-3 gap-8 items-center">
           {plans.map((plan, index) => (
             <motion.div
               key={plan.name}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 25 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className={`rounded-2xl p-8 relative ${
+              transition={{ delay: index * 0.1, duration: 0.5 }}
+              className={`rounded-3xl p-8 relative border transition-all duration-500 ${
                 plan.highlight
-                  ? "bg-gradient-to-b from-indigo-500/10 via-purple-500/5 to-transparent border-2 border-indigo-500/30"
-                  : "glass border border-border card-glow"
+                  ? "bg-gradient-to-b from-indigo-500/20 via-purple-500/10 to-black/50 border-2 border-indigo-500/50 floating-layer-deep scale-105 z-10"
+                  : "glass border-white/5 floating-layer hover:bg-white/[0.08]"
               }`}
             >
               {plan.badge && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="px-4 py-1 btn-gradient text-white text-xs font-bold rounded-full">
+                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
+                  <span className="px-4 py-1.5 bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-[10px] font-bold rounded-full border border-white/10 shadow-lg tracking-wider uppercase">
                     {plan.badge}
                   </span>
                 </div>
               )}
 
-              <h3 className="text-xl font-bold mb-1">{plan.name}</h3>
-              <p className="text-xs text-muted mb-4">{plan.description}</p>
+              <h3 className="text-xl font-bold mb-1 text-white">{plan.name}</h3>
+              <p className="text-xs text-muted mb-6">{plan.description}</p>
 
-              <div className="flex items-baseline mb-6">
-                <span className="text-4xl font-bold gradient-text">{plan.price}</span>
-                <span className="text-sm text-muted ml-1">/{plan.period}</span>
+              <div className="flex items-baseline mb-6 border-b border-white/10 pb-6">
+                <span className="text-5xl font-extrabold gradient-text-warm">{plan.price}</span>
+                <span className="text-xs text-muted ml-1.5">/{plan.period}</span>
               </div>
 
-              <Link href="/builder">
-                <motion.button
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  className={`w-full py-3 rounded-xl font-medium transition-all text-sm mb-6 ${
+              <Link href="/builder" className="block w-full mb-8">
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className={`w-full text-center cursor-pointer ${
                     plan.highlight
-                      ? "btn-gradient text-white"
-                      : "glass hover:bg-white/10"
+                      ? "btn-premium-primary"
+                      : "btn-premium-secondary"
                   }`}
                 >
-                  Start Designing Free
-                </motion.button>
+                  <span>Start Designing Free</span>
+                </motion.div>
               </Link>
 
-              <ul className="space-y-3">
+              <ul className="space-y-4">
                 {plan.features.map((f, i) => (
-                  <li key={i} className="flex items-start gap-2 text-xs">
-                    <span className="text-accent-light mt-0.5">✓</span>
-                    <span className="text-muted">{f}</span>
+                  <li key={i} className="flex items-start gap-2.5 text-xs">
+                    <span className="text-accent-light mt-0.5 font-bold">✓</span>
+                    <span className="text-muted leading-normal">{f}</span>
                   </li>
                 ))}
               </ul>
@@ -133,24 +136,24 @@ export default function PricingPage() {
           ))}
         </div>
 
-        {/* FAQ */}
+        {/* FAQ - styled as floating cards */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
-          className="mt-20 max-w-2xl mx-auto"
+          className="mt-28 max-w-3xl mx-auto"
         >
-          <h2 className="text-2xl font-bold text-center mb-8">FAQ</h2>
-          <div className="space-y-4">
+          <h2 className="text-3xl font-bold text-center mb-10 text-white tracking-tight">FAQ</h2>
+          <div className="grid md:grid-cols-2 gap-6">
             {[
               { q: "Why is it free?", a: "Furni AI is an open platform. We believe design tools should be accessible to everyone — hobbyists, students, small workshops, and factories alike." },
               { q: "Is the factory export accurate enough for production?", a: "Yes. The factory export generates mm-precision component breakdowns, hardware lists, edge banding specs, and assembly instructions that a skilled carpenter or factory can work from." },
               { q: "Do I need an OpenAI API key?", a: "No. Furni AI works without one using smart keyword-based generation. Add your OpenAI key in .env.local for enhanced AI-powered design suggestions." },
               { q: "Can I deploy this for my business?", a: "Absolutely. Furni AI is designed to be easily deployed on Vercel or any Node.js hosting. Perfect for furniture workshops and factories." },
             ].map((faq, i) => (
-              <div key={i} className="glass rounded-xl p-5 card-glow">
-                <h3 className="text-sm font-semibold mb-2">{faq.q}</h3>
-                <p className="text-xs text-muted">{faq.a}</p>
+              <div key={i} className="glass rounded-2xl p-6 border border-white/5 floating-layer hover:bg-white/[0.08]">
+                <h3 className="text-sm font-semibold mb-2.5 text-white">{faq.q}</h3>
+                <p className="text-xs text-muted leading-relaxed">{faq.a}</p>
               </div>
             ))}
           </div>
