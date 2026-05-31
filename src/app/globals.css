@@ -479,4 +479,70 @@ select {
   background: rgba(0, 0, 0, 0.03);
 }
 
+/* ─── Light Mode Overrides for Transparency & Overlay Classes ─── */
+:root[data-theme="light"] .bg-black\/20 {
+  background-color: rgba(255, 255, 255, 0.4) !important;
+}
+:root[data-theme="light"] .bg-black\/35 {
+  background-color: rgba(255, 255, 255, 0.5) !important;
+}
+:root[data-theme="light"] .bg-black\/40 {
+  background-color: rgba(255, 255, 255, 0.55) !important;
+}
+:root[data-theme="light"] .bg-black\/45 {
+  background-color: rgba(255, 255, 255, 0.6) !important;
+}
+:root[data-theme="light"] .bg-black\/55 {
+  background-color: rgba(255, 255, 255, 0.6) !important;
+}
+:root[data-theme="light"] .bg-black\/60 {
+  background-color: rgba(255, 255, 255, 0.65) !important;
+}
+:root[data-theme="light"] .bg-black\/75 {
+  background-color: rgba(255, 255, 255, 0.75) !important;
+}
+:root[data-theme="light"] .bg-black\/80 {
+  background-color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Translucent white elements to translucent dark styles */
+:root[data-theme="light"] .bg-white\/5 {
+  background-color: rgba(0, 0, 0, 0.03) !important;
+}
+:root[data-theme="light"] .bg-white\/10 {
+  background-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+/* Border overrides to subtle light borders instead of high-contrast white borders */
+:root[data-theme="light"] .border-white\/5 {
+  border-color: rgba(0, 0, 0, 0.05) !important;
+}
+:root[data-theme="light"] .border-white\/10 {
+  border-color: rgba(0, 0, 0, 0.09) !important;
+}
+:root[data-theme="light"] .border-white\/15 {
+  border-color: rgba(0, 0, 0, 0.13) !important;
+}
+
+/* Accent color overrides for better contrast in light mode */
+:root[data-theme="light"] .text-accent-light {
+  color: var(--color-accent) !important;
+}
+
+/* Form controls styling under light mode */
+:root[data-theme="light"] input[type="text"],
+:root[data-theme="light"] input[type="email"],
+:root[data-theme="light"] textarea {
+  background-color: rgba(255, 255, 255, 0.75) !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
+  color: var(--color-foreground) !important;
+}
+:root[data-theme="light"] input[type="text"]::placeholder,
+:root[data-theme="light"] input[type="email"]::placeholder,
+:root[data-theme="light"] textarea::placeholder {
+  color: var(--color-muted) !important;
+  opacity: 0.7;
+}
+
+
 
