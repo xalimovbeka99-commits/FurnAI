@@ -40,13 +40,13 @@ export default function BuilderPage() {
   const [width, setWidth] = useState(2.4);
   const [height, setHeight] = useState(2.8);
   const [depth, setDepth] = useState(0.60);
-  const [sections, setSections] = useState(5);
-  const [extDrawerRows, setExtDrawerRows] = useState(1);
+  const [sections, setSections] = useState(3);
+  const [extDrawerRows, setExtDrawerRows] = useState(0);
   const [intDrawers, setIntDrawers] = useState(false);
   const [activePreset, setActivePreset] = useState("luxury");
   const [activeColor, setActiveColor] = useState("oak");
   const [doorStyle, setDoorStyle] = useState("solid");
-  const [handleStyle, setHandleStyle] = useState("hidden");
+  const [handleStyle, setHandleStyle] = useState("gold");
   const [ledLighting, setLedLighting] = useState("off");
   const [activeView, setActiveView] = useState("v3d");
   const [prompt, setPrompt] = useState("");
@@ -1604,29 +1604,169 @@ export default function BuilderPage() {
 
         {/* RIGHT PANEL CONTROL BAR */}
         <div className="rp">
-          {/* Glass / Mirror Options at the top */}
-          <div className="rps" style={{ borderBottom: "1px solid var(--border)", paddingTop: "14px" }}>
-            <div className="optlist" style={{ gap: "6px" }}>
-              <div
-                className={`opt ${doorStyle === "mirror" ? "on" : ""}`}
-                onClick={() => {
-                  setDoorStyle(doorStyle === "mirror" ? "solid" : "mirror");
-                  triggerNotification(doorStyle === "mirror" ? "Mirror removed" : "Full Mirror applied");
-                }}
-              >
-                <span style={{ color: "#c8a96e", marginRight: "6px", fontSize: "0.8rem" }}>●</span>
-                Full Mirror
+          {/* AI Prompt */}
+          <div className="rps">
+            <div className="rpt">✦ AI Prompt</div>
+            <div className="aibox">
+              <textarea
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                placeholder="Describe your style…&#10;e.g. Dark walnut with gold handles and warm LED"
+              />
+              <div className="aifoot">
+                <div className="aiex-list">
+                  <span className="aiex cursor-pointer" onClick={() => setPrompt("Luxury gold")}>Luxury</span>
+                  <span className="aiex cursor-pointer" onClick={() => setPrompt("Minimal white")}>Minimal</span>
+                  <span className="aiex cursor-pointer" onClick={() => setPrompt("Dark walnut")}>Walnut</span>
+                  <span className="aiex cursor-pointer" onClick={() => setPrompt("Add warm LED")}>LED</span>
+                  <span className="aiex cursor-pointer" onClick={() => setPrompt("Mirror doors")}>Mirror</span>
+                  <span className="aiex cursor-pointer" onClick={() => setPrompt("Navy modern")}>Navy</span>
+                </div>
+                <button className="aiapply cursor-pointer" onClick={() => { handleRunAI(prompt); setPrompt(""); }}>Apply</button>
               </div>
-              <div
-                className={`opt ${doorStyle === "frosted" ? "on" : ""}`}
-                onClick={() => {
-                  setDoorStyle(doorStyle === "frosted" ? "solid" : "frosted");
-                  triggerNotification(doorStyle === "frosted" ? "Frosted Glass removed" : "Frosted Glass applied");
-                }}
-              >
-                <span style={{ color: "#88AAFF", marginRight: "6px", fontSize: "0.8rem" }}>❄</span>
-                Frosted Glass
+            </div>
+          </div>
+
+          {/* Selected Part */}
+          <div className="rps">
+            <div className="rpt">Selected Part</div>
+            <div className="pbadge">
+              <div className="pdot"></div>
+              <span>{selectedPart}</span>
+            </div>
+          </div>
+
+          {/* Size & Structure */}
+          <div className="rps">
+            <div className="rpt">Size & Structure</div>
+            <div className="size-grid">
+              <div className="size-row">
+                <label>Width <span>{width.toFixed(1)} m</span></label>
+                <input
+                  type="range"
+                  className="slider"
+                  min="1.6"
+                  max="3.2"
+                  step="0.1"
+                  value={width}
+                  onChange={(e) => setWidth(parseFloat(e.target.value))}
+                />
               </div>
+              <div className="size-row">
+                <label>Height <span>{height.toFixed(1)} m</span></label>
+                <input
+                  type="range"
+                  className="slider"
+                  min="1.8"
+                  max="3.0"
+                  step="0.1"
+                  value={height}
+                  onChange={(e) => setHeight(parseFloat(e.target.value))}
+                />
+              </div>
+              <div className="size-row">
+                <label>Depth <span>{depth.toFixed(2)} m</span></label>
+                <input
+                  type="range"
+                  className="slider"
+                  min="0.4"
+                  max="0.8"
+                  step="0.05"
+                  value={depth}
+                  onChange={(e) => setDepth(parseFloat(e.target.value))}
+                />
+              </div>
+              <div className="size-row">
+                <label>Door Sections</label>
+                <div className="section-btns">
+                  {[2, 3, 4].map((num) => (
+                    <div
+                      key={num}
+                      className={`sec-n ${sections === num ? "on" : ""}`}
+                      onClick={() => {
+                        setSections(num);
+                        triggerNotification(num + "-section wardrobe built");
+                      }}
+                    >
+                      {num}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Style Preset */}
+          <div className="rps">
+            <div className="rpt">Style Preset</div>
+            <div className="chips">
+              {Object.keys(PRESETS).map((key) => (
+                <div
+                  key={key}
+                  className={`chip ${activePreset === key ? "on" : ""}`}
+                  onClick={() => handleApplyPreset(key)}
+                >
+                  {key.charAt(0).toUpperCase() + key.slice(1)}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Surface Colour */}
+          <div className="rps">
+            <div className="rpt">Surface Colour</div>
+            <div className="txgrid">
+              {[
+                { id: "oak", name: "Oak", cls: "s1" },
+                { id: "walnut", name: "Walnut", cls: "s2" },
+                { id: "white", name: "White", cls: "s3" },
+                { id: "black", name: "Black", cls: "s4" },
+                { id: "beige", name: "Beige", cls: "s5" },
+                { id: "mahog", name: "Mahog.", cls: "s6" },
+                { id: "linen", name: "Linen", cls: "s7" },
+                { id: "graph", name: "Graphite", cls: "s8" },
+                { id: "sage", name: "Sage", cls: "s9" },
+                { id: "navy", name: "Navy", cls: "s10" },
+                { id: "concrete", name: "Concrete", style: { background: "linear-gradient(135deg,#c4c0b8,#a8a49c)" } },
+                { id: "darkwood", name: "Dark Wood", style: { background: "linear-gradient(135deg,#2a2422,#1a1614)" } },
+              ].map((sw) => (
+                <div
+                  key={sw.id}
+                  className={`sw ${sw.cls || ""} ${activeColor === sw.id ? "on" : ""}`}
+                  style={sw.style}
+                  onClick={() => {
+                    setActiveColor(sw.id);
+                    setDoorStyle("solid");
+                    triggerNotification("Colour: " + sw.name);
+                  }}
+                >
+                  <span className="sw-tip">{sw.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Door Style */}
+          <div className="rps">
+            <div className="rpt">Door Style</div>
+            <div className="optlist">
+              {[
+                { id: "solid", label: "🪵 Solid Panel" },
+                { id: "glass", label: "🔷 Glass Panel" },
+                { id: "mirror", label: "🪞 Full Mirror" },
+                { id: "frosted", label: "❄️ Frosted Glass" },
+              ].map((style) => (
+                <div
+                  key={style.id}
+                  className={`opt ${doorStyle === style.id ? "on" : ""}`}
+                  onClick={() => {
+                    setDoorStyle(style.id);
+                    triggerNotification("Door style: " + style.label.replace(/[^a-zA-Z ]/g, ""));
+                  }}
+                >
+                  {style.label}
+                </div>
+              ))}
             </div>
           </div>
 
@@ -1635,21 +1775,20 @@ export default function BuilderPage() {
             <div className="rpt">Handle Style</div>
             <div className="optlist">
               {[
-                { id: "gold", label: "Gold Bar", icon: "—", iconCol: "#c8a96e" },
-                { id: "silver", label: "Silver Knob", icon: "◎", iconCol: "#c0c8d0" },
-                { id: "black", label: "Black Strip", icon: "▬", iconCol: "#1c1c1c" },
-                { id: "hidden", label: "Hidden Push", icon: "⊘", iconCol: "#8a8880" },
-                { id: "chrome", label: "Chrome", icon: "✦", iconCol: "#dde8f0" },
+                { id: "gold", label: "— Gold Bar" },
+                { id: "silver", label: "◎ Silver Knob" },
+                { id: "black", label: "▬ Black Strip" },
+                { id: "hidden", label: "⊘ Hidden Push" },
+                { id: "chrome", label: "✦ Chrome" },
               ].map((handle) => (
                 <div
                   key={handle.id}
                   className={`opt ${handleStyle === handle.id ? "on" : ""}`}
                   onClick={() => {
                     setHandleStyle(handle.id);
-                    triggerNotification("Handle style: " + handle.label);
+                    triggerNotification("Handle style: " + handle.label.replace(/[^a-zA-Z ]/g, ""));
                   }}
                 >
-                  <span style={{ color: handle.iconCol, marginRight: "8px", fontWeight: "bold", fontSize: "0.8rem" }}>{handle.icon}</span>
                   {handle.label}
                 </div>
               ))}
@@ -1718,14 +1857,14 @@ export default function BuilderPage() {
             </div>
           </div>
 
-          {/* Versions / Color presets */}
+          {/* Versions */}
           <div className="rps" style={{ borderBottom: "none" }}>
             <div className="rpt">Versions</div>
             <div className="optlist" style={{ gap: "8px" }}>
               {[
                 { id: "oak", name: "Golden Oak", desc: "Current · now", cls: "s1" },
                 { id: "walnut", name: "Dark Walnut", desc: "v2 · 5 min ago", cls: "s2" },
-                { id: "white", name: "Glossy White", desc: "v3 · 10 min ago", cls: "s3" }
+                { id: "white", name: "Glossy White", desc: "v3 · 12 min ago", cls: "s3" }
               ].map((v) => (
                 <div
                   key={v.id}
