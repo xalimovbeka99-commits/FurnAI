@@ -24,11 +24,11 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm group-hover:scale-110 transition-transform shadow-lg shadow-blue-500/20">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm group-hover:scale-110 transition-transform shadow-lg shadow-indigo-500/25 pulse-glow-purple">
             F
           </div>
           <span className="text-lg font-bold tracking-tight">
-            Furni<span className="bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">AI</span>
+            Furni<span className="gradient-text">AI</span>
           </span>
         </Link>
 
@@ -69,7 +69,7 @@ export default function Navbar() {
 
           <Link
             href="/builder"
-            className="px-5 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white text-sm font-medium rounded-full transition-all hover:shadow-lg hover:shadow-blue-500/25"
+            className="px-5 py-2 btn-gradient text-white text-sm font-medium rounded-full transition-all hover:scale-105"
           >
             Start Designing
           </Link>
@@ -138,7 +138,7 @@ export default function Navbar() {
               <Link
                 href="/builder"
                 onClick={() => setMobileOpen(false)}
-                className="mt-2 px-5 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-sm font-medium rounded-full text-center"
+                className="mt-2 px-5 py-3 btn-gradient text-white text-sm font-medium rounded-full text-center"
               >
                 Start Designing
               </Link>

@@ -57,7 +57,7 @@ const plans = [
 
 export default function PricingPage() {
   return (
-    <div className="min-h-screen pt-32 pb-20 px-4">
+    <div className="min-h-screen pt-32 pb-20 px-4 gradient-bg-hero">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <motion.div
@@ -65,11 +65,11 @@ export default function PricingPage() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-16"
         >
-          <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-green-500/10 border border-green-500/20 mb-6">
-            <span className="text-xs font-medium text-green-400">100% Free & Open</span>
+          <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-6 pulse-glow">
+            <span className="text-xs font-medium text-emerald-400">100% Free & Open</span>
           </div>
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            Completely <span className="text-green-400">Free</span>
+            Completely <span className="gradient-text">Free</span>
           </h1>
           <p className="text-muted max-w-lg mx-auto">
             Furni AI is a free platform. No hidden fees, no subscriptions, no limits.
@@ -87,13 +87,13 @@ export default function PricingPage() {
               transition={{ delay: index * 0.1 }}
               className={`rounded-2xl p-8 relative ${
                 plan.highlight
-                  ? "bg-gradient-to-b from-green-500/10 to-transparent border-2 border-green-500/30"
-                  : "glass border border-border"
+                  ? "bg-gradient-to-b from-indigo-500/10 via-purple-500/5 to-transparent border-2 border-indigo-500/30"
+                  : "glass border border-border card-glow"
               }`}
             >
               {plan.badge && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="px-4 py-1 bg-green-500 text-white text-xs font-bold rounded-full">
+                  <span className="px-4 py-1 btn-gradient text-white text-xs font-bold rounded-full">
                     {plan.badge}
                   </span>
                 </div>
@@ -103,7 +103,7 @@ export default function PricingPage() {
               <p className="text-xs text-muted mb-4">{plan.description}</p>
 
               <div className="flex items-baseline mb-6">
-                <span className="text-4xl font-bold text-green-400">{plan.price}</span>
+                <span className="text-4xl font-bold gradient-text">{plan.price}</span>
                 <span className="text-sm text-muted ml-1">/{plan.period}</span>
               </div>
 
@@ -113,7 +113,7 @@ export default function PricingPage() {
                   whileTap={{ scale: 0.97 }}
                   className={`w-full py-3 rounded-xl font-medium transition-all text-sm mb-6 ${
                     plan.highlight
-                      ? "bg-green-500 hover:bg-green-600 text-white shadow-lg shadow-green-500/20"
+                      ? "btn-gradient text-white"
                       : "glass hover:bg-white/10"
                   }`}
                 >
@@ -124,7 +124,7 @@ export default function PricingPage() {
               <ul className="space-y-3">
                 {plan.features.map((f, i) => (
                   <li key={i} className="flex items-start gap-2 text-xs">
-                    <span className="text-green-400 mt-0.5">✓</span>
+                    <span className="text-accent-light mt-0.5">✓</span>
                     <span className="text-muted">{f}</span>
                   </li>
                 ))}
@@ -148,7 +148,7 @@ export default function PricingPage() {
               { q: "Do I need an OpenAI API key?", a: "No. Furni AI works without one using smart keyword-based generation. Add your OpenAI key in .env.local for enhanced AI-powered design suggestions." },
               { q: "Can I deploy this for my business?", a: "Absolutely. Furni AI is designed to be easily deployed on Vercel or any Node.js hosting. Perfect for furniture workshops and factories." },
             ].map((faq, i) => (
-              <div key={i} className="glass rounded-xl p-5">
+              <div key={i} className="glass rounded-xl p-5 card-glow">
                 <h3 className="text-sm font-semibold mb-2">{faq.q}</h3>
                 <p className="text-xs text-muted">{faq.a}</p>
               </div>

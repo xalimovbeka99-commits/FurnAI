@@ -175,7 +175,7 @@ export default function BuilderPage() {
       <div className="relative h-[calc(100vh-4rem)] overflow-hidden bg-background">
         {/* ─── Left Panel (Glass Island) ─── */}
         <motion.div initial={{ x: -40, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 0.5 }}
-          className="absolute left-0 top-0 lg:left-6 lg:top-6 lg:bottom-6 w-full lg:w-[440px] z-20 glass-pro lg:rounded-[2rem] overflow-y-auto flex flex-col pointer-events-auto">
+          className="absolute left-0 top-0 lg:left-6 lg:top-6 lg:bottom-6 w-full lg:w-[440px] z-20 glass-pro lg:rounded-[2rem] overflow-y-auto flex flex-col pointer-events-auto shimmer">
           <div className="p-8 space-y-6">
             <div>
               <h1 className="text-2xl font-bold mb-1">AI Builder</h1>
@@ -203,7 +203,7 @@ export default function BuilderPage() {
                 </div>
                 <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
                   onClick={handleAIGenerate} disabled={aiLoading || !store.prompt.trim()}
-                  className="w-full py-4 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg">
+                  className="w-full py-4 btn-gradient text-white font-semibold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg">
                   {aiLoading ? (<><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />AI is thinking...</>) : "🧠 Generate with AI"}
                 </motion.button>
                 <AnimatePresence>
@@ -228,7 +228,7 @@ export default function BuilderPage() {
                   <p className="text-xs text-muted mb-4">Production-ready spec with component breakdown, hardware list, assembly instructions, and mm dimensions.</p>
                   <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
                     onClick={handleFactoryExport} disabled={!store.generatedDesign || exportLoading}
-                    className="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl disabled:opacity-40 flex items-center justify-center gap-2">
+                    className="w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-semibold rounded-xl disabled:opacity-40 flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20">
                     {exportLoading ? (<><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Generating...</>) : "📦 Export for Factory (JSON)"}
                   </motion.button>
                 </div>

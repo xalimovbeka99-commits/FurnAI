@@ -2,17 +2,19 @@ import Link from "next/link";
 
 export default function Footer() {
   return (
-    <footer className="border-t border-white/5 bg-surface">
-      <div className="max-w-7xl mx-auto px-6 py-16">
+    <footer className="border-t border-white/5 bg-surface relative">
+      {/* Subtle gradient overlay */}
+      <div className="absolute inset-0 gradient-bg-cta opacity-50 pointer-events-none" />
+      <div className="relative z-10 max-w-7xl mx-auto px-6 py-16">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
           {/* Brand */}
           <div className="md:col-span-1">
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center text-white font-bold text-sm">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-indigo-500/20">
                 F
               </div>
               <span className="text-lg font-semibold">
-                Furni <span className="text-accent">AI</span>
+                Furni <span className="gradient-text">AI</span>
               </span>
             </div>
             <p className="text-sm text-muted leading-relaxed">

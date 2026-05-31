@@ -35,7 +35,7 @@ export default function GalleryPage() {
     : galleryItems.filter((item) => item.type === filter.toLowerCase());
 
   return (
-    <div className="min-h-screen pt-24 pb-20">
+    <div className="min-h-screen pt-24 pb-20 gradient-bg-hero">
       <div className="max-w-7xl mx-auto px-6">
         {/* Header */}
         <motion.div
@@ -43,7 +43,7 @@ export default function GalleryPage() {
           animate="visible"
           className="text-center mb-12"
         >
-          <motion.p variants={fadeUp} custom={0} className="text-accent text-sm font-semibold tracking-widest uppercase mb-4">
+          <motion.p variants={fadeUp} custom={0} className="text-sm font-semibold tracking-widest uppercase mb-4 gradient-text">
             Gallery
           </motion.p>
           <motion.h1 variants={fadeUp} custom={1} className="text-4xl md:text-5xl font-bold mb-4">
@@ -87,7 +87,7 @@ export default function GalleryPage() {
               variants={fadeUp}
               custom={i}
               onClick={() => setSelected(item)}
-              className="glass rounded-2xl overflow-hidden cursor-pointer group hover:border-accent/30 transition-all"
+              className="glass rounded-2xl overflow-hidden cursor-pointer group hover:border-accent/30 transition-all card-glow"
             >
               {/* Preview placeholder */}
               <div className="h-56 relative overflow-hidden" style={{ background: `linear-gradient(135deg, ${item.color}22, ${item.color}44)` }}>
@@ -187,7 +187,7 @@ export default function GalleryPage() {
 
               <a
                 href="/builder"
-                className="block w-full py-3 bg-accent hover:bg-accent-dark text-white text-center font-semibold rounded-xl transition-all"
+                className="block w-full py-3 btn-gradient text-white text-center font-semibold rounded-xl transition-all"
               >
                 Open in Builder →
               </a>
