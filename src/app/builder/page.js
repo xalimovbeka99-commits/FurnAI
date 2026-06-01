@@ -16,19 +16,21 @@ const PALETTE = {
   graph:    { c: 0x363232, r: 0.48, m: 0.18 },
   sage:     { c: 0x3A5040, r: 0.72, m: 0.02 },
   navy:     { c: 0x1A2840, r: 0.55, m: 0.10 },
+  ice:      { c: 0xB0C4D8, r: 0.38, m: 0.12 },
+  marble:   { c: 0xF0ECE4, r: 0.15, m: 0.08 },
   concrete: { c: 0xBCB8B0, r: 0.92, m: 0.00 },
   darkwood: { c: 0x282422, r: 0.80, m: 0.04 },
 };
 
 // ─── STYLE PRESETS ───
 const PRESETS = {
-  luxury:     { color: 'oak',    handle: 'gold',   door: 'solid',  led: 'warm'  },
-  minimal:    { color: 'white',  handle: 'hidden',  door: 'solid',  led: 'off'   },
-  scandi:     { color: 'linen',  handle: 'silver',  door: 'solid',  led: 'off'   },
-  industrial: { color: 'graph',  handle: 'black',   door: 'solid',  led: 'cool'  },
-  classic:    { color: 'walnut', handle: 'gold',    door: 'solid',  led: 'warm'  },
-  modern:     { color: 'black',  handle: 'chrome',  door: 'solid',  led: 'cool'  },
-  navy:       { color: 'navy',   handle: 'chrome',  door: 'glass',  led: 'cool'  },
+  luxury:     { color: 'oak',    faceColor: 'oak',    handle: 'gold',   door: 'solid', led: 'warm', dr: 2, ro: true  },
+  minimal:    { color: 'white',  faceColor: 'white',  handle: 'hidden', door: 'solid', led: 'off',  dr: 0, ro: false },
+  scandi:     { color: 'linen',  faceColor: 'linen',  handle: 'silver', door: 'solid', led: 'warm', dr: 1, ro: true  },
+  industrial: { color: 'graph',  faceColor: 'graph',  handle: 'black',  door: 'solid', led: 'cool', dr: 2, ro: false },
+  classic:    { color: 'walnut', faceColor: 'walnut', handle: 'gold',   door: 'solid', led: 'warm', dr: 2, ro: true  },
+  modern:     { color: 'black',  faceColor: 'black',  handle: 'chrome', door: 'glass', led: 'cool', dr: 1, ro: false },
+  navy:       { color: 'navy',   faceColor: 'navy',   handle: 'chrome', door: 'glass', led: 'cool', dr: 0, ro: false },
 };
 
 export default function BuilderPage() {
@@ -44,9 +46,10 @@ export default function BuilderPage() {
   const [depth, setDepth] = useState(0.60);
   const [sections, setSections] = useState(3);
   const [extDrawerRows, setExtDrawerRows] = useState(0);
-  const [intDrawers, setIntDrawers] = useState(false);
+  const [hangerRods, setHangerRods] = useState(false);
   const [activePreset, setActivePreset] = useState("luxury");
   const [activeColor, setActiveColor] = useState("oak");
+  const [activeFaceColor, setActiveFaceColor] = useState("oak");
   const [doorStyle, setDoorStyle] = useState("solid");
   const [handleStyle, setHandleStyle] = useState("gold");
   const [ledLighting, setLedLighting] = useState("off");
@@ -197,17 +200,25 @@ export default function BuilderPage() {
     doorPivots: [],
     drawerPivots: [],
     shelvesMeshes: [],
+    doorFrameMeshes: [],
+    hangerRodMeshes: [],
+    shelfLEDStrips: [],
+    doorHandleMeshes: [],
+    drawerHandleMeshes: [],
     ledMesh: null,
     ledLight: null,
     doorsOpen: false,
     drawersAllOpen: false,
-    interiorVisible: false,
+    currentDoorStyle: 'solid',
     M: {
-      body: new THREE.MeshStandardMaterial({ color: 0x282422, roughness: 0.80, metalness: 0.04 }),
-      door: new THREE.MeshStandardMaterial({ color: 0xBCB8B0, roughness: 0.92, metalness: 0.00 }),
-      handle: new THREE.MeshStandardMaterial({ color: 0x1A1A1A, roughness: 0.45, metalness: 0.30 }),
-      plinth: new THREE.MeshStandardMaterial({ color: 0x1E1C1A, roughness: 0.85, metalness: 0.04 }),
-      led: new THREE.MeshStandardMaterial({ color: 0xFFDD88, emissive: new THREE.Color(0xFFDD88), emissiveIntensity: 0 }),
+      body:        new THREE.MeshStandardMaterial({ color: 0x282422, roughness: 0.80, metalness: 0.04 }),
+      door:        new THREE.MeshStandardMaterial({ color: 0xBCB8B0, roughness: 0.92, metalness: 0.00 }),
+      drawerFront: new THREE.MeshStandardMaterial({ color: 0xBCB8B0, roughness: 0.92, metalness: 0.00 }),
+      doorFrame:   new THREE.MeshStandardMaterial({ color: 0x1A1818, roughness: 0.22, metalness: 0.88 }),
+      handle:      new THREE.MeshStandardMaterial({ color: 0x1A1A1A, roughness: 0.45, metalness: 0.30 }),
+      plinth:      new THREE.MeshStandardMaterial({ color: 0x1E1C1A, roughness: 0.85, metalness: 0.04 }),
+      rod:         new THREE.MeshStandardMaterial({ color: 0xC0C0C0, roughness: 0.15, metalness: 0.90 }),
+      led:         new THREE.MeshStandardMaterial({ color: 0xFFDD88, emissive: new THREE.Color(0xFFDD88), emissiveIntensity: 0 }),
     }
   });
 
@@ -224,17 +235,51 @@ export default function BuilderPage() {
     setTimeout(() => setShowHud(false), 2200);
   }, []);
 
-  // helper to lighten hex colors
-  const lightenColor = (hex, amount) => {
-    const num = hex;
-    const r = Math.min(255, Math.max(0, (num >> 16) + amount));
-    const g = Math.min(255, Math.max(0, ((num >> 8) & 0xff) + amount));
-    const b = Math.min(255, Math.max(0, (num & 0xff) + amount));
-    return (r << 16) | (g << 8) | b;
+  // Helper: restore door style state after wardrobe rebuild
+  const _restoreDoorStyleWardrobe = (app) => {
+    const style = app.currentDoorStyle || 'solid';
+    const isFramed = style !== 'solid';
+    app.doorPivots.forEach(dp => {
+      if (dp.solidPanel) dp.solidPanel.visible = !isFramed;
+      if (dp.glassPanel) dp.glassPanel.visible = isFramed;
+      if (dp.frameParts) dp.frameParts.forEach(f => f.visible = isFramed);
+    });
+    if (isFramed) {
+      if (style === 'glass') {
+        app.M.door.color.setHex(0xD0ECFC); app.M.door.roughness = 0.04; app.M.door.metalness = 0.04;
+        app.M.door.transparent = true; app.M.door.opacity = 0.16;
+      } else if (style === 'mirror') {
+        app.M.door.color.setHex(0xCCDCEE); app.M.door.roughness = 0.01; app.M.door.metalness = 0.96;
+        app.M.door.transparent = false; app.M.door.opacity = 1;
+      } else if (style === 'frosted') {
+        app.M.door.color.setHex(0xDCE8F4); app.M.door.roughness = 0.58; app.M.door.metalness = 0.0;
+        app.M.door.transparent = true; app.M.door.opacity = 0.48;
+      }
+      app.M.door.needsUpdate = true;
+    }
   };
 
-  // ─── 3D WARDROBE MESH GENERATOR ───
-  const buildWardrobe = useCallback(() => {
+  // Helper: apply LED mode to shelf strips + point light
+  const _applyLEDstate = (app, mode) => {
+    const cols = { off: 0xFFDD88, warm: 0xFFCC44, cool: 0x88AAFF, rgb: 0xFF55BB };
+    const emI  = { off: 0, warm: 2.2, cool: 2.0, rgb: 2.5 };
+    const lInt = { off: 0, warm: 1.0, cool: 0.8, rgb: 1.3 };
+    if (app.ledLight) {
+      app.ledLight.color.setHex(cols[mode]);
+      app.ledLight.intensity = lInt[mode] * 0.7;
+    }
+    if (app.shelfLEDStrips) {
+      app.shelfLEDStrips.forEach(sl => {
+        sl.visible = mode !== 'off';
+        sl.material.color.setHex(cols[mode]);
+        sl.material.emissive.setHex(cols[mode]);
+        sl.material.emissiveIntensity = emI[mode];
+        sl.material.needsUpdate = true;
+      });
+    }
+  };
+
+const buildWardrobe = useCallback(() => {
     const app = appRef.current;
     if (!app.root) return;
 
@@ -246,6 +291,11 @@ export default function BuilderPage() {
     app.doorPivots = [];
     app.drawerPivots = [];
     app.shelvesMeshes = [];
+    app.doorFrameMeshes = [];
+    app.hangerRodMeshes = [];
+    app.shelfLEDStrips = [];
+    app.doorHandleMeshes = [];
+    app.drawerHandleMeshes = [];
 
     const W = width;
     const H = height;
@@ -274,7 +324,6 @@ export default function BuilderPage() {
       return m;
     };
 
-    // Body Panel creator helper
     const addBody = (w, h, d, x, y, z, n) => {
       const m = mesh(box(w, h, d), app.M.body, x, y, z, n);
       m.userData.group = "body";
@@ -283,44 +332,23 @@ export default function BuilderPage() {
       return m;
     };
 
-    // Core Frame
     const BODY_H = H - PL;
     addBody(W, BODY_H, T, 0, PL + BODY_H / 2, -(D / 2 - T / 2), "back");
     addBody(T, BODY_H, D, -(W / 2 - T / 2), PL + BODY_H / 2, 0, "sideL");
     addBody(T, BODY_H, D, (W / 2 - T / 2), PL + BODY_H / 2, 0, "sideR");
     addBody(W, T, D, 0, H - T / 2, 0, "top");
 
-    // Top rail accent
-    const topRail = mesh(box(W, 0.018, D + 0.004), app.M.plinth, 0, H + 0.009, 0, "topRail");
-    topRail.userData.group = "body";
-    app.root.add(topRail);
-
-    // Plinth
     const plinth = mesh(box(W, PL, D - 0.06), app.M.plinth, 0, PL / 2, 0.01, "plinth");
     plinth.userData.group = "plinth";
     app.root.add(plinth);
     app.selectables.push(plinth);
 
-    // Feet
-    const footGeo = new THREE.BoxGeometry(FT, FH, FT);
-    const foX = W / 2 - 0.08, foZ = D / 2 - 0.08;
-    [[-foX, -foZ], [foX, -foZ], [-foX, foZ], [foX, foZ]].forEach(([fx, fz], idx) => {
-      const fm = new THREE.Mesh(footGeo, app.M.plinth);
-      fm.position.set(fx, FH / 2, fz);
-      fm.castShadow = true;
-      fm.name = "foot" + idx;
-      fm.userData = { group: "body", selectable: false };
-      app.root.add(fm);
-    });
-
-    // Separator panel
     if (extDrawerRows > 0) {
       const sep = mesh(box(W - T * 2, T * 0.8, D - T), app.M.body, 0, PL + T + EXT_DH, 0, "sepH");
       sep.userData.group = "body";
       app.root.add(sep);
     }
 
-    // ─── EXTERIOR DRAWERS ───
     const cols = sections;
     const dW = (W - T * 2 - GAP * (cols + 1)) / cols;
     const drawerIntMat = new THREE.MeshStandardMaterial({ color: 0xC8B898, roughness: 0.82, metalness: 0.0 });
@@ -328,7 +356,6 @@ export default function BuilderPage() {
 
     for (let row = 0; row < extDrawerRows; row++) {
       const cy = PL + T + row * ROW_H + ROW_H / 2;
-
       for (let col = 0; col < cols; col++) {
         const cx = -W / 2 + T + GAP + col * (dW + GAP) + dW / 2;
         const dg = new THREE.Group();
@@ -342,23 +369,25 @@ export default function BuilderPage() {
         const backZ = frontZ - T - boxD;
         const midZ = frontZ - T / 2 - boxD / 2;
 
-        const dFront = mesh(box(trayW, trayH, T), app.M.door, 0, 0, frontZ, `dFront_r${row}_c${col}`);
+        const dFront = mesh(box(trayW, trayH, T), app.M.drawerFront, 0, 0, frontZ, `dFront_r${row}_c${col}`);
         dFront.userData.group = "ext-drawer";
         dFront.userData.drawerGroup = dg;
         dg.add(dFront);
         app.selectables.push(dFront);
 
-        // Tray walls
         dg.add(Object.assign(mesh(box(WT, trayH, boxD), drawerIntMat, -(trayW / 2 - WT / 2), 0, midZ), { userData: { group: "body" } }));
         dg.add(Object.assign(mesh(box(WT, trayH, boxD), drawerIntMat, (trayW / 2 - WT / 2), 0, midZ), { userData: { group: "body" } }));
         dg.add(Object.assign(mesh(box(trayW - WT * 2, WT, boxD), drawerIntMat, 0, -(trayH / 2 - WT / 2), midZ), { userData: { group: "body" } }));
         dg.add(Object.assign(mesh(box(trayW - WT * 2, trayH - WT, WT), drawerIntMat, 0, WT / 2, backZ), { userData: { group: "body" } }));
 
-        // Handle
         const dHandle = mesh(box(trayW * 0.44, 0.022, 0.026), app.M.handle, 0, 0, frontZ + T / 2 + 0.016, `dHandle_r${row}_c${col}`);
         dHandle.userData.group = "handles";
+        dHandle.userData.kind = "drawer";
+        dHandle.userData.baseZ = frontZ + T / 2 + 0.016;
+        dHandle.userData.barW = trayW * 0.44;
         dg.add(dHandle);
         app.selectables.push(dHandle);
+        app.drawerHandleMeshes.push(dHandle);
 
         app.root.add(dg);
         app.drawerPivots.push({ group: dg, targetZ: 0, openZ: SLIDE_OUT, open: false, row, col });
@@ -369,7 +398,6 @@ export default function BuilderPage() {
         ds.userData.group = "body";
         app.root.add(ds);
       }
-
       for (let c = 1; c < cols; c++) {
         const vx = -W / 2 + T + GAP + c * (dW + GAP) - GAP / 2;
         const vcd = mesh(box(T * 0.6, ROW_H - GAP, T), app.M.plinth, vx, PL + T + row * ROW_H + ROW_H / 2, D / 2 + T * 0.3, `drVDiv_r${row}_c${c}`);
@@ -378,44 +406,82 @@ export default function BuilderPage() {
       }
     }
 
-    // ─── DOORS ───
+    // ─── DOORS (metallic frames + glass/mirror panel support) ───
     const doorW = (W - T * 2 - GAP * (sections + 1)) / sections;
+    const FW = 0.028;
+    const dH_inner = DOOR_H - GAP * 2;
+
     for (let i = 0; i < sections; i++) {
       const leftHinge = (i % 2 === 0);
       const slotLeft = -W / 2 + T + GAP + i * (doorW + GAP);
       const hingeX = leftHinge ? slotLeft : slotLeft + doorW;
+      const dmOffX = leftHinge ? doorW / 2 : -doorW / 2;
 
       const pivot = new THREE.Group();
       pivot.position.set(hingeX, DOOR_Y, DOOR_Z);
 
-      const dmOffX = leftHinge ? doorW / 2 : -doorW / 2;
-      const dm = mesh(box(doorW, DOOR_H - GAP * 2, T), app.M.door, dmOffX, 0, 0, "door" + i);
-      dm.userData.group = "doors";
-      pivot.add(dm);
-      app.selectables.push(dm);
+      // Solid panel
+      const solidPanel = mesh(box(doorW, dH_inner, T), app.M.door, dmOffX, 0, 0, "door" + i);
+      solidPanel.userData.group = "doors";
+      pivot.add(solidPanel);
+      app.selectables.push(solidPanel);
 
+      // Glass panel (inside frame)
+      const gpW = doorW - FW * 2;
+      const gpH = dH_inner - FW * 2;
+      const glassPanel = mesh(box(gpW, gpH, T * 0.85), app.M.door, dmOffX, 0, -T * 0.08, "doorG" + i);
+      glassPanel.userData.group = "doors";
+      glassPanel.visible = false;
+      pivot.add(glassPanel);
+      app.selectables.push(glassPanel);
+
+      // Metallic border frame (4 strips, hidden until framed style)
+      const fp = [
+        mesh(box(doorW, FW, T * 1.05), app.M.doorFrame, dmOffX,                    dH_inner / 2 - FW / 2, 0, "fT" + i),
+        mesh(box(doorW, FW, T * 1.05), app.M.doorFrame, dmOffX,                   -dH_inner / 2 + FW / 2, 0, "fB" + i),
+        mesh(box(FW, dH_inner, T * 1.05), app.M.doorFrame, dmOffX - doorW / 2 + FW / 2, 0,                0, "fL" + i),
+        mesh(box(FW, dH_inner, T * 1.05), app.M.doorFrame, dmOffX + doorW / 2 - FW / 2, 0,                0, "fR" + i),
+      ];
+      fp.forEach(f => { f.userData.group = "door-frame"; f.visible = false; pivot.add(f); app.doorFrameMeshes.push(f); });
+
+      // Door handle bar
       const hx = leftHinge ? doorW * 0.72 : -doorW * 0.72;
-      const hBar = mesh(new THREE.BoxGeometry(0.022, 0.20, 0.028), app.M.handle, hx, 0, T / 2 + 0.018, "handle" + i);
+      const hBar = mesh(new THREE.BoxGeometry(0.022, 0.20, 0.028), app.M.handle, dmOffX + (leftHinge ? hx - dmOffX : hx - dmOffX), 0, T / 2 + 0.018, "handle" + i);
       hBar.userData.group = "handles";
+      hBar.userData.kind = "door";
+      hBar.userData.baseX = hx;
+      hBar.userData.baseZ = T / 2 + 0.018;
+      if (handleStyle === "hidden") hBar.visible = false;
       pivot.add(hBar);
       app.selectables.push(hBar);
-
-      // Hide handles if style is set to hidden
-      if (handleStyle === "hidden") {
-        hBar.visible = false;
-      }
+      app.doorHandleMeshes.push(hBar);
 
       app.root.add(pivot);
       const openDir = leftHinge ? -Math.PI / 2 : Math.PI / 2;
-      app.doorPivots.push({ pivot, target: app.doorsOpen ? openDir : 0, openDir, i });
-      
-      // sync current door pivot position if door is set open
-      if (app.doorsOpen) {
-        pivot.rotation.y = openDir;
+      app.doorPivots.push({ pivot, target: app.doorsOpen ? openDir : 0, openDir, i, solidPanel, glassPanel, frameParts: fp });
+      if (app.doorsOpen) pivot.rotation.y = openDir;
+
+      // Hanger rods
+      if (hangerRods) {
+        const scx = slotLeft + doorW / 2;
+        const rodY = PL + T + EXT_DH + DOOR_H * 0.80;
+        const rodW = doorW - T * 1.6;
+        const rod = mesh(new THREE.BoxGeometry(rodW, 0.016, 0.016), app.M.rod, scx, rodY, 0, "rod" + i);
+        rod.userData.group = "rod";
+        app.root.add(rod);
+        app.hangerRodMeshes.push(rod);
+        [-1, 1].forEach(s => {
+          const br = new THREE.Mesh(new THREE.BoxGeometry(0.022, 0.055, 0.022), app.M.rod);
+          br.position.set(scx + s * (rodW / 2 + 0.011), rodY + 0.028, 0);
+          br.castShadow = true;
+          br.userData = { group: "rod" };
+          app.root.add(br);
+          app.hangerRodMeshes.push(br);
+        });
       }
     }
 
-    // Vertical dividers between slots
+    // Vertical dividers between door slots
     for (let i = 1; i < sections; i++) {
       const vx = -W / 2 + T + GAP + i * (doorW + GAP) - GAP / 2;
       const vd = mesh(box(T * 0.8, DOOR_H, D - T * 0.5), app.M.body, vx, DOOR_Y, -T * 0.2, "vdiv" + i);
@@ -423,79 +489,45 @@ export default function BuilderPage() {
       app.root.add(vd);
     }
 
-    // ─── INTERIOR DRAWERS ───
-    if (intDrawers) {
-      const iDW = (W - T * 2) / sections - GAP * 2;
-      const iDH = 0.16;
-      const iRows = 4;
-      const iCol = 0;
-      const icx = -W / 2 + T + GAP + iCol * (doorW + GAP) + doorW / 2;
-      const iBoxD = D - T * 3;
-
-      for (let r = 0; r < iRows; r++) {
-        const iy = PL + T + EXT_DH + 0.05 + r * (iDH + GAP * 3);
-        const ig = new THREE.Group();
-        ig.position.set(icx, iy, 0);
-        ig.userData.isDrawerGroup = true;
-
-        const iFront = mesh(box(iDW, iDH - GAP, T), app.M.door, 0, 0, D / 2 - T, "idFront_r" + r);
-        iFront.userData.group = "int-drawer";
-        iFront.userData.drawerGroup = ig;
-        ig.add(iFront);
-        app.selectables.push(iFront);
-
-        const iBoxMesh = mesh(box(iDW - T * 0.5, iDH - GAP - T * 0.4, iBoxD), app.M.body, 0, 0, D / 2 - T - iBoxD / 2, "idBox_r" + r);
-        iBoxMesh.userData.group = "body";
-        ig.add(iBoxMesh);
-
-        const iHandle = mesh(box(iDW * 0.38, 0.018, 0.022), app.M.handle, 0, 0, D / 2 - T + 0.014, "idHandle_r" + r);
-        iHandle.userData.group = "handles";
-        ig.add(iHandle);
-        app.selectables.push(iHandle);
-
-        // Visible only if doors are swung open or interior toggle is checked
-        ig.visible = app.doorsOpen || app.interiorVisible;
-        app.root.add(ig);
-        app.shelvesMeshes.push(ig);
-        app.drawerPivots.push({ group: ig, targetZ: 0, openZ: (D - T * 2) * 0.68, open: false, row: r, col: iCol, interior: true });
-      }
-    }
-
-    // ─── INTERIOR SHELVES ───
+    // ─── INTERIOR SHELVES (always visible, split with LED channel) ───
     const shelfMat = new THREE.MeshStandardMaterial({ color: app.M.body.color.getHex(), roughness: 0.78, metalness: 0.03 });
     const innerW = W - T * 2 - 0.008;
     const innerD = D - T * 1.5;
+    const LEDC = 0.024;
+    const halfD = (innerD - LEDC) / 2;
+
     for (let i = 1; i <= 4; i++) {
       const sy = PL + T + EXT_DH + DOOR_H * (i / 5);
-      const sm = mesh(box(innerW, T, innerD), shelfMat, 0, sy, -T * 0.25, "shelf" + i);
-      sm.userData.group = "shelf";
-      sm.visible = app.interiorVisible || app.doorsOpen;
-      app.root.add(sm);
-      app.shelvesMeshes.push(sm);
-      app.selectables.push(sm);
+
+      const smF = mesh(box(innerW, T, halfD), shelfMat, 0, sy, halfD / 2 + LEDC / 2, "shelf" + i + "F");
+      smF.userData.group = "shelf";
+      app.root.add(smF);
+      app.shelvesMeshes.push(smF);
+
+      const smB = mesh(box(innerW, T, halfD), shelfMat.clone(), 0, sy, -(halfD / 2 + LEDC / 2), "shelf" + i + "B");
+      smB.userData.group = "shelf";
+      app.root.add(smB);
+      app.shelvesMeshes.push(smB);
+
+      // Per-shelf LED strip in the channel gap
+      const slMat = new THREE.MeshStandardMaterial({ color: 0xFFDD88, emissive: new THREE.Color(0xFFDD88), emissiveIntensity: 0 });
+      const sl = mesh(new THREE.BoxGeometry(innerW, T * 0.35, LEDC), slMat, 0, sy - T * 0.5 + T * 0.175, 0, "shelfLED" + i);
+      sl.userData.group = "shelf-led";
+      sl.visible = false;
+      app.root.add(sl);
+      app.shelfLEDStrips.push(sl);
     }
 
-    // ─── LED LIGHT STRIP ───
-    app.ledMesh = mesh(new THREE.BoxGeometry(W - T * 2 - 0.02, 0.014, 0.014), app.M.led, 0, PL + T + EXT_DH + 0.01, D / 2 - 0.008, "led");
-    app.ledMesh.visible = ledLighting !== "off";
-    app.root.add(app.ledMesh);
-
+    // LED point light
     app.ledLight = new THREE.PointLight(0xFFDD88, 0, 4);
-    app.ledLight.position.set(0, PL + T + EXT_DH + 0.06, D / 2 + 0.12);
+    app.ledLight.position.set(0, PL + T + EXT_DH + DOOR_H * 0.3, D / 2 + 0.1);
     app.root.add(app.ledLight);
 
-    // Apply active LED power level
-    const colsLED = { off: 0xFFDD88, warm: 0xFFCC44, cool: 0x88AAFF, rgb: 0xFF55BB };
-    const emI = { off: 0, warm: 2.2, cool: 2.0, rgb: 2.5 };
-    const lInt = { off: 0, warm: 1.0, cool: 0.8, rgb: 1.3 };
-    app.M.led.color.setHex(colsLED[ledLighting]);
-    app.M.led.emissive.setHex(colsLED[ledLighting]);
-    app.M.led.emissiveIntensity = emI[ledLighting];
-    app.M.led.needsUpdate = true;
-    app.ledLight.color.setHex(colsLED[ledLighting]);
-    app.ledLight.intensity = lInt[ledLighting];
+    // Apply LED + door style state
+    _applyLEDstate(app, ledLighting);
+    _restoreDoorStyleWardrobe(app);
 
-  }, [width, height, depth, sections, extDrawerRows, intDrawers, handleStyle, ledLighting]);
+  }, [width, height, depth, sections, extDrawerRows, hangerRods, handleStyle, ledLighting]);
 
   // ─── 3D KITCHEN MESH GENERATOR ───
   const buildKitchen = useCallback(() => {
@@ -1080,19 +1112,21 @@ export default function BuilderPage() {
   useEffect(() => {
     const app = appRef.current;
     const p = PALETTE[activeColor];
+    const pFace = PALETTE[activeFaceColor] || p;
     if (!p) return;
 
-    // Apply body + plinth
+    // Apply body + plinth (all parts)
     app.M.body.color.setHex(p.c);
     app.M.body.roughness = p.r;
     app.M.body.metalness = p.m;
     app.M.body.needsUpdate = true;
 
     app.M.plinth.color.setHex(p.c);
-    app.M.plinth.color.multiplyScalar(0.60);
+    app.M.plinth.color.multiplyScalar(0.58);
     app.M.plinth.roughness = p.r;
     app.M.plinth.needsUpdate = true;
 
+    // Shelves match body
     app.shelvesMeshes.forEach(s => {
       if (s.material && s.userData.group === "shelf") {
         s.material.color.setHex(p.c);
@@ -1100,33 +1134,47 @@ export default function BuilderPage() {
       }
     });
 
-    // Apply door panels style configs
+    // Face color (door panels + drawer fronts) — independently overrideable
+    // Store in drawerFront so it persists through door style changes
+    app.M.drawerFront.color.setHex(pFace.c);
+    app.M.drawerFront.roughness = pFace.r;
+    app.M.drawerFront.metalness = pFace.m;
+    app.M.drawerFront.transparent = false;
+    app.M.drawerFront.opacity = 1;
+    app.M.drawerFront.needsUpdate = true;
+
+    // Sync app.currentDoorStyle
+    app.currentDoorStyle = doorStyle;
+
+    // Apply door panels style
     if (doorStyle === "glass") {
-      app.M.door.color.setHex(0xCCE0F4);
-      app.M.door.roughness = 0.06; app.M.door.metalness = 0.05;
-      app.M.door.transparent = true; app.M.door.opacity = 0.22;
+      app.M.door.color.setHex(0xD0ECFC); app.M.door.roughness = 0.04; app.M.door.metalness = 0.04;
+      app.M.door.transparent = true; app.M.door.opacity = 0.16;
     } else if (doorStyle === "mirror") {
-      app.M.door.color.setHex(0xCCDEEE);
-      app.M.door.roughness = 0.02; app.M.door.metalness = 0.95;
+      app.M.door.color.setHex(0xCCDCEE); app.M.door.roughness = 0.01; app.M.door.metalness = 0.96;
       app.M.door.transparent = false; app.M.door.opacity = 1;
     } else if (doorStyle === "frosted") {
-      app.M.door.color.setHex(0xE4ECF8);
-      app.M.door.roughness = 0.55; app.M.door.metalness = 0.0;
+      app.M.door.color.setHex(0xDCE8F4); app.M.door.roughness = 0.58; app.M.door.metalness = 0.0;
       app.M.door.transparent = true; app.M.door.opacity = 0.48;
     } else {
-      app.M.door.color.setHex(lightenColor(p.c, -8));
-      app.M.door.roughness = 0.90; app.M.door.metalness = 0.00;
+      // Solid — copy from drawerFront (face color)
+      app.M.door.color.copy(app.M.drawerFront.color);
+      app.M.door.roughness = app.M.drawerFront.roughness;
+      app.M.door.metalness = app.M.drawerFront.metalness;
       app.M.door.transparent = false; app.M.door.opacity = 1;
     }
     app.M.door.needsUpdate = true;
 
+    // Apply frame/glass visibility based on doorStyle
+    _restoreDoorStyleWardrobe(app);
+
     // Apply Handle finishes
     const handleFinishes = {
-      gold: { c: 0xC8A050, r: 0.18, m: 0.88 },
-      silver: { c: 0xC0C8D0, r: 0.15, m: 0.90 },
-      black: { c: 0x1A1A1A, r: 0.5, m: 0.3 },
-      chrome: { c: 0xDDE8F0, r: 0.04, m: 0.96 },
-      hidden: { c: 0x1A1A1A, r: 0.5, m: 0.3 }
+      gold:   { c: 0xC8A050, r: 0.18, m: 0.88 },
+      silver: { c: 0xC0C8D0, r: 0.14, m: 0.92 },
+      black:  { c: 0x1A1A1A, r: 0.50, m: 0.30 },
+      chrome: { c: 0xDDE8F0, r: 0.03, m: 0.97 },
+      hidden: { c: 0x1A1A1A, r: 0.50, m: 0.30 },
     };
     const hp = handleFinishes[handleStyle] || handleFinishes.gold;
     app.M.handle.color.setHex(hp.c);
@@ -1134,7 +1182,20 @@ export default function BuilderPage() {
     app.M.handle.metalness = hp.m;
     app.M.handle.needsUpdate = true;
 
-  }, [activeColor, doorStyle, handleStyle]);
+    // Show/hide door handles based on style
+    if (app.doorHandleMeshes) {
+      app.doorHandleMeshes.forEach(h => { h.visible = handleStyle !== 'hidden'; });
+    }
+
+  }, [activeColor, activeFaceColor, doorStyle, handleStyle]);
+
+  // LED lighting live update (without rebuild)
+  useEffect(() => {
+    const app = appRef.current;
+    if (activeCategory === 'wardrobe') {
+      _applyLEDstate(app, ledLighting);
+    }
+  }, [ledLighting, activeCategory]);
 
   // Initial WebGL Context Mount
   useEffect(() => {
@@ -1400,7 +1461,7 @@ export default function BuilderPage() {
     }
   }, [
     activeCategory,
-    width, height, depth, sections, extDrawerRows, intDrawers, buildWardrobe,
+    width, height, depth, sections, extDrawerRows, hangerRods, buildWardrobe,
     roomWidth, roomLength, roomHeight, kitchenLayout,
     baseCabinetWidth, baseCabinetHeight, baseCabinetDepth, toeKickHeight, kitchenHandleType,
     wallCabinetsEnabled, wallCabinetHeight, wallCabinetDepth, wallCabinetDistance, wallCabinetGlass, wallCabinetOpen,
@@ -1468,10 +1529,13 @@ export default function BuilderPage() {
     if (!p) return;
 
     setActiveColor(p.color);
+    if (p.faceColor) setActiveFaceColor(p.faceColor);
     setHandleStyle(p.handle);
     setDoorStyle(p.door);
     setLedLighting(p.led);
-    triggerNotification("Style applied: " + presetKey);
+    if (typeof p.dr !== 'undefined') setExtDrawerRows(p.dr);
+    if (typeof p.ro !== 'undefined') setHangerRods(p.ro);
+    triggerNotification("✦ " + presetKey.charAt(0).toUpperCase() + presetKey.slice(1) + " style applied");
   };
   // Export handlers
   const handleExportPNG = () => {
@@ -1554,7 +1618,7 @@ export default function BuilderPage() {
       } : {
         sections,
         extDrawerRows,
-        intDrawers,
+        hangerRods,
         preset: activePreset,
         color: activeColor,
         doorStyle,
@@ -3540,9 +3604,9 @@ ${activeCategory === "kitchen" ? `
                 </div>
               </div>
 
-              {/* Surface Colour */}
+              {/* Wardrobe Colour - all parts */}
               <div className="rps">
-                <div className="rpt">Surface Colour</div>
+                <div className="rpt">Wardrobe Colour <span style={{ fontSize: ".6rem", color: "var(--muted2)", fontWeight: "400", letterSpacing: 0 }}>(all parts)</span></div>
                 <div className="txgrid">
                   {[
                     { id: "oak", name: "Oak", cls: "s1" },
@@ -3564,8 +3628,41 @@ ${activeCategory === "kitchen" ? `
                       style={sw.style}
                       onClick={() => {
                         setActiveColor(sw.id);
-                        setDoorStyle("solid");
+                        setActiveFaceColor(sw.id);
                         triggerNotification("Colour: " + sw.name);
+                      }}
+                    >
+                      <span className="sw-tip">{sw.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Door & Drawer Face Colour Override */}
+              <div className="rps">
+                <div className="rpt">Door &amp; Drawer Face <span style={{ fontSize: ".6rem", color: "var(--muted2)", fontWeight: "400", letterSpacing: 0 }}>(override)</span></div>
+                <div className="txgrid">
+                  {[
+                    { id: "oak", name: "Oak", cls: "s1" },
+                    { id: "walnut", name: "Walnut", cls: "s2" },
+                    { id: "white", name: "White", cls: "s3" },
+                    { id: "black", name: "Black", cls: "s4" },
+                    { id: "beige", name: "Beige", cls: "s5" },
+                    { id: "mahog", name: "Mahog.", cls: "s6" },
+                    { id: "linen", name: "Linen", cls: "s7" },
+                    { id: "graph", name: "Graphite", cls: "s8" },
+                    { id: "sage", name: "Sage", cls: "s9" },
+                    { id: "navy", name: "Navy", cls: "s10" },
+                    { id: "concrete", name: "Concrete", style: { background: "linear-gradient(135deg,#c4c0b8,#a8a49c)" } },
+                    { id: "darkwood", name: "Dark Wood", style: { background: "linear-gradient(135deg,#2a2422,#1a1614)" } },
+                  ].map((sw) => (
+                    <div
+                      key={sw.id}
+                      className={`sw ${sw.cls || ""} ${activeFaceColor === sw.id ? "on" : ""}`}
+                      style={sw.style}
+                      onClick={() => {
+                        setActiveFaceColor(sw.id);
+                        triggerNotification("Face colour: " + sw.name);
                       }}
                     >
                       <span className="sw-tip">{sw.name}</span>
@@ -3645,15 +3742,15 @@ ${activeCategory === "kitchen" ? `
                 </div>
                 
                 <button
-                  className={`scene-btn ${intDrawers ? "on" : ""}`}
+                  className={`scene-btn ${hangerRods ? "on" : ""}`}
                   style={{ margin: "0 0 7px 0", width: "100%", justifyContent: "flex-start", paddingLeft: "10px" }}
                   onClick={() => {
-                    setIntDrawers(!intDrawers);
-                    triggerNotification(!intDrawers ? "Interior drawers added" : "Interior drawers removed");
+                    setHangerRods(!hangerRods);
+                    triggerNotification(!hangerRods ? "Hanger rods added — top shelf removed for space" : "Hanger rods removed");
                   }}
                 >
-                  <span style={{ background: "#e07a5f", width: "18px", height: "18px", borderRadius: "4px", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: "0.6rem", marginRight: "8px" }}>📥</span>
-                  Add Interior Drawers
+                  <span style={{ background: hangerRods ? "#8a7adc" : "#5a5855", width: "18px", height: "18px", borderRadius: "4px", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: "0.6rem", marginRight: "8px" }}>🪝</span>
+                  {hangerRods ? "Remove Hanger Rods" : "Add Hanger Rods"}
                 </button>
                 <button 
                   className="scene-btn" 
