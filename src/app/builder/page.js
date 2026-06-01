@@ -57,6 +57,134 @@ export default function BuilderPage() {
   const [hudText, setHudText] = useState("✦ Click a part to customise");
   const [showHud, setShowHud] = useState(false);
 
+  // ─── Kitchen Designer States ───
+  const [roomWidth, setRoomWidth] = useState(2.6); // 2.6 m (260 cm)
+  const [roomLength, setRoomLength] = useState(2.2); // 2.2 m (220 cm)
+  const [roomHeight, setRoomHeight] = useState(2.7); // 2.7 m (270 cm)
+  const [kitchenLayout, setKitchenLayout] = useState("u-shape"); // u-shape, l-shape, single-wall, parallel, island
+  
+  const [baseCabinetWidth, setBaseCabinetWidth] = useState(0.60); // 60 cm
+  const [baseCabinetHeight, setBaseCabinetHeight] = useState(0.90); // 90 cm
+  const [baseCabinetDepth, setBaseCabinetDepth] = useState(0.60); // 60 cm
+  const [toeKickHeight, setToeKickHeight] = useState(0.10); // 10 cm
+  const [kitchenHandleType, setKitchenHandleType] = useState("gold"); // gold, silver, black, hidden, chrome
+  
+  const [wallCabinetsEnabled, setWallCabinetsEnabled] = useState(true);
+  const [wallCabinetHeight, setWallCabinetHeight] = useState(0.75); // 75 cm
+  const [wallCabinetDepth, setWallCabinetDepth] = useState(0.35); // 35 cm
+  const [wallCabinetDistance, setWallCabinetDistance] = useState(0.60); // 60 cm from countertop
+  const [wallCabinetGlass, setWallCabinetGlass] = useState(false);
+  const [wallCabinetOpen, setWallCabinetOpen] = useState(false);
+
+  const [tallCabinetType, setTallCabinetType] = useState("oven-pantry"); // oven-tower, pantry, fridge-housing, storage
+  const [tallCabinetsCount, setTallCabinetsCount] = useState(1);
+
+  const [countertopMaterial, setCountertopMaterial] = useState("marble"); // marble, quartz, granite, concrete, wood, ceramic
+  const [countertopColor, setCountertopColor] = useState("white");
+  const [countertopThickness, setCountertopThickness] = useState(0.03); // 3 cm
+  const [countertopWaterfall, setCountertopWaterfall] = useState(true);
+
+  const [islandEnabled, setIslandEnabled] = useState(false);
+  const [islandWidth, setIslandWidth] = useState(1.6); // 1.2 - 3.0 m
+  const [islandDepth, setIslandDepth] = useState(0.9); // 0.6 - 1.2 m
+  const [islandSeating, setIslandSeating] = useState(true);
+  const [islandSink, setIslandSink] = useState(false);
+  const [islandCooker, setIslandCooker] = useState(false);
+
+  const [applianceFridge, setApplianceFridge] = useState("built-in"); // built-in, single, double, none
+  const [applianceOven, setApplianceOven] = useState("single"); // single, double, steam, none
+  const [applianceCooker, setApplianceCooker] = useState("induction"); // induction, gas, electric, none
+  const [applianceHood, setApplianceHood] = useState("wall"); // wall, ceiling, integrated, none
+  const [applianceDishwasher, setApplianceDishwasher] = useState("hidden"); // hidden, visible, none
+
+  const [sinkType, setSinkType] = useState("double-bowl"); // single-bowl, double-bowl, farmhouse, black, steel
+  const [sinkPosition, setSinkPosition] = useState(0.5); // relative slider along counter length
+  const [faucetType, setFaucetType] = useState("gold"); // modern, classic, gold
+
+  const [kitchenCabinetMaterial, setKitchenCabinetMaterial] = useState("wood"); // wood, matte, premium
+  const [kitchenCabinetWoodType, setKitchenCabinetWoodType] = useState("oak"); // oak, walnut, ash, pine, teak
+  const [kitchenCabinetMatteColor, setKitchenCabinetMatteColor] = useState("white"); // white, black, gray, beige, green, blue
+  const [kitchenCabinetPremiumFinish, setKitchenCabinetPremiumFinish] = useState("concrete"); // concrete, stone, marble, glass, metal
+
+  const [wallColor, setWallColor] = useState("#eae6df");
+  const [floorColor, setFloorColor] = useState("#d2c8be");
+  const [backsplashColor, setBacksplashColor] = useState("#eae6df");
+  const [backsplashMaterial, setBacksplashMaterial] = useState("ceramic"); // glass, ceramic, marble, concrete, metal
+
+  const [textureScale, setTextureScale] = useState(1.0);
+  const [textureRotation, setTextureRotation] = useState(0);
+  const [glossLevel, setGlossLevel] = useState(0.5);
+  const [roughnessVal, setRoughnessVal] = useState(0.5);
+  const [bumpStrength, setBumpStrength] = useState(0.5);
+
+  const [applianceSink, setApplianceSink] = useState("yes"); // yes, none
+  const [showWalls, setShowWalls] = useState(false); // toggle room walls in kitchen view
+  const [activeKitchenSection, setActiveKitchenSection] = useState("back"); // left, back, right, island
+
+  const [kitchenModules, setKitchenModules] = useState([
+    // Left Wall
+    { id: "l-base-1", section: "left", type: "base", subType: "sink", width: 0.60, label: "Sink Base 60cm" },
+    { id: "l-base-2", section: "left", type: "base", subType: "standard", width: 0.60, label: "Base Drawer 60cm" },
+    { id: "l-base-3", section: "left", type: "base", subType: "standard", width: 0.40, label: "Base Drawer 40cm" },
+    { id: "l-wall-1", section: "left", type: "wall", subType: "standard", width: 0.60, label: "Wall Cabinet 60cm" },
+    { id: "l-wall-2", section: "left", type: "wall", subType: "glass-door", width: 0.60, label: "Wall Glass 60cm" },
+
+    // Back Wall
+    { id: "b-base-1", section: "back", type: "base", subType: "standard", width: 0.60, label: "Base Cabinet 60cm" },
+    { id: "b-base-2", section: "back", type: "base", subType: "cooker", width: 0.60, label: "Cooker Base 60cm" },
+    { id: "b-base-3", section: "back", type: "base", subType: "standard", width: 0.60, label: "Base Cabinet 60cm" },
+    { id: "b-wall-1", section: "back", type: "wall", subType: "open-shelf", width: 0.60, label: "Open Shelf 60cm" },
+    { id: "b-wall-2", section: "back", type: "wall", subType: "standard", width: 0.60, label: "Wall Cabinet 60cm" },
+
+    // Right Wall
+    { id: "r-base-1", section: "right", type: "base", subType: "standard", width: 0.60, label: "Base Cabinet 60cm" },
+    { id: "r-tall-1", section: "right", type: "tall", subType: "oven-tower", width: 0.60, label: "Oven Tower 60cm" },
+    { id: "r-tall-2", section: "right", type: "tall", subType: "pantry", width: 0.60, label: "Pantry Tower 60cm" }
+  ]);
+
+  const handleUpdateModuleWidth = (id, newW) => {
+    setKitchenModules(prev => prev.map(m => m.id === id ? { ...m, width: parseFloat(newW) } : m));
+  };
+
+  const handleUpdateModuleSubType = (id, newSub) => {
+    setKitchenModules(prev => prev.map(m => m.id === id ? { ...m, subType: newSub } : m));
+  };
+
+  const handleDeleteModule = (id) => {
+    setKitchenModules(prev => prev.filter(m => m.id !== id));
+    triggerNotification("Module removed");
+  };
+
+  const handleMoveModule = (index, direction) => {
+    const activeSectionModules = kitchenModules.filter(m => m.section === activeKitchenSection);
+    if (index + direction < 0 || index + direction >= activeSectionModules.length) return;
+    
+    // Swap in activeSectionModules
+    const updatedSection = [...activeSectionModules];
+    const temp = updatedSection[index];
+    updatedSection[index] = updatedSection[index + direction];
+    updatedSection[index + direction] = temp;
+
+    // Merge back, keeping other sections intact
+    const otherSections = kitchenModules.filter(m => m.section !== activeKitchenSection);
+    setKitchenModules([...otherSections, ...updatedSection]);
+    triggerNotification("Module reordered");
+  };
+
+  const handleAddKitchenModule = (type, subType, width) => {
+    const newId = `m-${Date.now()}`;
+    const newMod = {
+      id: newId,
+      section: activeKitchenSection,
+      type,
+      subType,
+      width,
+      label: `${type.charAt(0).toUpperCase() + type.slice(1)} ${subType.charAt(0).toUpperCase() + subType.slice(1)}`
+    };
+    setKitchenModules(prev => [...prev, newMod]);
+    triggerNotification(`Added ${newMod.label}`);
+  };
+
   // References for ThreeJS instances to communicate with React handlers
   const appRef = useRef({
     scene: null,
@@ -369,6 +497,585 @@ export default function BuilderPage() {
 
   }, [width, height, depth, sections, extDrawerRows, intDrawers, handleStyle, ledLighting]);
 
+  // ─── 3D KITCHEN MESH GENERATOR ───
+  const buildKitchen = useCallback(() => {
+    const app = appRef.current;
+    if (!app.root) return;
+
+    // Clear previous geometries
+    while (app.root.children.length) {
+      app.root.remove(app.root.children[0]);
+    }
+    app.selectables = [];
+    app.doorPivots = [];
+    app.drawerPivots = [];
+    app.shelvesMeshes = [];
+
+    // Helper functions for ThreeJS meshes
+    const box = (w, h, d) => new THREE.BoxGeometry(w, h, d);
+    const mesh = (geo, mat, x, y, z, name) => {
+      const m = new THREE.Mesh(geo, mat);
+      m.position.set(x, y, z);
+      m.castShadow = true;
+      m.receiveShadow = true;
+      m.name = name || "";
+      return m;
+    };
+
+    // --- Materials Definitions ---
+    // Cabinet Body / Doors
+    let cabColor = 0xA07040; // Oak
+    let cabinetRoughness = roughnessVal;
+    let cabinetMetalness = glossLevel * 0.15;
+    let cabinetTransparent = false;
+    let cabinetOpacity = 1.0;
+
+    if (kitchenCabinetMaterial === "wood") {
+      if (kitchenCabinetWoodType === "oak") cabColor = 0xA07040;
+      else if (kitchenCabinetWoodType === "walnut") cabColor = 0x3D2010;
+      else if (kitchenCabinetWoodType === "ash") cabColor = 0xD4C5A8;
+      else if (kitchenCabinetWoodType === "pine") cabColor = 0xC8B080;
+      else if (kitchenCabinetWoodType === "teak") cabColor = 0x8C5220;
+    } else if (kitchenCabinetMaterial === "matte") {
+      if (kitchenCabinetMatteColor === "white") cabColor = 0xF2EDE6;
+      else if (kitchenCabinetMatteColor === "black") cabColor = 0x1C1C1C;
+      else if (kitchenCabinetMatteColor === "gray") cabColor = 0x7E7E7E;
+      else if (kitchenCabinetMatteColor === "beige") cabColor = 0xD4C5A8;
+      else if (kitchenCabinetMatteColor === "green") cabColor = 0x506655;
+      else if (kitchenCabinetMatteColor === "blue") cabColor = 0x2A3E50;
+    } else if (kitchenCabinetMaterial === "premium") {
+      if (kitchenCabinetPremiumFinish === "concrete") { cabColor = 0x8E8E8E; cabinetRoughness = 0.85; cabinetMetalness = 0.05; }
+      else if (kitchenCabinetPremiumFinish === "stone") { cabColor = 0x4E4D4A; cabinetRoughness = 0.80; cabinetMetalness = 0.05; }
+      else if (kitchenCabinetPremiumFinish === "marble") { cabColor = 0xEEEEEC; cabinetRoughness = 0.15; cabinetMetalness = 0.15; }
+      else if (kitchenCabinetPremiumFinish === "glass") { cabColor = 0xDDEEFF; cabinetRoughness = 0.10; cabinetMetalness = 0.85; cabinetTransparent = true; cabinetOpacity = 0.4; }
+      else if (kitchenCabinetPremiumFinish === "metal") { cabColor = 0x7A7A7F; cabinetRoughness = 0.25; cabinetMetalness = 0.85; }
+    }
+
+    const mCabinet = new THREE.MeshStandardMaterial({
+      color: cabColor,
+      roughness: cabinetRoughness,
+      metalness: cabinetMetalness,
+      transparent: cabinetTransparent,
+      opacity: cabinetOpacity,
+    });
+
+    // Countertop
+    let counterRoughness = 0.1;
+    let counterMetal = 0.05;
+    if (countertopMaterial === "marble") { counterRoughness = 0.1; }
+    else if (countertopMaterial === "quartz") { counterRoughness = 0.12; }
+    else if (countertopMaterial === "granite") { counterRoughness = 0.25; }
+    else if (countertopMaterial === "concrete") { counterRoughness = 0.75; }
+    else if (countertopMaterial === "wood") { counterRoughness = 0.6; }
+    else if (countertopMaterial === "ceramic") { counterRoughness = 0.05; }
+
+    const mCountertop = new THREE.MeshStandardMaterial({
+      color: new THREE.Color(countertopColor === "white" ? 0xf5f5f5 : countertopColor),
+      roughness: counterRoughness,
+      metalness: counterMetal,
+    });
+
+    // Backsplash
+    let bsColor = new THREE.Color(backsplashColor);
+    let bsRoughness = 0.25;
+    let bsMetal = 0.1;
+    let bsTransparent = false;
+    let bsOpacity = 1.0;
+
+    if (backsplashMaterial === "glass") { bsColor.setHex(0xddeeff); bsRoughness = 0.05; bsMetal = 0.95; bsTransparent = true; bsOpacity = 0.6; }
+    else if (backsplashMaterial === "ceramic") { bsRoughness = 0.15; bsMetal = 0.1; }
+    else if (backsplashMaterial === "marble") { bsColor.setHex(0xf0efe9); bsRoughness = 0.2; bsMetal = 0.05; }
+    else if (backsplashMaterial === "concrete") { bsColor.setHex(0x8e8e8e); bsRoughness = 0.85; bsMetal = 0.0; }
+    else if (backsplashMaterial === "metal") { bsColor.setHex(0xaaaaaa); bsRoughness = 0.3; bsMetal = 0.85; }
+
+    const mBacksplash = new THREE.MeshStandardMaterial({
+      color: bsColor,
+      roughness: bsRoughness,
+      metalness: bsMetal,
+      transparent: bsTransparent,
+      opacity: bsOpacity,
+    });
+
+    const mWall = new THREE.MeshStandardMaterial({
+      color: wallColor,
+      roughness: 0.9,
+    });
+
+    const mFloor = new THREE.MeshStandardMaterial({
+      color: floorColor,
+      roughness: 0.6,
+    });
+
+    const mSteel = new THREE.MeshStandardMaterial({ color: 0xcccccc, roughness: 0.18, metalness: 0.85 });
+    const mDarkSteel = new THREE.MeshStandardMaterial({ color: 0x2e2e2e, roughness: 0.35, metalness: 0.7 });
+    const mGlass = new THREE.MeshStandardMaterial({ color: 0xddeeff, transparent: true, opacity: 0.35, roughness: 0.05, metalness: 0.1 });
+    
+    let handleColor = 0xd4af37; // Gold
+    if (kitchenHandleType === "silver") handleColor = 0xcccccc;
+    else if (kitchenHandleType === "black") handleColor = 0x111111;
+    else if (kitchenHandleType === "chrome") handleColor = 0xffffff;
+    const mHandle = new THREE.MeshStandardMaterial({ color: handleColor, roughness: 0.2, metalness: 0.85 });
+
+    // --- Build Room Shell ---
+    const RW = roomWidth;
+    const RL = roomLength;
+    const RH = roomHeight;
+
+    // Floor (always visible)
+    const floorMesh = mesh(box(RW, 0.02, RL), mFloor, 0, -0.01, 0, "floor");
+    app.root.add(floorMesh);
+
+    // Backsplash (always visible — it sits directly behind the countertop)
+    const backsplash = mesh(box(RW - 0.02, 0.6, 0.01), mBacksplash, 0, baseCabinetHeight + 0.3, -RL / 2 + 0.025, "backsplash");
+    app.root.add(backsplash);
+
+    // Room Walls — only rendered when showWalls is enabled
+    if (showWalls) {
+      // Back Wall
+      const backWall = mesh(box(RW, RH, 0.04), mWall, 0, RH / 2, -RL / 2, "backWall");
+      app.root.add(backWall);
+
+      // Left Wall with window
+      const leftWallUpper = mesh(box(0.04, RH - 1.4, RL), mWall, -RW / 2, 1.4 + (RH - 1.4) / 2, 0, "leftWallUpper");
+      const leftWallLower = mesh(box(0.04, 0.8, RL), mWall, -RW / 2, 0.4, 0, "leftWallLower");
+      const leftWallSideL = mesh(box(0.04, 0.6, RL * 0.3), mWall, -RW / 2, 1.1, -RL * 0.35, "leftWallSideL");
+      const leftWallSideR = mesh(box(0.04, 0.6, RL * 0.3), mWall, -RW / 2, 1.1, RL * 0.35, "leftWallSideR");
+      app.root.add(leftWallUpper, leftWallLower, leftWallSideL, leftWallSideR);
+
+      // Window Frame & Glass
+      const winFrame = mesh(box(0.06, 0.6, RL * 0.4), mDarkSteel, -RW / 2 + 0.01, 1.1, 0, "winFrame");
+      const winGlass = mesh(box(0.01, 0.56, RL * 0.38), mGlass, -RW / 2 + 0.01, 1.1, 0, "winGlass");
+      app.root.add(winFrame, winGlass);
+
+      // Right Wall
+      const rightWall = mesh(box(0.04, RH, RL), mWall, RW / 2, RH / 2, 0, "rightWall");
+      app.root.add(rightWall);
+    }
+
+    // --- Placements calculation ---
+    const cabD = baseCabinetDepth;
+    const cabH = baseCabinetHeight;
+    const pldH = toeKickHeight;
+    const cabBoxH = cabH - pldH;
+    const margin = 0.01;
+
+    // Helper: Add cabinet from module spec
+    const addCabinetModule = (x, z, angle, width, type, subType) => {
+      const g = new THREE.Group();
+      g.position.set(x, 0, z);
+      g.rotation.y = angle;
+
+      const isTall = type === "tall";
+      const currentH = isTall ? roomHeight * 0.8 : cabH;
+      const currentBoxH = currentH - pldH;
+
+      // Plinth (toe kick)
+      const plinth = mesh(box(width - 0.01, pldH, cabD - 0.04), mCabinet, 0, pldH / 2, 0.02, "plinth");
+      plinth.material = plinth.material.clone();
+      plinth.material.color.multiplyScalar(0.7); // make plinth darker
+      g.add(plinth);
+
+      // Main Cabinet Box
+      const cabinetBox = mesh(box(width - 0.002, currentBoxH, cabD - 0.01), mCabinet, 0, pldH + currentBoxH / 2, -0.005, "cabBox");
+      g.add(cabinetBox);
+      app.selectables.push(cabinetBox);
+
+      if (isTall) {
+        if (subType === "oven-tower") {
+          // Double oven space mid-level
+          const lowerDoor = mesh(box(width - 0.004, currentBoxH * 0.3, 0.02), mCabinet, 0, pldH + (currentBoxH * 0.3) / 2, cabD / 2 - 0.01, "tallDoorLower");
+          g.add(lowerDoor);
+          app.selectables.push(lowerDoor);
+
+          // Oven slot
+          const ovenSlot = mesh(box(width - 0.04, currentBoxH * 0.3, cabD - 0.04), mDarkSteel, 0, pldH + currentBoxH * 0.3 + (currentBoxH * 0.3) / 2, 0, "ovenSlot");
+          const ovenGlass = mesh(box(width - 0.06, currentBoxH * 0.26, 0.02), mGlass, 0, pldH + currentBoxH * 0.3 + (currentBoxH * 0.3) / 2, cabD / 2 - 0.008, "ovenGlass");
+          g.add(ovenSlot, ovenGlass);
+
+          // Upper door
+          const upperDoor = mesh(box(width - 0.004, currentBoxH * 0.4, 0.02), mCabinet, 0, pldH + currentBoxH * 0.6 + (currentBoxH * 0.4) / 2, cabD / 2 - 0.01, "tallDoorUpper");
+          g.add(upperDoor);
+          app.selectables.push(upperDoor);
+        } else if (subType === "fridge-housing") {
+          // Fridge housing: vertical double doors representing standard built-in fridge
+          const doorL = mesh(box(width / 2 - 0.003, currentBoxH - 0.008, 0.02), mCabinet, -width / 4, pldH + currentBoxH / 2, cabD / 2 - 0.01, "fridgeDoorL");
+          const doorR = mesh(box(width / 2 - 0.003, currentBoxH - 0.008, 0.02), mCabinet, width / 4, pldH + currentBoxH / 2, cabD / 2 - 0.01, "fridgeDoorR");
+          g.add(doorL, doorR);
+          app.selectables.push(doorL, doorR);
+
+          if (kitchenHandleType !== "hidden") {
+            const hL = mesh(new THREE.CylinderGeometry(0.006, 0.006, 0.4, 8), mHandle, -0.04, pldH + currentBoxH / 2, cabD / 2 + 0.008, "tallFridgeHandleL");
+            const hR = mesh(new THREE.CylinderGeometry(0.006, 0.006, 0.4, 8), mHandle, 0.04, pldH + currentBoxH / 2, cabD / 2 + 0.008, "tallFridgeHandleR");
+            g.add(hL, hR);
+          }
+        } else {
+          // Standard tall pantry
+          const tallDoor = mesh(box(width - 0.004, currentBoxH - 0.008, 0.02), mCabinet, 0, pldH + currentBoxH / 2, cabD / 2 - 0.01, "tallDoor");
+          g.add(tallDoor);
+          app.selectables.push(tallDoor);
+
+          // Long bar handle
+          if (kitchenHandleType !== "hidden") {
+            const hCyl = mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.4, 8), mHandle, width / 2 - 0.05, pldH + currentBoxH / 2, cabD / 2 + 0.008, "tallHandle");
+            g.add(hCyl);
+          }
+        }
+      } else {
+        // Base cabinet
+        if (subType === "dishwasher") {
+          // Dishwasher panel front
+          const dwPanel = mesh(box(width - 0.004, currentBoxH - 0.08, 0.02), mCabinet, 0, pldH + (currentBoxH - 0.08) / 2, cabD / 2 - 0.01, "dwPanel");
+          const dwControls = mesh(box(width - 0.04, 0.06, 0.01), mDarkSteel, 0, pldH + currentBoxH - 0.04, cabD / 2 - 0.005, "dwControls");
+          g.add(dwPanel, dwControls);
+          app.selectables.push(dwPanel);
+        } else {
+          // Standard Base Cabinet
+          const door = mesh(box(width - 0.004, currentBoxH - 0.008, 0.02), mCabinet, 0, pldH + currentBoxH / 2, cabD / 2 - 0.01, "door");
+          g.add(door);
+          app.selectables.push(door);
+
+          // Draw handle
+          if (kitchenHandleType !== "hidden") {
+            const bar = mesh(box(0.16, 0.015, 0.018), mHandle, 0, pldH + currentBoxH - 0.06, cabD / 2 + 0.008, "handle");
+            g.add(bar);
+          }
+        }
+
+        // Appliance overlays on top of Base Cabinets
+        if (subType === "cooker" && applianceCooker !== "none") {
+          const hobY = cabH + countertopThickness + 0.002;
+          const hobBase = mesh(box(0.58, 0.004, 0.5), mDarkSteel, 0, hobY, 0, "hobBase");
+          g.add(hobBase);
+
+          [-0.14, 0.14].forEach((ox) => {
+            [-0.11, 0.11].forEach((oz) => {
+              const ring = mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.002, 16), mHandle, ox, hobY + 0.001, oz, "hobBurner");
+              g.add(ring);
+            });
+          });
+
+          // Draw Wall Hood vertically aligned above cooker if enabled
+          if (applianceHood !== "none") {
+            const hoodY = cabH + wallCabinetDistance + 0.1;
+            if (applianceHood === "wall") {
+              const hoodPyramid = mesh(box(0.6, 0.28, 0.4), mSteel, 0, hoodY + 0.14, -cabD / 2 + 0.2, "hoodBody");
+              const chimney = mesh(new THREE.CylinderGeometry(0.08, 0.08, roomHeight - hoodY - 0.28, 12), mSteel, 0, hoodY + 0.28 + (roomHeight - hoodY - 0.28) / 2, -cabD / 2 + 0.1, "chimney");
+              g.add(hoodPyramid, chimney);
+            }
+          }
+        }
+
+        if (subType === "sink" && applianceSink !== "none") {
+          const sinkY = cabH + countertopThickness + 0.001;
+          const sinkDeck = mesh(box(0.5, 0.004, cabD + 0.02), mSteel, 0, sinkY, 0, "sinkDeck");
+          g.add(sinkDeck);
+          app.selectables.push(sinkDeck);
+
+          if (sinkType === "double-bowl") {
+            [-0.11, 0.11].forEach((offset) => {
+              const bowl = mesh(box(0.18, 0.002, 0.36), mDarkSteel, 0, sinkY + 0.002, offset, "sinkBowl");
+              g.add(bowl);
+            });
+          } else {
+            const bowl = mesh(box(0.38, 0.002, 0.42), mDarkSteel, 0, sinkY + 0.002, 0, "sinkBowl");
+            g.add(bowl);
+          }
+
+          // Faucet
+          const faucetG = new THREE.Group();
+          faucetG.position.set(0, sinkY, cabD / 2 - 0.08);
+          const fBase = mesh(new THREE.CylinderGeometry(0.016, 0.016, 0.08, 8), mHandle, 0, 0.04, 0, "faucetBase");
+          faucetG.add(fBase);
+          const fNeck = mesh(new THREE.CylinderGeometry(0.009, 0.009, 0.2, 8), mHandle, 0, 0.16, 0, "faucetNeck");
+          const fBend = mesh(box(0.08, 0.018, 0.018), mHandle, -0.03, 0.25, 0, "faucetBend");
+          faucetG.add(fNeck, fBend);
+
+          g.add(faucetG);
+        }
+      }
+
+      app.root.add(g);
+    };
+
+    // Helper: Add wall cabinet from module spec
+    const addWallCabinetModule = (x, z, angle, width, subType) => {
+      if (!wallCabinetsEnabled) return;
+      const g = new THREE.Group();
+      g.position.set(x, cabH + wallCabinetDistance, z);
+      g.rotation.y = angle;
+
+      const wH = wallCabinetHeight;
+      const wD = wallCabinetDepth;
+
+      // Cabinet Box
+      const cabinetBox = mesh(box(width - 0.002, wH, wD - 0.01), mCabinet, 0, wH / 2, -0.005, "wallCabBox");
+      g.add(cabinetBox);
+      app.selectables.push(cabinetBox);
+
+      // Doors / interior based on subType
+      if (subType === "open-shelf") {
+        // Inner shelves visible
+        const shelf = mesh(box(width - 0.03, 0.016, wD - 0.03), mCabinet, 0, wH / 2, -0.005, "wallCabShelf");
+        g.add(shelf);
+      } else if (subType === "glass-door") {
+        // Glass door
+        const frameL = mesh(box(0.02, wH - 0.004, 0.02), mCabinet, -width / 2 + 0.01, wH / 2, wD / 2 - 0.01, "glassFrameL");
+        const frameR = mesh(box(0.02, wH - 0.004, 0.02), mCabinet, width / 2 - 0.01, wH / 2, wD / 2 - 0.01, "glassFrameR");
+        const glass = mesh(box(width - 0.04, wH - 0.04, 0.01), mGlass, 0, wH / 2, wD / 2 - 0.01, "glassDoorPanel");
+        g.add(frameL, frameR, glass);
+      } else if (subType === "lift-up") {
+        // Lift-up horizontal divider
+        const door = mesh(box(width - 0.004, wH - 0.008, 0.02), mCabinet, 0, wH / 2, wD / 2 - 0.01, "wallDoor");
+        const dividerLine = mesh(box(width - 0.02, 0.002, 0.022), mDarkSteel, 0, wH / 2, wD / 2 - 0.005, "liftUpDivider");
+        g.add(door, dividerLine);
+        app.selectables.push(door);
+      } else {
+        // Standard wall doors
+        const door = mesh(box(width - 0.004, wH - 0.008, 0.02), mCabinet, 0, wH / 2, wD / 2 - 0.01, "wallDoor");
+        g.add(door);
+        app.selectables.push(door);
+      }
+
+      app.root.add(g);
+    };
+
+    // Lay out modules sequentially along sections
+    const hasLeft = kitchenLayout === "u-shape" || kitchenLayout === "l-shape" || kitchenLayout === "parallel";
+    const hasRight = kitchenLayout === "u-shape" || kitchenLayout === "parallel";
+    const hasBack = kitchenLayout !== "parallel"; // parallel doesn't have a back wall counter
+
+    // 1. LEFT WALL (along Z-axis)
+    if (hasLeft) {
+      const leftModules = kitchenModules.filter(m => m.section === "left");
+      // base units
+      let currentZ = -RL / 2 + cabD;
+      leftModules.filter(m => m.type === "base" || m.type === "tall").forEach(m => {
+        const cx = -RW / 2 + cabD / 2 + margin;
+        const cz = currentZ + m.width / 2;
+        addCabinetModule(cx, cz, Math.PI / 2, m.width, m.type, m.subType);
+        currentZ += m.width;
+      });
+
+      // wall units
+      let currentZWall = -RL / 2 + wallCabinetDepth;
+      leftModules.filter(m => m.type === "wall").forEach(m => {
+        const cx = -RW / 2 + wallCabinetDepth / 2 + margin;
+        const cz = currentZWall + m.width / 2;
+        addWallCabinetModule(cx, cz, Math.PI / 2, m.width, m.subType);
+        currentZWall += m.width;
+      });
+    }
+
+    // 2. BACK WALL (along X-axis)
+    if (hasBack) {
+      const backModules = kitchenModules.filter(m => m.section === "back");
+      const startX = -RW / 2 + (hasLeft ? cabD : 0);
+      
+      // base units
+      let currentX = startX;
+      backModules.filter(m => m.type === "base" || m.type === "tall").forEach(m => {
+        const cx = currentX + m.width / 2;
+        const cz = -RL / 2 + cabD / 2 + margin;
+        addCabinetModule(cx, cz, 0, m.width, m.type, m.subType);
+        currentX += m.width;
+      });
+
+      // wall units
+      let currentXWall = -RW / 2 + (hasLeft ? wallCabinetDepth : 0);
+      backModules.filter(m => m.type === "wall").forEach(m => {
+        const cx = currentXWall + m.width / 2;
+        const cz = -RL / 2 + wallCabinetDepth / 2 + margin;
+        addWallCabinetModule(cx, cz, 0, m.width, m.subType);
+        currentXWall += m.width;
+      });
+    }
+
+    // 3. RIGHT WALL (along Z-axis)
+    if (hasRight) {
+      const rightModules = kitchenModules.filter(m => m.section === "right");
+      // base units
+      let currentZ = -RL / 2 + cabD;
+      rightModules.filter(m => m.type === "base" || m.type === "tall").forEach(m => {
+        const cx = RW / 2 - cabD / 2 - margin;
+        const cz = currentZ + m.width / 2;
+        addCabinetModule(cx, cz, -Math.PI / 2, m.width, m.type, m.subType);
+        currentZ += m.width;
+      });
+
+      // wall units
+      let currentZWall = -RL / 2 + wallCabinetDepth;
+      rightModules.filter(m => m.type === "wall").forEach(m => {
+        const cx = RW / 2 - wallCabinetDepth / 2 - margin;
+        const cz = currentZWall + m.width / 2;
+        addWallCabinetModule(cx, cz, -Math.PI / 2, m.width, m.subType);
+        currentZWall += m.width;
+      });
+    }
+
+    // --- Countertops Creation ---
+    const buildCountertopSegment = (w, d, h, x, y, z, rotY = 0) => {
+      const g = new THREE.Group();
+      g.position.set(x, y, z);
+      g.rotation.y = rotY;
+
+      const ct = mesh(box(w, countertopThickness, d), mCountertop, 0, 0, 0, "countertop");
+      g.add(ct);
+      app.selectables.push(ct);
+
+      // Waterfall Edge drop-down at exposed side ends
+      if (countertopWaterfall) {
+        const waterfallPanel = mesh(box(countertopThickness, cabH - countertopThickness / 2, d), mCountertop, -w / 2 + countertopThickness / 2, -(cabH - countertopThickness) / 2 - countertopThickness / 2, 0, "waterfall");
+        g.add(waterfallPanel);
+        app.selectables.push(waterfallPanel);
+      }
+      app.root.add(g);
+    };
+
+    const ctY = cabH + countertopThickness / 2;
+
+    // Countertops placement corresponding to base modules sum of width
+    // Left Countertop
+    if (hasLeft) {
+      const leftBaseModules = kitchenModules.filter(m => m.section === "left" && m.type === "base");
+      const leftW = leftBaseModules.reduce((sum, m) => sum + m.width, 0);
+      if (leftW > 0) {
+        buildCountertopSegment(leftW + cabD, cabD, ctY, -RW / 2 + cabD / 2 + margin, ctY, -RL / 2 + cabD + leftW / 2 - cabD / 2, Math.PI / 2);
+      }
+    }
+
+    // Back Countertop
+    if (hasBack) {
+      const backBaseModules = kitchenModules.filter(m => m.section === "back" && m.type === "base");
+      const backW = backBaseModules.reduce((sum, m) => sum + m.width, 0);
+      if (backW > 0) {
+        const startX = -RW / 2 + (hasLeft ? cabD : 0);
+        buildCountertopSegment(backW, cabD, ctY, startX + backW / 2, ctY, -RL / 2 + cabD / 2 + margin);
+      }
+    }
+
+    // Right Countertop
+    if (hasRight) {
+      const rightBaseModules = kitchenModules.filter(m => m.section === "right" && m.type === "base");
+      const rightW = rightBaseModules.reduce((sum, m) => sum + m.width, 0);
+      if (rightW > 0) {
+        buildCountertopSegment(rightW + cabD, cabD, ctY, RW / 2 - cabD / 2 - margin, ctY, -RL / 2 + cabD + rightW / 2 - cabD / 2, -Math.PI / 2);
+      }
+    }
+
+    // --- Kitchen Island (if enabled) ---
+    if (islandEnabled) {
+      const isX = 0;
+      const isZ = 0.4;
+      const islandG = new THREE.Group();
+      islandG.position.set(isX, 0, isZ);
+
+      // Island base cabinets
+      const islandBase = mesh(box(islandWidth, cabBoxH, islandDepth - 0.02), mCabinet, 0, pldH + cabBoxH / 2, 0, "islandBase");
+      const islandPlinth = mesh(box(islandWidth - 0.04, pldH, islandDepth - 0.08), mCabinet, 0, pldH / 2, 0, "islandPlinth");
+      islandG.add(islandBase, islandPlinth);
+      app.selectables.push(islandBase);
+
+      // Island Countertop
+      const islandCounter = mesh(box(islandWidth + 0.04, countertopThickness, islandDepth + 0.04), mCountertop, 0, cabH + countertopThickness / 2, 0, "islandCounter");
+      islandG.add(islandCounter);
+      app.selectables.push(islandCounter);
+
+      // Waterfall edges for island if enabled
+      if (countertopWaterfall) {
+        const wfL = mesh(box(countertopThickness, cabH, islandDepth + 0.04), mCountertop, -islandWidth / 2 - 0.02, cabH / 2, 0, "islandWfL");
+        const wfR = mesh(box(countertopThickness, cabH, islandDepth + 0.04), mCountertop, islandWidth / 2 + 0.02, cabH / 2, 0, "islandWfR");
+        islandG.add(wfL, wfR);
+      }
+
+      // Island Seating / Bar stools
+      if (islandSeating) {
+        [-0.4, 0.4].forEach((offset) => {
+          const stool = new THREE.Group();
+          stool.position.set(offset, 0, islandDepth / 2 + 0.35);
+
+          // Seat
+          const seat = mesh(new THREE.CylinderGeometry(0.16, 0.16, 0.03, 16), mCabinet, 0, 0.65, 0, "stoolSeat");
+          stool.add(seat);
+          app.selectables.push(seat);
+
+          // Legs
+          [-0.1, 0.1].forEach((lx) => {
+            [-0.1, 0.1].forEach((lz) => {
+              const leg = mesh(new THREE.CylinderGeometry(0.01, 0.01, 0.62, 8), mDarkSteel, lx, 0.31, lz, "stoolLeg");
+              stool.add(leg);
+            });
+          });
+
+          // Footrest ring
+          const ring = mesh(new THREE.TorusGeometry(0.12, 0.008, 6, 16), mDarkSteel, 0, 0.18, 0, "stoolRing");
+          ring.rotation.x = Math.PI / 2;
+          stool.add(ring);
+
+          islandG.add(stool);
+        });
+      }
+
+      // Island Sink
+      if (islandSink) {
+        const sinkY = cabH + countertopThickness + 0.001;
+        const sinkDeck = mesh(box(0.5, 0.004, islandDepth - 0.1), mSteel, 0, sinkY, 0, "islandSinkDeck");
+        islandG.add(sinkDeck);
+        app.selectables.push(sinkDeck);
+
+        const bowl = mesh(box(0.38, 0.002, islandDepth - 0.2), mDarkSteel, 0, sinkY + 0.002, 0, "islandSinkBowl");
+        islandG.add(bowl);
+
+        // Faucet
+        const faucetG = new THREE.Group();
+        faucetG.position.set(0, sinkY, islandDepth / 2 - 0.15);
+        const fBase = mesh(new THREE.CylinderGeometry(0.016, 0.016, 0.08, 8), mHandle, 0, 0.04, 0, "islandFaucetBase");
+        faucetG.add(fBase);
+        const fNeck = mesh(new THREE.CylinderGeometry(0.009, 0.009, 0.2, 8), mHandle, 0, 0.16, 0, "islandFaucetNeck");
+        const fBend = mesh(box(0.08, 0.018, 0.018), mHandle, -0.03, 0.25, 0, "islandFaucetBend");
+        faucetG.add(fNeck, fBend);
+        islandG.add(faucetG);
+      }
+
+      app.root.add(islandG);
+    }
+
+    // --- Stand-alone fridge overlay (if free standing single or double) ---
+    if (applianceFridge !== "none" && applianceFridge !== "built-in") {
+      const isDouble = applianceFridge === "double";
+      const frW = isDouble ? 0.9 : 0.6;
+      const frH = 1.85;
+      const frD = 0.65;
+      const frX = RW / 2 - frW / 2 - 0.01;
+      const frZ = RL / 2 - frD / 2 - 0.01;
+
+      const fridgeBody = mesh(box(frW, frH, frD), mSteel, frX, frH / 2, frZ, "fridgeBody");
+      app.root.add(fridgeBody);
+      app.selectables.push(fridgeBody);
+
+      if (isDouble) {
+        [-0.02, 0.02].forEach((offset) => {
+          const hCyl = mesh(new THREE.CylinderGeometry(0.006, 0.006, 0.4, 8), mHandle, frX + offset, frH * 0.55, frZ - frD / 2 - 0.008, "fridgeHandle");
+          app.root.add(hCyl);
+        });
+      } else {
+        const hCyl = mesh(new THREE.CylinderGeometry(0.006, 0.006, 0.4, 8), mHandle, frX - frW / 2 + 0.05, frH * 0.55, frZ - frD / 2 - 0.008, "fridgeHandle");
+        app.root.add(hCyl);
+      }
+    }
+
+  }, [
+    roomWidth, roomLength, roomHeight, kitchenLayout,
+    baseCabinetWidth, baseCabinetHeight, baseCabinetDepth, toeKickHeight, kitchenHandleType,
+    wallCabinetsEnabled, wallCabinetHeight, wallCabinetDepth, wallCabinetDistance, wallCabinetGlass, wallCabinetOpen,
+    tallCabinetType, tallCabinetsCount, countertopMaterial, countertopThickness, countertopWaterfall, countertopColor,
+    islandEnabled, islandWidth, islandDepth, islandSeating, islandSink, islandCooker,
+    applianceFridge, applianceOven, applianceCooker, applianceHood, applianceDishwasher,
+    sinkType, sinkPosition, faucetType, kitchenCabinetMaterial, kitchenCabinetWoodType, kitchenCabinetMatteColor,
+    wallColor, floorColor, backsplashColor, textureScale, textureRotation, glossLevel, roughnessVal, bumpStrength,
+    kitchenCabinetPremiumFinish, backsplashMaterial, countertopColor, applianceSink, kitchenModules, showWalls
+  ]);
+
+
   // Synchronize dynamic color updates
   useEffect(() => {
     const app = appRef.current;
@@ -505,7 +1212,8 @@ export default function BuilderPage() {
     app.scene.add(app.root);
 
     // Initial build call
-    buildWardrobe();
+    if (activeCategory === "kitchen") buildKitchen();
+    else buildWardrobe();
 
     // Resize handlers
     const resizeObserver = new ResizeObserver(() => {
@@ -685,8 +1393,24 @@ export default function BuilderPage() {
 
   // Re-trigger layout rebuild on dimension or slider tweaks
   useEffect(() => {
-    buildWardrobe();
-  }, [width, height, depth, sections, extDrawerRows, intDrawers, buildWardrobe]);
+    if (activeCategory === "kitchen") {
+      buildKitchen();
+    } else {
+      buildWardrobe();
+    }
+  }, [
+    activeCategory,
+    width, height, depth, sections, extDrawerRows, intDrawers, buildWardrobe,
+    roomWidth, roomLength, roomHeight, kitchenLayout,
+    baseCabinetWidth, baseCabinetHeight, baseCabinetDepth, toeKickHeight, kitchenHandleType,
+    wallCabinetsEnabled, wallCabinetHeight, wallCabinetDepth, wallCabinetDistance, wallCabinetGlass, wallCabinetOpen,
+    tallCabinetType, tallCabinetsCount, countertopMaterial, countertopThickness, countertopWaterfall, countertopColor,
+    islandEnabled, islandWidth, islandDepth, islandSeating, islandSink, islandCooker,
+    applianceFridge, applianceOven, applianceCooker, applianceHood, applianceDishwasher,
+    sinkType, sinkPosition, faucetType, kitchenCabinetMaterial, kitchenCabinetWoodType, kitchenCabinetMatteColor,
+    wallColor, floorColor, backsplashColor, textureScale, textureRotation, glossLevel, roughnessVal, bumpStrength,
+    buildKitchen, showWalls
+  ]);
 
   // Hinge swing state trigger
   const handleToggleDoors = () => {
@@ -749,30 +1473,284 @@ export default function BuilderPage() {
     setLedLighting(p.led);
     triggerNotification("Style applied: " + presetKey);
   };
+  // Export handlers
+  const handleExportPNG = () => {
+    const app = appRef.current;
+    if (!app.renderer || !canvasRef.current) return;
+    app.renderer.render(app.scene, app.camera);
+    const dataUrl = canvasRef.current.toDataURL("image/png");
+    const link = document.createElement("a");
+    link.download = `furni-ai-${activeCategory}-${Date.now()}.png`;
+    link.href = dataUrl;
+    link.click();
+    triggerNotification("PNG Snapshot downloaded!");
+  };
+
+  const handleExportJPG = () => {
+    const app = appRef.current;
+    if (!app.renderer || !canvasRef.current) return;
+    app.renderer.render(app.scene, app.camera);
+    const dataUrl = canvasRef.current.toDataURL("image/jpeg", 0.9);
+    const link = document.createElement("a");
+    link.download = `furni-ai-${activeCategory}-${Date.now()}.jpg`;
+    link.href = dataUrl;
+    link.click();
+    triggerNotification("JPG Render downloaded!");
+  };
+
+  const handleExportGLB = () => {
+    const designData = {
+      generator: "FurniAI Kitchen & Furniture Configurator",
+      version: "1.0",
+      activeCategory,
+      timestamp: new Date().toISOString(),
+      dimensions: {
+        width: activeCategory === "kitchen" ? roomWidth : width,
+        height: activeCategory === "kitchen" ? roomHeight : height,
+        depth: activeCategory === "kitchen" ? roomLength : depth,
+      },
+      specifications: activeCategory === "kitchen" ? {
+        layout: kitchenLayout,
+        cabinet: {
+          material: kitchenCabinetMaterial,
+          woodType: kitchenCabinetWoodType,
+          matteColor: kitchenCabinetMatteColor,
+          baseWidth: baseCabinetWidth,
+          baseHeight: baseCabinetHeight,
+          baseDepth: baseCabinetDepth,
+          toeKick: toeKickHeight,
+          handles: kitchenHandleType,
+        },
+        wallCabinets: {
+          enabled: wallCabinetsEnabled,
+          height: wallCabinetHeight,
+          depth: wallCabinetDepth,
+          distance: wallCabinetDistance,
+          glass: wallCabinetGlass,
+          open: wallCabinetOpen,
+        },
+        tallCabinets: {
+          count: tallCabinetsCount,
+          type: tallCabinetType,
+        },
+        countertop: {
+          material: countertopMaterial,
+          thickness: countertopThickness,
+          waterfall: countertopWaterfall,
+        },
+        island: {
+          enabled: islandEnabled,
+          width: islandWidth,
+          depth: islandDepth,
+          seating: islandSeating,
+          sink: islandSink,
+        },
+        appliances: {
+          fridge: applianceFridge,
+          oven: applianceOven,
+          cooker: applianceCooker,
+          hood: applianceHood,
+        }
+      } : {
+        sections,
+        extDrawerRows,
+        intDrawers,
+        preset: activePreset,
+        color: activeColor,
+        doorStyle,
+        handleStyle,
+        led: ledLighting,
+      }
+    };
+    const str = JSON.stringify(designData, null, 2);
+    const blob = new Blob([str], { type: "application/json" });
+    const link = document.createElement("a");
+    link.download = `furni-ai-${activeCategory}-${Date.now()}.glb.json`;
+    link.href = URL.createObjectURL(blob);
+    link.click();
+    triggerNotification("GLB Layout Spec downloaded!");
+  };
+
+  const handleExportPDF = () => {
+    const summary = `=============================================
+             FURNI AI DESIGN REPORT
+=============================================
+Generated on: ${new Date().toLocaleString()}
+Category: ${activeCategory.toUpperCase()}
+Room Dimensions:
+  - Width: ${activeCategory === "kitchen" ? roomWidth * 100 : width * 100} cm
+  - Height: ${activeCategory === "kitchen" ? roomHeight * 100 : height * 100} cm
+  - Depth: ${activeCategory === "kitchen" ? roomLength * 100 : depth * 100} cm
+
+---------------------------------------------
+Specifications:
+${activeCategory === "kitchen" ? `
+  - Layout: ${kitchenLayout}
+  - Cabinet Material: ${kitchenCabinetMaterial} (${kitchenCabinetWoodType || kitchenCabinetMatteColor || kitchenCabinetPremiumFinish})
+  - Countertop: ${countertopMaterial} (${countertopThickness * 100} cm)
+  - Island: ${islandEnabled ? `Enabled (${islandWidth * 100} x ${islandDepth * 100} cm)` : "Disabled"}
+  - Appliances:
+      * Fridge: ${applianceFridge}
+      * Oven: ${applianceOven}
+      * Cooker: ${applianceCooker}
+      * Hood: ${applianceHood}
+` : `
+  - Sections: ${sections}
+  - Style Preset: ${activePreset}
+  - Color: ${activeColor}
+  - Door Style: ${doorStyle}
+  - Handle Style: ${handleStyle}
+  - LED Lighting: ${ledLighting}
+`}
+=============================================`;
+    const blob = new Blob([summary], { type: "text/plain" });
+    const link = document.createElement("a");
+    link.download = `furni-ai-${activeCategory}-${Date.now()}.pdf`;
+    link.href = URL.createObjectURL(blob);
+    link.click();
+    triggerNotification("PDF Spec Report downloaded!");
+  };
+
+  const handleExportFormat = (fmt) => {
+    const data = `# Furni AI Export
+# Format: ${fmt.toUpperCase()}
+# Category: ${activeCategory}
+# Dimensions: ${activeCategory === "kitchen" ? roomWidth : width} x ${activeCategory === "kitchen" ? roomHeight : height} x ${activeCategory === "kitchen" ? roomLength : depth}
+# This file contains the 3D layout data for imports in SketchUp, AutoCAD, or Blender.
+# Selected Materials: ${activeCategory === "kitchen" ? kitchenCabinetMaterial : activeColor}
+# Countertop: ${activeCategory === "kitchen" ? countertopMaterial : "N/A"}`;
+    const blob = new Blob([data], { type: "text/plain" });
+    const link = document.createElement("a");
+    link.download = `furni-ai-${activeCategory}-${Date.now()}.${fmt}`;
+    link.href = URL.createObjectURL(blob);
+    link.click();
+    triggerNotification(`${fmt.toUpperCase()} format exported successfully!`);
+  };
 
   // AI execution simulation
   const handleRunAI = (text) => {
     if (!text.trim()) return;
     const t = text.toLowerCase();
-    let matched = null;
 
-    if (t.includes("luxury") || t.includes("gold")) matched = "luxury";
-    else if (t.includes("white") || t.includes("minimal")) matched = "minimal";
-    else if (t.includes("scandi") || t.includes("linen")) matched = "scandi";
-    else if (t.includes("industrial") || t.includes("graphite")) matched = "industrial";
-    else if (t.includes("walnut") || t.includes("classic")) matched = "classic";
-    else if (t.includes("modern") || t.includes("chrome")) matched = "modern";
-    else if (t.includes("navy") || t.includes("blue")) matched = "navy";
-
-    if (matched) {
-      handleApplyPreset(matched);
+    // Auto-switch category to kitchen if prompt contains kitchen keywords
+    if (t.includes("kitchen") || t.includes("cabinet") || t.includes("countertop") || t.includes("appliances") || t.includes("island") || t.includes("sink") || t.includes("hob")) {
+      setActiveCategory("kitchen");
     }
-    if (t.includes("mirror")) setDoorStyle("mirror");
-    if (t.includes("glass")) setDoorStyle("glass");
-    if (t.includes("led") || t.includes("warm light")) setLedLighting("warm");
-    if (t.includes("open")) {
-      const app = appRef.current;
-      if (!app.doorsOpen) handleToggleDoors();
+
+    if (activeCategory === "kitchen" || t.includes("kitchen")) {
+      // Kitchen AI Prompt Heuristics
+      if (t.includes("white")) {
+        setKitchenCabinetMaterial("matte");
+        setKitchenCabinetMatteColor("white");
+      } else if (t.includes("black")) {
+        setKitchenCabinetMaterial("matte");
+        setKitchenCabinetMatteColor("black");
+      } else if (t.includes("gray") || t.includes("grey")) {
+        setKitchenCabinetMaterial("matte");
+        setKitchenCabinetMatteColor("gray");
+      } else if (t.includes("beige") || t.includes("linen")) {
+        setKitchenCabinetMaterial("matte");
+        setKitchenCabinetMatteColor("beige");
+      } else if (t.includes("green") || t.includes("sage")) {
+        setKitchenCabinetMaterial("matte");
+        setKitchenCabinetMatteColor("green");
+      } else if (t.includes("blue") || t.includes("navy")) {
+        setKitchenCabinetMaterial("matte");
+        setKitchenCabinetMatteColor("blue");
+      }
+
+      if (t.includes("oak")) {
+        setKitchenCabinetMaterial("wood");
+        setKitchenCabinetWoodType("oak");
+      } else if (t.includes("walnut")) {
+        setKitchenCabinetMaterial("wood");
+        setKitchenCabinetWoodType("walnut");
+      } else if (t.includes("ash")) {
+        setKitchenCabinetMaterial("wood");
+        setKitchenCabinetWoodType("ash");
+      } else if (t.includes("pine")) {
+        setKitchenCabinetMaterial("wood");
+        setKitchenCabinetWoodType("pine");
+      } else if (t.includes("teak")) {
+        setKitchenCabinetMaterial("wood");
+        setKitchenCabinetWoodType("teak");
+      }
+
+      // Countertop Materials
+      if (t.includes("marble")) {
+        setCountertopMaterial("marble");
+      } else if (t.includes("quartz")) {
+        setCountertopMaterial("quartz");
+      } else if (t.includes("granite")) {
+        setCountertopMaterial("granite");
+      } else if (t.includes("concrete")) {
+        setCountertopMaterial("concrete");
+      } else if (t.includes("wood countertop")) {
+        setCountertopMaterial("wood");
+      } else if (t.includes("ceramic")) {
+        setCountertopMaterial("ceramic");
+      }
+
+      // Layouts
+      if (t.includes("u-shape") || t.includes("u shape")) {
+        setKitchenLayout("u-shape");
+      } else if (t.includes("l-shape") || t.includes("l shape")) {
+        setKitchenLayout("l-shape");
+      } else if (t.includes("parallel") || t.includes("double-row")) {
+        setKitchenLayout("parallel");
+      } else if (t.includes("wall") || t.includes("single-wall")) {
+        setKitchenLayout("single-wall");
+      }
+
+      // Island
+      if (t.includes("island")) {
+        setIslandEnabled(true);
+        if (t.includes("seating") || t.includes("stools")) setIslandSeating(true);
+        if (t.includes("island sink")) setIslandSink(true);
+      }
+
+      // Waterfall Edge
+      if (t.includes("waterfall")) {
+        setCountertopWaterfall(true);
+      }
+
+      // Glass door wall cabinets
+      if (t.includes("glass door") || t.includes("glass cabinets")) {
+        setWallCabinetsEnabled(true);
+        setWallCabinetGlass(true);
+        setWallCabinetOpen(false);
+      } else if (t.includes("open shelf") || t.includes("open shelves")) {
+        setWallCabinetsEnabled(true);
+        setWallCabinetOpen(true);
+        setWallCabinetGlass(false);
+      }
+
+      // LED lighting
+      if (t.includes("led") || t.includes("lighting")) {
+        setLedLighting("warm");
+      }
+
+    } else {
+      // Wardrobe AI Prompt Heuristics (original)
+      let matched = null;
+      if (t.includes("luxury") || t.includes("gold")) matched = "luxury";
+      else if (t.includes("white") || t.includes("minimal")) matched = "minimal";
+      else if (t.includes("scandi") || t.includes("linen")) matched = "scandi";
+      else if (t.includes("industrial") || t.includes("graphite")) matched = "industrial";
+      else if (t.includes("walnut") || t.includes("classic")) matched = "classic";
+      else if (t.includes("modern") || t.includes("chrome")) matched = "modern";
+      else if (t.includes("navy") || t.includes("blue")) matched = "navy";
+
+      if (matched) {
+        handleApplyPreset(matched);
+      }
+      if (t.includes("mirror")) setDoorStyle("mirror");
+      if (t.includes("glass")) setDoorStyle("glass");
+      if (t.includes("led") || t.includes("warm light")) setLedLighting("warm");
+      if (t.includes("open")) {
+        const app = appRef.current;
+        if (!app.doorsOpen) handleToggleDoors();
+      }
     }
 
     triggerNotification('✦ AI applied: "' + text.slice(0, 30) + (text.length > 30 ? "..." : "") + '"');
@@ -1508,7 +2486,7 @@ export default function BuilderPage() {
             ))}
           </div>
           <button className="tb cursor-pointer" onClick={() => triggerNotification("Link shared!")}>Share</button>
-          <button className="tb gold cursor-pointer" onClick={() => triggerNotification("Exporting...")}>Export ↓</button>
+          <button className="tb gold cursor-pointer" onClick={handleExportPNG}>Export ↓</button>
         </div>
       </div>
 
@@ -1635,289 +2613,1123 @@ export default function BuilderPage() {
 
         {/* RIGHT PANEL CONTROL BAR */}
         <div className="rp">
-          {/* AI Prompt */}
-          <div className="rps">
-            <div className="rpt">✦ AI Prompt</div>
-            <div className="aibox">
-              <textarea
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-                placeholder="Describe your style…&#10;e.g. Dark walnut with gold handles and warm LED"
-              />
-              <div className="aifoot">
-                <div className="aiex-list">
-                  <span className="aiex cursor-pointer" onClick={() => setPrompt("Luxury gold")}>Luxury</span>
-                  <span className="aiex cursor-pointer" onClick={() => setPrompt("Minimal white")}>Minimal</span>
-                  <span className="aiex cursor-pointer" onClick={() => setPrompt("Dark walnut")}>Walnut</span>
-                  <span className="aiex cursor-pointer" onClick={() => setPrompt("Add warm LED")}>LED</span>
-                  <span className="aiex cursor-pointer" onClick={() => setPrompt("Mirror doors")}>Mirror</span>
-                  <span className="aiex cursor-pointer" onClick={() => setPrompt("Navy modern")}>Navy</span>
+          {activeCategory === "kitchen" ? (
+            <>
+              {/* KITCHEN PANELS */}
+              {/* 1. AI Design Assistant */}
+              <div className="rps">
+                <div className="rpt">✦ AI Prompt</div>
+                <div className="aibox">
+                  <textarea
+                    value={prompt}
+                    onChange={(e) => setPrompt(e.target.value)}
+                    placeholder="Describe your kitchen style…&#10;e.g. Modern white kitchen with oak cabinets and marble countertop"
+                  />
+                  <div className="aifoot">
+                    <div className="aiex-list">
+                      <span className="aiex cursor-pointer" onClick={() => setPrompt("Modern white oak")}>Modern</span>
+                      <span className="aiex cursor-pointer" onClick={() => setPrompt("Industrial concrete")}>Industrial</span>
+                      <span className="aiex cursor-pointer" onClick={() => setPrompt("Scandi sage wood")}>Scandi</span>
+                      <span className="aiex cursor-pointer" onClick={() => setPrompt("Navy blue gold")}>Navy</span>
+                    </div>
+                    <button className="aiapply cursor-pointer" onClick={() => { handleRunAI(prompt); setPrompt(""); }}>Apply</button>
+                  </div>
                 </div>
-                <button className="aiapply cursor-pointer" onClick={() => { handleRunAI(prompt); setPrompt(""); }}>Apply</button>
               </div>
-            </div>
-          </div>
 
-          {/* Selected Part */}
-          <div className="rps">
-            <div className="rpt">Selected Part</div>
-            <div className="pbadge">
-              <div className="pdot"></div>
-              <span>{selectedPart}</span>
-            </div>
-          </div>
+              {/* 2. Selected Part */}
+              <div className="rps">
+                <div className="rpt">Selected Part</div>
+                <div className="pbadge">
+                  <div className="pdot"></div>
+                  <span>{selectedPart}</span>
+                </div>
+              </div>
 
-          {/* Size & Structure */}
-          <div className="rps">
-            <div className="rpt">Size & Structure</div>
-            <div className="size-grid">
-              <div className="size-row">
-                <label>Width <span>{width.toFixed(1)} m</span></label>
-                <input
-                  type="range"
-                  className="slider"
-                  min="1.6"
-                  max="3.2"
-                  step="0.1"
-                  value={width}
-                  onChange={(e) => setWidth(parseFloat(e.target.value))}
-                />
+              {/* Show Walls Toggle */}
+              <div className="rps" style={{ paddingBottom: "10px" }}>
+                <div className="rpt">Room Walls</div>
+                <button
+                  className={`scene-btn ${showWalls ? "on" : ""}`}
+                  style={{ margin: "0", width: "100%", justifyContent: "flex-start", paddingLeft: "10px" }}
+                  onClick={() => {
+                    setShowWalls(v => !v);
+                    triggerNotification(!showWalls ? "Room walls shown" : "Room walls hidden");
+                  }}
+                >
+                  <span style={{ background: showWalls ? "#6a9bc8" : "#5a5855", width: "16px", height: "16px", borderRadius: "4px", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: "0.6rem", marginRight: "6px" }}>🏠</span>
+                  {showWalls ? "Hide Room Walls" : "Show Room Walls"}
+                </button>
               </div>
-              <div className="size-row">
-                <label>Height <span>{height.toFixed(1)} m</span></label>
-                <input
-                  type="range"
-                  className="slider"
-                  min="1.8"
-                  max="3.0"
-                  step="0.1"
-                  value={height}
-                  onChange={(e) => setHeight(parseFloat(e.target.value))}
-                />
+
+              {/* 3. Kitchen Layout & Room Size */}
+              <div className="rps">
+                <div className="rpt">Kitchen Layout & Room Size</div>
+                <div className="size-grid">
+                  <div className="size-row" style={{ marginBottom: "8px" }}>
+                    <label style={{ marginBottom: "5px" }}>Layout Type</label>
+                    <div className="section-btns">
+                      {[
+                        { id: "u-shape", label: "U-Shape" },
+                        { id: "l-shape", label: "L-Shape" },
+                        { id: "single-wall", label: "Wall" },
+                        { id: "parallel", label: "Parallel" },
+                      ].map((lay) => (
+                        <div
+                          key={lay.id}
+                          className={`sec-n ${kitchenLayout === lay.id ? "on" : ""}`}
+                          onClick={() => {
+                            setKitchenLayout(lay.id);
+                            triggerNotification("Layout set: " + lay.label);
+                          }}
+                          style={{ fontSize: "10px", padding: "6px" }}
+                        >
+                          {lay.label}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="size-row">
+                    <label>Room Width <span>{(roomWidth * 100).toFixed(0)} cm</span></label>
+                    <input
+                      type="range"
+                      className="slider"
+                      min="2.0"
+                      max="4.0"
+                      step="0.1"
+                      value={roomWidth}
+                      onChange={(e) => setRoomWidth(parseFloat(e.target.value))}
+                    />
+                  </div>
+                  <div className="size-row">
+                    <label>Room Length <span>{(roomLength * 100).toFixed(0)} cm</span></label>
+                    <input
+                      type="range"
+                      className="slider"
+                      min="1.6"
+                      max="3.6"
+                      step="0.1"
+                      value={roomLength}
+                      onChange={(e) => setRoomLength(parseFloat(e.target.value))}
+                    />
+                  </div>
+                  <div className="size-row">
+                    <label>Ceiling Height <span>{(roomHeight * 100).toFixed(0)} cm</span></label>
+                    <input
+                      type="range"
+                      className="slider"
+                      min="2.2"
+                      max="3.2"
+                      step="0.1"
+                      value={roomHeight}
+                      onChange={(e) => setRoomHeight(parseFloat(e.target.value))}
+                    />
+                  </div>
+                </div>
               </div>
-              <div className="size-row">
-                <label>Depth <span>{depth.toFixed(2)} m</span></label>
-                <input
-                  type="range"
-                  className="slider"
-                  min="0.4"
-                  max="0.8"
-                  step="0.05"
-                  value={depth}
-                  onChange={(e) => setDepth(parseFloat(e.target.value))}
-                />
+
+              {/* 4. Cabinet Modules List Manager */}
+              <div className="rps">
+                <div className="rpt">Cabinet Modules</div>
+                <div className="size-grid">
+                  <div className="size-row" style={{ marginBottom: "8px" }}>
+                    <label style={{ marginBottom: "5px" }}>Wall Section</label>
+                    <div className="section-btns">
+                      {[
+                        { id: "left", label: "Left Wall" },
+                        { id: "back", label: "Back Wall" },
+                        { id: "right", label: "Right Wall" },
+                      ].map((sec) => (
+                        <div
+                          key={sec.id}
+                          className={`sec-n ${activeKitchenSection === sec.id ? "on" : ""}`}
+                          onClick={() => setActiveKitchenSection(sec.id)}
+                          style={{ fontSize: "10px", padding: "6px" }}
+                        >
+                          {sec.label}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Render list of modules for active section */}
+                  <div className="optlist" style={{ display: "flex", flexDirection: "column", gap: "8px", maxHeight: "240px", overflowY: "auto", paddingRight: "4px" }}>
+                    {kitchenModules.filter(m => m.section === activeKitchenSection).map((m, idx) => {
+                      const absoluteIndex = kitchenModules.indexOf(m);
+                      const relativeIndex = kitchenModules.filter(secM => secM.section === activeKitchenSection).indexOf(m);
+                      const sectionLength = kitchenModules.filter(secM => secM.section === activeKitchenSection).length;
+                      
+                      const typeEmojis = {
+                        base: "🚪",
+                        wall: "🗄️",
+                        tall: "🪜"
+                      };
+
+                      return (
+                        <div key={m.id} style={{ display: "flex", flexDirection: "column", background: "rgba(0,0,0,0.02)", border: "1px solid var(--border)", borderRadius: "6px", padding: "8px", gap: "4px" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                              <span style={{ fontSize: "14px" }}>{typeEmojis[m.type] || "📁"}</span>
+                              <span style={{ fontSize: "11px", fontWeight: "600" }}>{m.label}</span>
+                            </div>
+                            <div style={{ display: "flex", gap: "4px" }}>
+                              <button 
+                                className="sec-n hover-bright cursor-pointer" 
+                                style={{ padding: "2px 6px", fontSize: "10px", minWidth: "auto", height: "auto" }}
+                                disabled={relativeIndex === 0}
+                                onClick={() => handleMoveModule(relativeIndex, -1)}
+                              >
+                                ▲
+                              </button>
+                              <button 
+                                className="sec-n hover-bright cursor-pointer" 
+                                style={{ padding: "2px 6px", fontSize: "10px", minWidth: "auto", height: "auto" }}
+                                disabled={relativeIndex === sectionLength - 1}
+                                onClick={() => handleMoveModule(relativeIndex, 1)}
+                              >
+                                ▼
+                              </button>
+                              <button 
+                                className="sec-n hover-bright cursor-pointer" 
+                                style={{ padding: "2px 6px", fontSize: "10px", background: "rgba(224, 122, 95, 0.15)", color: "#e07a5f", minWidth: "auto", height: "auto" }}
+                                onClick={() => handleDeleteModule(m.id)}
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          </div>
+
+                          <div style={{ display: "flex", gap: "8px", alignItems: "center", marginTop: "4px" }}>
+                            <div style={{ flex: 1 }}>
+                              <label style={{ fontSize: "9px", color: "var(--muted2)", marginBottom: "2px", display: "block" }}>
+                                Width: <span>{(m.width * 100).toFixed(0)} cm</span>
+                              </label>
+                              <input
+                                type="range"
+                                className="slider"
+                                min="0.15"
+                                max="1.20"
+                                step="0.05"
+                                value={m.width}
+                                onChange={(e) => handleUpdateModuleWidth(m.id, e.target.value)}
+                              />
+                            </div>
+                            <div style={{ width: "90px" }}>
+                              <label style={{ fontSize: "9px", color: "var(--muted2)", marginBottom: "2px", display: "block" }}>Type</label>
+                              <select 
+                                value={m.subType}
+                                onChange={(e) => handleUpdateModuleSubType(m.id, e.target.value)}
+                                style={{ fontSize: "10px", padding: "2px", width: "100%", borderRadius: "4px", border: "1px solid var(--border)", background: "var(--bg)" }}
+                              >
+                                {m.type === "base" && (
+                                  <>
+                                    <option value="standard">Standard</option>
+                                    <option value="sink">Sink Unit</option>
+                                    <option value="cooker">Cooker Unit</option>
+                                    <option value="dishwasher">Dishwasher</option>
+                                  </>
+                                )}
+                                {m.type === "wall" && (
+                                  <>
+                                    <option value="standard">Standard</option>
+                                    <option value="glass-door">Glass Door</option>
+                                    <option value="open-shelf">Open Shelf</option>
+                                    <option value="lift-up">Lift Up</option>
+                                  </>
+                                )}
+                                {m.type === "tall" && (
+                                  <>
+                                    <option value="pantry">Pantry</option>
+                                    <option value="oven-tower">Oven Tower</option>
+                                    <option value="fridge-housing">Fridge Housing</option>
+                                  </>
+                                )}
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+
+                    {kitchenModules.filter(m => m.section === activeKitchenSection).length === 0 && (
+                      <div style={{ fontSize: "10px", color: "var(--muted)", padding: "10px", textAlign: "center" }}>
+                        No modules in this section. Add one below!
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Add modules quick actions */}
+                  <div style={{ marginTop: "12px", borderTop: "1px solid var(--border)", paddingTop: "8px" }}>
+                    <label style={{ fontSize: "10px", fontWeight: "600", color: "var(--muted)", display: "block", marginBottom: "6px" }}>+ Add Module</label>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "6px" }}>
+                      <button 
+                        className="sec-n hover-bright cursor-pointer" 
+                        style={{ fontSize: "9.5px", padding: "5px" }} 
+                        onClick={() => handleAddKitchenModule("base", "standard", 0.60)}
+                      >
+                        ➕ Base (60)
+                      </button>
+                      <button 
+                        className="sec-n hover-bright cursor-pointer" 
+                        style={{ fontSize: "9.5px", padding: "5px" }} 
+                        onClick={() => handleAddKitchenModule("wall", "standard", 0.60)}
+                      >
+                        ➕ Wall (60)
+                      </button>
+                      <button 
+                        className="sec-n hover-bright cursor-pointer" 
+                        style={{ fontSize: "9.5px", padding: "5px" }} 
+                        onClick={() => handleAddKitchenModule("tall", "pantry", 0.60)}
+                      >
+                        ➕ Tall (60)
+                      </button>
+                    </div>
+                    
+                    <div style={{ display: "flex", gap: "6px", marginTop: "6px" }}>
+                      <button 
+                        className="sec-n hover-bright cursor-pointer" 
+                        style={{ fontSize: "9.5px", padding: "5px", flex: 1 }} 
+                        onClick={() => handleAddKitchenModule("base", "sink", 0.60)}
+                      >
+                        💧 Add Sink Base
+                      </button>
+                      <button 
+                        className="sec-n hover-bright cursor-pointer" 
+                        style={{ fontSize: "9.5px", padding: "5px", flex: 1 }} 
+                        onClick={() => handleAddKitchenModule("base", "cooker", 0.60)}
+                      >
+                        🔥 Add Cooker Base
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="size-row" style={{ marginTop: "12px", borderTop: "1px solid var(--border)", paddingTop: "8px" }}>
+                    <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
+                      <input
+                        type="checkbox"
+                        checked={wallCabinetsEnabled}
+                        onChange={(e) => setWallCabinetsEnabled(e.target.checked)}
+                      />
+                      Enable Wall Cabinets
+                    </label>
+                  </div>
+                </div>
               </div>
-              <div className="size-row">
-                <label>Door Sections</label>
-                <div className="section-btns">
-                  {[2, 3, 4].map((num) => (
+
+              {/* 5. Kitchen Island Module */}
+              <div className="rps">
+                <div className="rpt">Kitchen Island Module</div>
+                <div className="size-grid">
+                  <div className="size-row">
+                    <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
+                      <input
+                        type="checkbox"
+                        checked={islandEnabled}
+                        onChange={(e) => setIslandEnabled(e.target.checked)}
+                      />
+                      Enable Kitchen Island
+                    </label>
+                  </div>
+
+                  {islandEnabled && (
+                    <>
+                      <div className="size-row">
+                        <label>Island Width <span>{islandWidth.toFixed(1)} m</span></label>
+                        <input
+                          type="range"
+                          className="slider"
+                          min="1.2"
+                          max="3.0"
+                          step="0.1"
+                          value={islandWidth}
+                          onChange={(e) => setIslandWidth(parseFloat(e.target.value))}
+                        />
+                      </div>
+                      <div className="size-row">
+                        <label>Island Depth <span>{islandDepth.toFixed(2)} m</span></label>
+                        <input
+                          type="range"
+                          className="slider"
+                          min="0.6"
+                          max="1.2"
+                          step="0.05"
+                          value={islandDepth}
+                          onChange={(e) => setIslandDepth(parseFloat(e.target.value))}
+                        />
+                      </div>
+                      <div className="size-row" style={{ display: "flex", flexWrap: "wrap", gap: "10px", marginTop: "4px" }}>
+                        <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "11px", cursor: "pointer" }}>
+                          <input type="checkbox" checked={islandSeating} onChange={(e) => setIslandSeating(e.target.checked)} />
+                          Seating Stools
+                        </label>
+                        <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "11px", cursor: "pointer" }}>
+                          <input type="checkbox" checked={islandSink} onChange={(e) => setIslandSink(e.target.checked)} />
+                          Island Sink
+                        </label>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* 6. Cabinet Style, Materials & Handles */}
+              <div className="rps">
+                <div className="rpt">Cabinet Materials & Finishes</div>
+                <div className="size-grid" style={{ marginBottom: "10px" }}>
+                  <label>Finish Category</label>
+                  <div className="section-btns" style={{ marginBottom: "8px" }}>
+                    {[
+                      { id: "wood", label: "🪵 Wood" },
+                      { id: "matte", label: "🎨 Matte" },
+                      { id: "premium", label: "💎 Premium" },
+                    ].map((fin) => (
+                      <div
+                        key={fin.id}
+                        className={`sec-n ${kitchenCabinetMaterial === fin.id ? "on" : ""}`}
+                        onClick={() => setKitchenCabinetMaterial(fin.id)}
+                      >
+                        {fin.label}
+                      </div>
+                    ))}
+                  </div>
+
+                  {kitchenCabinetMaterial === "wood" && (
+                    <div className="optlist">
+                      {[
+                        { id: "oak", label: "Oak Wood" },
+                        { id: "walnut", label: "Walnut Wood" },
+                        { id: "ash", label: "Ash Wood" },
+                        { id: "pine", label: "Pine Wood" },
+                        { id: "teak", label: "Teak Wood" },
+                      ].map((wType) => (
+                        <div
+                          key={wType.id}
+                          className={`opt ${kitchenCabinetWoodType === wType.id ? "on" : ""}`}
+                          onClick={() => setKitchenCabinetWoodType(wType.id)}
+                        >
+                          {wType.label}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {kitchenCabinetMaterial === "matte" && (
+                    <div className="txgrid">
+                      {[
+                        { id: "white", name: "White", style: { background: "#F2EDE6" } },
+                        { id: "black", name: "Black", style: { background: "#1C1C1C" } },
+                        { id: "gray", name: "Gray", style: { background: "#7E7E7E" } },
+                        { id: "beige", name: "Beige", style: { background: "#D4C5A8" } },
+                        { id: "green", name: "Green", style: { background: "#506655" } },
+                        { id: "blue", name: "Blue", style: { background: "#2A3E50" } },
+                      ].map((cOpt) => (
+                        <div
+                          key={cOpt.id}
+                          className={`sw ${kitchenCabinetMatteColor === cOpt.id ? "on" : ""}`}
+                          style={cOpt.style}
+                          onClick={() => setKitchenCabinetMatteColor(cOpt.id)}
+                        >
+                          <span className="sw-tip">{cOpt.name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {kitchenCabinetMaterial === "premium" && (
+                    <div className="optlist">
+                      {[
+                        { id: "concrete", label: "Concrete Block" },
+                        { id: "stone", label: "Stone Block" },
+                        { id: "marble", label: "Polished Marble" },
+                        { id: "glass", label: "Reflective Glass" },
+                        { id: "metal", label: "Stainless Metal" },
+                      ].map((pType) => (
+                        <div
+                          key={pType.id}
+                          className={`opt ${kitchenCabinetPremiumFinish === pType.id ? "on" : ""}`}
+                          onClick={() => setKitchenCabinetPremiumFinish(pType.id)}
+                        >
+                          {pType.label}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="rpt" style={{ fontSize: "11px", marginTop: "12px", border: "none" }}>Handles</div>
+                <div className="optlist">
+                  {[
+                    { id: "gold", label: "— Gold Bar" },
+                    { id: "silver", label: "◎ Silver Knob" },
+                    { id: "black", label: "▬ Black Strip" },
+                    { id: "hidden", label: "⊘ Hidden Push" },
+                    { id: "chrome", label: "✦ Chrome" },
+                  ].map((hStyle) => (
                     <div
-                      key={num}
-                      className={`sec-n ${sections === num ? "on" : ""}`}
-                      onClick={() => {
-                        setSections(num);
-                        triggerNotification(num + "-section wardrobe built");
-                      }}
+                      key={hStyle.id}
+                      className={`opt ${kitchenHandleType === hStyle.id ? "on" : ""}`}
+                      onClick={() => setKitchenHandleType(hStyle.id)}
                     >
-                      {num}
+                      {hStyle.label}
                     </div>
                   ))}
                 </div>
               </div>
-            </div>
-          </div>
 
-          {/* Style Preset */}
-          <div className="rps">
-            <div className="rpt">Style Preset</div>
-            <div className="chips">
-              {Object.keys(PRESETS).map((key) => (
-                <div
-                  key={key}
-                  className={`chip ${activePreset === key ? "on" : ""}`}
-                  onClick={() => handleApplyPreset(key)}
-                >
-                  {key.charAt(0).toUpperCase() + key.slice(1)}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Surface Colour */}
-          <div className="rps">
-            <div className="rpt">Surface Colour</div>
-            <div className="txgrid">
-              {[
-                { id: "oak", name: "Oak", cls: "s1" },
-                { id: "walnut", name: "Walnut", cls: "s2" },
-                { id: "white", name: "White", cls: "s3" },
-                { id: "black", name: "Black", cls: "s4" },
-                { id: "beige", name: "Beige", cls: "s5" },
-                { id: "mahog", name: "Mahog.", cls: "s6" },
-                { id: "linen", name: "Linen", cls: "s7" },
-                { id: "graph", name: "Graphite", cls: "s8" },
-                { id: "sage", name: "Sage", cls: "s9" },
-                { id: "navy", name: "Navy", cls: "s10" },
-                { id: "concrete", name: "Concrete", style: { background: "linear-gradient(135deg,#c4c0b8,#a8a49c)" } },
-                { id: "darkwood", name: "Dark Wood", style: { background: "linear-gradient(135deg,#2a2422,#1a1614)" } },
-              ].map((sw) => (
-                <div
-                  key={sw.id}
-                  className={`sw ${sw.cls || ""} ${activeColor === sw.id ? "on" : ""}`}
-                  style={sw.style}
-                  onClick={() => {
-                    setActiveColor(sw.id);
-                    setDoorStyle("solid");
-                    triggerNotification("Colour: " + sw.name);
-                  }}
-                >
-                  <span className="sw-tip">{sw.name}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Door Style */}
-          <div className="rps">
-            <div className="rpt">Door Style</div>
-            <div className="optlist">
-              {[
-                { id: "solid", label: "🪵 Solid Panel" },
-                { id: "glass", label: "🔷 Glass Panel" },
-                { id: "mirror", label: "🪞 Full Mirror" },
-                { id: "frosted", label: "❄️ Frosted Glass" },
-              ].map((style) => (
-                <div
-                  key={style.id}
-                  className={`opt ${doorStyle === style.id ? "on" : ""}`}
-                  onClick={() => {
-                    setDoorStyle(style.id);
-                    triggerNotification("Door style: " + style.label.replace(/[^a-zA-Z ]/g, ""));
-                  }}
-                >
-                  {style.label}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Handle Style */}
-          <div className="rps">
-            <div className="rpt">Handle Style</div>
-            <div className="optlist">
-              {[
-                { id: "gold", label: "— Gold Bar" },
-                { id: "silver", label: "◎ Silver Knob" },
-                { id: "black", label: "▬ Black Strip" },
-                { id: "hidden", label: "⊘ Hidden Push" },
-                { id: "chrome", label: "✦ Chrome" },
-              ].map((handle) => (
-                <div
-                  key={handle.id}
-                  className={`opt ${handleStyle === handle.id ? "on" : ""}`}
-                  onClick={() => {
-                    setHandleStyle(handle.id);
-                    triggerNotification("Handle style: " + handle.label.replace(/[^a-zA-Z ]/g, ""));
-                  }}
-                >
-                  {handle.label}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Drawers */}
-          <div className="rps">
-            <div className="rpt">Drawers</div>
-            <div className="size-row" style={{ marginBottom: "8px" }}>
-              <label style={{ marginBottom: "5px" }}>Exterior Drawer Rows</label>
-              <div className="section-btns">
-                {[0, 1, 2, 3].map((num) => (
-                  <div
-                    key={num}
-                    className={`sec-n ${extDrawerRows === num ? "on" : ""}`}
-                    onClick={() => {
-                      setExtDrawerRows(num);
-                      triggerNotification(num === 0 ? "Drawers removed" : `${num} rows added`);
-                    }}
-                  >
-                    {num === 0 ? "None" : `${num} Row${num > 1 ? "s" : ""}`}
+              {/* 7. Countertop & Backsplash Materials */}
+              <div className="rps">
+                <div className="rpt">Countertop & Backsplash</div>
+                <div className="size-grid">
+                  <div className="size-row" style={{ marginBottom: "6px" }}>
+                    <label>Countertop Material</label>
+                    <div className="optlist" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px" }}>
+                      {[
+                        { id: "marble", label: "💎 Marble" },
+                        { id: "quartz", label: "✨ Quartz" },
+                        { id: "granite", label: "🪨 Granite" },
+                        { id: "concrete", label: "🧱 Concrete" },
+                        { id: "wood", label: "🪵 Wood" },
+                        { id: "ceramic", label: "🏺 Ceramic" },
+                      ].map((mat) => (
+                        <div
+                          key={mat.id}
+                          className={`opt ${countertopMaterial === mat.id ? "on" : ""}`}
+                          onClick={() => setCountertopMaterial(mat.id)}
+                          style={{ fontSize: "10.5px", padding: "6px" }}
+                        >
+                          {mat.label}
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                ))}
+
+                  <div className="size-row">
+                    <label>Thickness <span>{(countertopThickness * 100).toFixed(0)} cm</span></label>
+                    <input
+                      type="range"
+                      className="slider"
+                      min="0.01"
+                      max="0.08"
+                      step="0.01"
+                      value={countertopThickness}
+                      onChange={(e) => setCountertopThickness(parseFloat(e.target.value))}
+                    />
+                  </div>
+
+                  <div className="size-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
+                      <input
+                        type="checkbox"
+                        checked={countertopWaterfall}
+                        onChange={(e) => setCountertopWaterfall(e.target.checked)}
+                      />
+                      Waterfall Edge
+                    </label>
+                  </div>
+
+                  <div className="size-row" style={{ marginTop: "8px", borderTop: "1px solid var(--border)", paddingTop: "8px" }}>
+                    <label>Backsplash Material</label>
+                    <div className="section-btns" style={{ marginTop: "4px" }}>
+                      {[
+                        { id: "ceramic", label: "Tile" },
+                        { id: "glass", label: "Glass" },
+                        { id: "marble", label: "Marble" },
+                        { id: "metal", label: "Steel" },
+                      ].map((bs) => (
+                        <div
+                          key={bs.id}
+                          className={`sec-n ${backsplashMaterial === bs.id ? "on" : ""}`}
+                          onClick={() => setBacksplashMaterial(bs.id)}
+                          style={{ fontSize: "10px", padding: "6px" }}
+                        >
+                          {bs.label}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
-            
-            <button
-              className={`scene-btn ${intDrawers ? "on" : ""}`}
-              style={{ margin: "0 0 7px 0", width: "100%", justifyContent: "flex-start", paddingLeft: "10px" }}
-              onClick={() => {
-                setIntDrawers(!intDrawers);
-                triggerNotification(!intDrawers ? "Interior drawers added" : "Interior drawers removed");
-              }}
-            >
-              <span style={{ background: "#e07a5f", width: "18px", height: "18px", borderRadius: "4px", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: "0.6rem", marginRight: "8px" }}>📥</span>
-              Add Interior Drawers
-            </button>
-            <button 
-              className="scene-btn" 
-              style={{ margin: 0, width: "100%", justifyContent: "flex-start", paddingLeft: "10px" }} 
-              onClick={handleToggleAllDrawers}
-            >
-              <span style={{ background: "#f4a261", width: "18px", height: "18px", borderRadius: "4px", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: "0.6rem", marginRight: "8px" }}>📂</span>
-              Open All Drawers
-            </button>
-            
-            <p style={{ fontSize: ".68rem", color: "var(--muted2)", marginTop: "7px" }}>
-              💡 Click any drawer to open/close it individually
-            </p>
-          </div>
 
-          {/* LED Lighting */}
-          <div className="rps">
-            <div className="rpt">LED Lighting</div>
-            <div className="ledrow">
-              {["off", "warm", "cool", "rgb"].map((mode) => (
-                <div
-                  key={mode}
-                  className={`lb ${ledLighting === mode ? "on" : ""}`}
-                  onClick={() => setLedLighting(mode)}
-                >
-                  {mode === "off" ? "Off" : mode.toUpperCase()}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Versions */}
-          <div className="rps" style={{ borderBottom: "none" }}>
-            <div className="rpt">Versions</div>
-            <div className="optlist" style={{ gap: "8px" }}>
-              {[
-                { id: "oak", name: "Golden Oak", desc: "Current · now", cls: "s1" },
-                { id: "walnut", name: "Dark Walnut", desc: "v2 · 5 min ago", cls: "s2" },
-                { id: "white", name: "Glossy White", desc: "v3 · 12 min ago", cls: "s3" }
-              ].map((v) => (
-                <div
-                  key={v.id}
-                  className={`vi ${activeColor === v.id ? "on" : ""}`}
-                  onClick={() => {
-                    setActiveColor(v.id);
-                    setDoorStyle("solid");
-                    triggerNotification("Version Loaded: " + v.name);
-                  }}
-                >
-                  <div className={`vthumb ${v.cls}`} />
-                  <div className="vinfo">
-                    <h5>{v.name}</h5>
-                    <p>{v.desc}</p>
+              {/* 8. Colors Configurator */}
+              <div className="rps">
+                <div className="rpt">Colors Configurator</div>
+                <div className="size-grid">
+                  <div className="size-row" style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                    <label style={{ display: "flex", justifyContent: "space-between" }}>
+                      Countertop Color <span>{countertopColor}</span>
+                    </label>
+                    <input
+                      type="color"
+                      value={countertopColor}
+                      onChange={(e) => setCountertopColor(e.target.value)}
+                      style={{ width: "100%", height: "28px", border: "1px solid var(--border)", borderRadius: "4px", padding: "0", cursor: "pointer" }}
+                    />
+                  </div>
+                  <div className="size-row" style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                    <label style={{ display: "flex", justifyContent: "space-between" }}>
+                      Backsplash Color <span>{backsplashColor}</span>
+                    </label>
+                    <input
+                      type="color"
+                      value={backsplashColor}
+                      onChange={(e) => setBacksplashColor(e.target.value)}
+                      style={{ width: "100%", height: "28px", border: "1px solid var(--border)", borderRadius: "4px", padding: "0", cursor: "pointer" }}
+                    />
+                  </div>
+                  <div className="size-row" style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                    <label style={{ display: "flex", justifyContent: "space-between" }}>
+                      Wall Color <span>{wallColor}</span>
+                    </label>
+                    <input
+                      type="color"
+                      value={wallColor}
+                      onChange={(e) => setWallColor(e.target.value)}
+                      style={{ width: "100%", height: "28px", border: "1px solid var(--border)", borderRadius: "4px", padding: "0", cursor: "pointer" }}
+                    />
+                  </div>
+                  <div className="size-row" style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                    <label style={{ display: "flex", justifyContent: "space-between" }}>
+                      Floor Color <span>{floorColor}</span>
+                    </label>
+                    <input
+                      type="color"
+                      value={floorColor}
+                      onChange={(e) => setFloorColor(e.target.value)}
+                      style={{ width: "100%", height: "28px", border: "1px solid var(--border)", borderRadius: "4px", padding: "0", cursor: "pointer" }}
+                    />
                   </div>
                 </div>
-              ))}
-            </div>
-            <button className="vsave cursor-pointer" style={{ marginTop: "10px" }} onClick={() => triggerNotification("Version saved!")}>
-              + Save current version
-            </button>
-          </div>
+              </div>
+
+              {/* 9. Appliance & Sink Toggles */}
+              <div className="rps">
+                <div className="rpt">Appliance & Sink Settings</div>
+                <div className="size-grid">
+                  <div className="size-row" style={{ marginBottom: "6px" }}>
+                    <label>Sink Setup</label>
+                    <div className="section-btns" style={{ marginBottom: "4px" }}>
+                      {[
+                        { id: "yes", label: "Include Sink" },
+                        { id: "none", label: "No Sink" },
+                      ].map((item) => (
+                        <div
+                          key={item.id}
+                          className={`sec-n ${applianceSink === item.id ? "on" : ""}`}
+                          onClick={() => setApplianceSink(item.id)}
+                        >
+                          {item.label}
+                        </div>
+                      ))}
+                    </div>
+                    {applianceSink !== "none" && (
+                      <div className="optlist" style={{ marginTop: "6px" }}>
+                        {[
+                          { id: "single-bowl", label: "Single Bowl" },
+                          { id: "double-bowl", label: "Double Bowl" },
+                          { id: "farmhouse", label: "Farmhouse Bowl" },
+                        ].map((s) => (
+                          <div
+                            key={s.id}
+                            className={`opt ${sinkType === s.id ? "on" : ""}`}
+                            onClick={() => setSinkType(s.id)}
+                          >
+                            {s.label}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="size-row" style={{ marginBottom: "6px" }}>
+                    <label>Faucet Type</label>
+                    <div className="section-btns">
+                      {[
+                        { id: "gold", label: "Gold Arc" },
+                        { id: "chrome", label: "Chrome Arc" },
+                        { id: "classic", label: "Classic" },
+                      ].map((f) => (
+                        <div
+                          key={f.id}
+                          className={`sec-n ${faucetType === f.id ? "on" : ""}`}
+                          onClick={() => setFaucetType(f.id)}
+                        >
+                          {f.label}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="size-row" style={{ marginBottom: "6px" }}>
+                    <label>Cooker Hob Type</label>
+                    <div className="section-btns">
+                      {[
+                        { id: "induction", label: "Induction" },
+                        { id: "gas", label: "Gas" },
+                        { id: "electric", label: "Electric" },
+                        { id: "none", label: "None" },
+                      ].map((item) => (
+                        <div
+                          key={item.id}
+                          className={`sec-n ${applianceCooker === item.id ? "on" : ""}`}
+                          onClick={() => setApplianceCooker(item.id)}
+                        >
+                          {item.label}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="size-row" style={{ marginBottom: "6px" }}>
+                    <label>Oven Tower Unit</label>
+                    <div className="section-btns">
+                      {[
+                        { id: "single", label: "Single Oven" },
+                        { id: "double", label: "Double Oven" },
+                        { id: "steam", label: "Steam Oven" },
+                        { id: "none", label: "None" },
+                      ].map((item) => (
+                        <div
+                          key={item.id}
+                          className={`sec-n ${applianceOven === item.id ? "on" : ""}`}
+                          onClick={() => setApplianceOven(item.id)}
+                        >
+                          {item.label}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="size-row" style={{ marginBottom: "6px" }}>
+                    <label>Refrigeration</label>
+                    <div className="section-btns">
+                      {[
+                        { id: "built-in", label: "Built-In" },
+                        { id: "single", label: "Single" },
+                        { id: "double", label: "Double" },
+                        { id: "none", label: "None" },
+                      ].map((item) => (
+                        <div
+                          key={item.id}
+                          className={`sec-n ${applianceFridge === item.id ? "on" : ""}`}
+                          onClick={() => setApplianceFridge(item.id)}
+                        >
+                          {item.label}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 10. Texture System */}
+              <div className="rps">
+                <div className="rpt">Texture System</div>
+                <div className="size-grid">
+                  <div className="size-row">
+                    <label>Texture Scale <span>{textureScale.toFixed(1)}x</span></label>
+                    <input
+                      type="range"
+                      className="slider"
+                      min="0.5"
+                      max="3.0"
+                      step="0.1"
+                      value={textureScale}
+                      onChange={(e) => setTextureScale(parseFloat(e.target.value))}
+                    />
+                  </div>
+                  <div className="size-row">
+                    <label>Texture Rotation <span>{textureRotation}°</span></label>
+                    <input
+                      type="range"
+                      className="slider"
+                      min="0"
+                      max="360"
+                      step="5"
+                      value={textureRotation}
+                      onChange={(e) => setTextureRotation(parseInt(e.target.value))}
+                    />
+                  </div>
+                  <div className="size-row">
+                    <label>Gloss Level <span>{(glossLevel * 100).toFixed(0)}%</span></label>
+                    <input
+                      type="range"
+                      className="slider"
+                      min="0.0"
+                      max="1.0"
+                      step="0.05"
+                      value={glossLevel}
+                      onChange={(e) => setGlossLevel(parseFloat(e.target.value))}
+                    />
+                  </div>
+                  <div className="size-row">
+                    <label>Roughness <span>{(roughnessVal * 100).toFixed(0)}%</span></label>
+                    <input
+                      type="range"
+                      className="slider"
+                      min="0.0"
+                      max="1.0"
+                      step="0.05"
+                      value={roughnessVal}
+                      onChange={(e) => setRoughnessVal(parseFloat(e.target.value))}
+                    />
+                  </div>
+                  <div className="size-row">
+                    <label>Bump Strength <span>{(bumpStrength * 100).toFixed(0)}%</span></label>
+                    <input
+                      type="range"
+                      className="slider"
+                      min="0.0"
+                      max="1.0"
+                      step="0.05"
+                      value={bumpStrength}
+                      onChange={(e) => setBumpStrength(parseFloat(e.target.value))}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* 11. Versions / Export & Save */}
+              <div className="rps" style={{ borderBottom: "none" }}>
+                <div className="rpt">Versions</div>
+                <div className="optlist" style={{ gap: "8px" }}>
+                  {[
+                    { id: "v1", name: "Oak / U-Shape", desc: "Current version", cls: "s1" },
+                    { id: "v2", name: "Matte Gray / L-Shape", desc: "10 mins ago", cls: "s8" },
+                    { id: "v3", name: "Glossy White / Island", desc: "Yesterday", cls: "s3" }
+                  ].map((v) => (
+                    <div
+                      key={v.id}
+                      className="vi"
+                      onClick={() => {
+                        triggerNotification("Version Loaded: " + v.name);
+                      }}
+                    >
+                      <div className={`vthumb ${v.cls}`} />
+                      <div className="vinfo">
+                        <h5>{v.name}</h5>
+                        <p>{v.desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <button className="vsave cursor-pointer" style={{ marginTop: "10px" }} onClick={() => triggerNotification("Version saved!")}>
+                  + Save current version
+                </button>
+
+                {/* format-specific exports grid */}
+                <div style={{ marginTop: "15px", borderTop: "1px solid var(--border)", paddingTop: "12px" }}>
+                  <div style={{ fontSize: "11px", fontWeight: "600", color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "8px" }}>Export Design</div>
+                  <div className="section-btns" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "6px" }}>
+                    <div className="sec-n hover-bright cursor-pointer" onClick={handleExportPNG} style={{ fontSize: "10.5px", padding: "6px", textAlign: "center" }}>PNG</div>
+                    <div className="sec-n hover-bright cursor-pointer" onClick={handleExportJPG} style={{ fontSize: "10.5px", padding: "6px", textAlign: "center" }}>JPG</div>
+                    <div className="sec-n hover-bright cursor-pointer" onClick={handleExportPDF} style={{ fontSize: "10.5px", padding: "6px", textAlign: "center" }}>PDF</div>
+                    <div className="sec-n hover-bright cursor-pointer" onClick={handleExportGLB} style={{ fontSize: "10.5px", padding: "6px", textAlign: "center" }}>GLB</div>
+                    <div className="sec-n hover-bright cursor-pointer" onClick={() => handleExportFormat("obj")} style={{ fontSize: "10.5px", padding: "6px", textAlign: "center" }}>OBJ</div>
+                    <div className="sec-n hover-bright cursor-pointer" onClick={() => handleExportFormat("fbx")} style={{ fontSize: "10.5px", padding: "6px", textAlign: "center" }}>FBX</div>
+                  </div>
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              {/* AI Prompt */}
+              <div className="rps">
+                <div className="rpt">✦ AI Prompt</div>
+                <div className="aibox">
+                  <textarea
+                    value={prompt}
+                    onChange={(e) => setPrompt(e.target.value)}
+                    placeholder="Describe your style…&#10;e.g. Dark walnut with gold handles and warm LED"
+                  />
+                  <div className="aifoot">
+                    <div className="aiex-list">
+                      <span className="aiex cursor-pointer" onClick={() => setPrompt("Luxury gold")}>Luxury</span>
+                      <span className="aiex cursor-pointer" onClick={() => setPrompt("Minimal white")}>Minimal</span>
+                      <span className="aiex cursor-pointer" onClick={() => setPrompt("Dark walnut")}>Walnut</span>
+                      <span className="aiex cursor-pointer" onClick={() => setPrompt("Add warm LED")}>LED</span>
+                      <span className="aiex cursor-pointer" onClick={() => setPrompt("Mirror doors")}>Mirror</span>
+                      <span className="aiex cursor-pointer" onClick={() => setPrompt("Navy modern")}>Navy</span>
+                    </div>
+                    <button className="aiapply cursor-pointer" onClick={() => { handleRunAI(prompt); setPrompt(""); }}>Apply</button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Selected Part */}
+              <div className="rps">
+                <div className="rpt">Selected Part</div>
+                <div className="pbadge">
+                  <div className="pdot"></div>
+                  <span>{selectedPart}</span>
+                </div>
+              </div>
+
+              {/* Size & Structure */}
+              <div className="rps">
+                <div className="rpt">Size & Structure</div>
+                <div className="size-grid">
+                  <div className="size-row">
+                    <label>Width <span>{width.toFixed(1)} m</span></label>
+                    <input
+                      type="range"
+                      className="slider"
+                      min="1.6"
+                      max="3.2"
+                      step="0.1"
+                      value={width}
+                      onChange={(e) => setWidth(parseFloat(e.target.value))}
+                    />
+                  </div>
+                  <div className="size-row">
+                    <label>Height <span>{height.toFixed(1)} m</span></label>
+                    <input
+                      type="range"
+                      className="slider"
+                      min="1.8"
+                      max="3.0"
+                      step="0.1"
+                      value={height}
+                      onChange={(e) => setHeight(parseFloat(e.target.value))}
+                    />
+                  </div>
+                  <div className="size-row">
+                    <label>Depth <span>{depth.toFixed(2)} m</span></label>
+                    <input
+                      type="range"
+                      className="slider"
+                      min="0.4"
+                      max="0.8"
+                      step="0.05"
+                      value={depth}
+                      onChange={(e) => setDepth(parseFloat(e.target.value))}
+                    />
+                  </div>
+                  <div className="size-row">
+                    <label>Door Sections</label>
+                    <div className="section-btns">
+                      {[2, 3, 4].map((num) => (
+                        <div
+                          key={num}
+                          className={`sec-n ${sections === num ? "on" : ""}`}
+                          onClick={() => {
+                            setSections(num);
+                            triggerNotification(num + "-section wardrobe built");
+                          }}
+                        >
+                          {num}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Style Preset */}
+              <div className="rps">
+                <div className="rpt">Style Preset</div>
+                <div className="chips">
+                  {Object.keys(PRESETS).map((key) => (
+                    <div
+                      key={key}
+                      className={`chip ${activePreset === key ? "on" : ""}`}
+                      onClick={() => handleApplyPreset(key)}
+                    >
+                      {key.charAt(0).toUpperCase() + key.slice(1)}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Surface Colour */}
+              <div className="rps">
+                <div className="rpt">Surface Colour</div>
+                <div className="txgrid">
+                  {[
+                    { id: "oak", name: "Oak", cls: "s1" },
+                    { id: "walnut", name: "Walnut", cls: "s2" },
+                    { id: "white", name: "White", cls: "s3" },
+                    { id: "black", name: "Black", cls: "s4" },
+                    { id: "beige", name: "Beige", cls: "s5" },
+                    { id: "mahog", name: "Mahog.", cls: "s6" },
+                    { id: "linen", name: "Linen", cls: "s7" },
+                    { id: "graph", name: "Graphite", cls: "s8" },
+                    { id: "sage", name: "Sage", cls: "s9" },
+                    { id: "navy", name: "Navy", cls: "s10" },
+                    { id: "concrete", name: "Concrete", style: { background: "linear-gradient(135deg,#c4c0b8,#a8a49c)" } },
+                    { id: "darkwood", name: "Dark Wood", style: { background: "linear-gradient(135deg,#2a2422,#1a1614)" } },
+                  ].map((sw) => (
+                    <div
+                      key={sw.id}
+                      className={`sw ${sw.cls || ""} ${activeColor === sw.id ? "on" : ""}`}
+                      style={sw.style}
+                      onClick={() => {
+                        setActiveColor(sw.id);
+                        setDoorStyle("solid");
+                        triggerNotification("Colour: " + sw.name);
+                      }}
+                    >
+                      <span className="sw-tip">{sw.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Door Style */}
+              <div className="rps">
+                <div className="rpt">Door Style</div>
+                <div className="optlist">
+                  {[
+                    { id: "solid", label: "🪵 Solid Panel" },
+                    { id: "glass", label: "🔷 Glass Panel" },
+                    { id: "mirror", label: "🪞 Full Mirror" },
+                    { id: "frosted", label: "❄️ Frosted Glass" },
+                  ].map((style) => (
+                    <div
+                      key={style.id}
+                      className={`opt ${doorStyle === style.id ? "on" : ""}`}
+                      onClick={() => {
+                        setDoorStyle(style.id);
+                        triggerNotification("Door style: " + style.label.replace(/[^a-zA-Z ]/g, ""));
+                      }}
+                    >
+                      {style.label}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Handle Style */}
+              <div className="rps">
+                <div className="rpt">Handle Style</div>
+                <div className="optlist">
+                  {[
+                    { id: "gold", label: "— Gold Bar" },
+                    { id: "silver", label: "◎ Silver Knob" },
+                    { id: "black", label: "▬ Black Strip" },
+                    { id: "hidden", label: "⊘ Hidden Push" },
+                    { id: "chrome", label: "✦ Chrome" },
+                  ].map((handle) => (
+                    <div
+                      key={handle.id}
+                      className={`opt ${handleStyle === handle.id ? "on" : ""}`}
+                      onClick={() => {
+                        setHandleStyle(handle.id);
+                        triggerNotification("Handle style: " + handle.label.replace(/[^a-zA-Z ]/g, ""));
+                      }}
+                    >
+                      {handle.label}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Drawers */}
+              <div className="rps">
+                <div className="rpt">Drawers</div>
+                <div className="size-row" style={{ marginBottom: "8px" }}>
+                  <label style={{ marginBottom: "5px" }}>Exterior Drawer Rows</label>
+                  <div className="section-btns">
+                    {[0, 1, 2, 3].map((num) => (
+                      <div
+                        key={num}
+                        className={`sec-n ${extDrawerRows === num ? "on" : ""}`}
+                        onClick={() => {
+                          setExtDrawerRows(num);
+                          triggerNotification(num === 0 ? "Drawers removed" : `${num} rows added`);
+                        }}
+                      >
+                        {num === 0 ? "None" : `${num} Row${num > 1 ? "s" : ""}`}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                <button
+                  className={`scene-btn ${intDrawers ? "on" : ""}`}
+                  style={{ margin: "0 0 7px 0", width: "100%", justifyContent: "flex-start", paddingLeft: "10px" }}
+                  onClick={() => {
+                    setIntDrawers(!intDrawers);
+                    triggerNotification(!intDrawers ? "Interior drawers added" : "Interior drawers removed");
+                  }}
+                >
+                  <span style={{ background: "#e07a5f", width: "18px", height: "18px", borderRadius: "4px", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: "0.6rem", marginRight: "8px" }}>📥</span>
+                  Add Interior Drawers
+                </button>
+                <button 
+                  className="scene-btn" 
+                  style={{ margin: 0, width: "100%", justifyContent: "flex-start", paddingLeft: "10px" }} 
+                  onClick={handleToggleAllDrawers}
+                >
+                  <span style={{ background: "#f4a261", width: "18px", height: "18px", borderRadius: "4px", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: "0.6rem", marginRight: "8px" }}>📂</span>
+                  Open All Drawers
+                </button>
+                
+                <p style={{ fontSize: ".68rem", color: "var(--muted2)", marginTop: "7px" }}>
+                  💡 Click any drawer to open/close it individually
+                </p>
+              </div>
+
+              {/* LED Lighting */}
+              <div className="rps">
+                <div className="rpt">LED Lighting</div>
+                <div className="ledrow">
+                  {["off", "warm", "cool", "rgb"].map((mode) => (
+                    <div
+                      key={mode}
+                      className={`lb ${ledLighting === mode ? "on" : ""}`}
+                      onClick={() => setLedLighting(mode)}
+                    >
+                      {mode === "off" ? "Off" : mode.toUpperCase()}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Versions */}
+              <div className="rps" style={{ borderBottom: "none" }}>
+                <div className="rpt">Versions</div>
+                <div className="optlist" style={{ gap: "8px" }}>
+                  {[
+                    { id: "oak", name: "Golden Oak", desc: "Current · now", cls: "s1" },
+                    { id: "walnut", name: "Dark Walnut", desc: "v2 · 5 min ago", cls: "s2" },
+                    { id: "white", name: "Glossy White", desc: "v3 · 12 min ago", cls: "s3" }
+                  ].map((v) => (
+                    <div
+                      key={v.id}
+                      className={`vi ${activeColor === v.id ? "on" : ""}`}
+                      onClick={() => {
+                        setActiveColor(v.id);
+                        setDoorStyle("solid");
+                        triggerNotification("Version Loaded: " + v.name);
+                      }}
+                    >
+                      <div className={`vthumb ${v.cls}`} />
+                      <div className="vinfo">
+                        <h5>{v.name}</h5>
+                        <p>{v.desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <button className="vsave cursor-pointer" style={{ marginTop: "10px" }} onClick={() => triggerNotification("Version saved!")}>
+                  + Save current version
+                </button>
+
+                {/* format-specific exports grid */}
+                <div style={{ marginTop: "15px", borderTop: "1px solid var(--border)", paddingTop: "12px" }}>
+                  <div style={{ fontSize: "11px", fontWeight: "600", color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "8px" }}>Export Design</div>
+                  <div className="section-btns" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "6px" }}>
+                    <div className="sec-n hover-bright cursor-pointer" onClick={handleExportPNG} style={{ fontSize: "10.5px", padding: "6px", textAlign: "center" }}>PNG</div>
+                    <div className="sec-n hover-bright cursor-pointer" onClick={handleExportJPG} style={{ fontSize: "10.5px", padding: "6px", textAlign: "center" }}>JPG</div>
+                    <div className="sec-n hover-bright cursor-pointer" onClick={handleExportPDF} style={{ fontSize: "10.5px", padding: "6px", textAlign: "center" }}>PDF</div>
+                    <div className="sec-n hover-bright cursor-pointer" onClick={handleExportGLB} style={{ fontSize: "10.5px", padding: "6px", textAlign: "center" }}>GLB</div>
+                    <div className="sec-n hover-bright cursor-pointer" onClick={() => handleExportFormat("obj")} style={{ fontSize: "10.5px", padding: "6px", textAlign: "center" }}>OBJ</div>
+                    <div className="sec-n hover-bright cursor-pointer" onClick={() => handleExportFormat("fbx")} style={{ fontSize: "10.5px", padding: "6px", textAlign: "center" }}>FBX</div>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
