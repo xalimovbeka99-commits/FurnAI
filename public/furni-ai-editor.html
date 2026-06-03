@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Furni AI — 3D Editor</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0c0c0e;--bg2:#111114;--bg3:#18181d;--card:#16161a;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
+  --accent:#c8a96e;--accent2:#e8c98e;--text:#f0ede8;--muted:#8a8880;--muted2:#5a5855;
+}
+html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text)}
+
+/* TOPBAR */
+.topbar{height:52px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 16px;flex-shrink:0}
+.logo{font-size:1rem;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.file-name{display:flex;align-items:center;gap:8px;font-size:.8rem;color:var(--muted)}
+.file-name input{background:none;border:none;outline:none;color:var(--text);font-family:'Inter',sans-serif;font-size:.8rem;width:180px}
+.top-right{display:flex;gap:8px;align-items:center}
+.tb{background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:6px 14px;border-radius:7px;font-size:.78rem;font-weight:600;cursor:pointer;transition:background .15s}
+.tb:hover{background:#222228}
+.tb.gold{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#0c0c0e;border:none}
+.vtog{display:flex;background:var(--bg3);border:1px solid var(--border2);border-radius:7px;overflow:hidden}
+.vb{padding:6px 12px;font-size:.74rem;font-weight:600;cursor:pointer;border:none;background:none;color:var(--muted);transition:all .15s}
+.vb.on{background:rgba(200,169,110,.15);color:var(--accent)}
+
+/* LAYOUT */
+.workspace{display:flex;height:calc(100vh - 52px)}
+
+/* LEFT */
+.lsb{width:188px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column}
+.lsb-sec{padding:12px 12px 0}
+.sec-label{font-size:.66rem;font-weight:700;color:var(--muted2);letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px}
+.ftype{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:7px;cursor:pointer;font-size:.81rem;font-weight:500;color:var(--muted);transition:all .15s;margin-bottom:2px}
+.ftype:hover{background:var(--bg3);color:var(--text)}
+.ftype.on{background:rgba(200,169,110,.1);color:var(--accent)}
+.divider{height:1px;background:var(--border);margin:10px 12px}
+.scene-btn{display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border2);border-radius:7px;padding:7px 10px;font-size:.77rem;font-weight:600;color:var(--text);cursor:pointer;margin:0 12px 6px;transition:all .15s}
+.scene-btn:hover{border-color:rgba(200,169,110,.4);color:var(--accent)}
+.scene-btn.on{background:rgba(200,169,110,.1);border-color:var(--accent);color:var(--accent)}
+
+/* CANVAS */
+.cw{flex:1;position:relative;overflow:hidden;background:var(--bg)}
+#c{position:absolute;inset:0;width:100%!important;height:100%!important;cursor:grab;display:block}
+#c:active{cursor:grabbing}
+.hud{position:absolute;top:14px;left:50%;transform:translateX(-50%);background:rgba(12,12,14,.88);backdrop-filter:blur(12px);border:1px solid rgba(200,169,110,.3);border-radius:100px;padding:6px 16px;font-size:.74rem;font-weight:600;color:var(--accent2);pointer-events:none;opacity:0;transition:opacity .25s;white-space:nowrap}
+.hud.show{opacity:1}
+.hint{position:absolute;bottom:70px;left:50%;transform:translateX(-50%);font-size:.7rem;color:var(--muted2);pointer-events:none;white-space:nowrap;opacity:.7}
+.bbbar{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:10px;background:rgba(17,17,20,.92);backdrop-filter:blur(16px);border:1px solid var(--border2);border-radius:13px;padding:7px 7px 7px 16px;width:min(520px,90vw);box-shadow:0 8px 32px rgba(0,0,0,.4)}
+.bbi{flex:1;background:none;border:none;outline:none;color:var(--text);font-family:'Inter',sans-serif;font-size:.875rem}
+.bbi::placeholder{color:var(--muted2)}
+.bbs{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:9px;padding:9px 18px;color:#0c0c0e;font-weight:700;font-size:.78rem;cursor:pointer;white-space:nowrap}
+.bbs:hover{opacity:.9}
+
+/* RIGHT PANEL */
+.rp{width:262px;flex-shrink:0;background:var(--bg2);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto}
+.rps{padding:12px;border-bottom:1px solid var(--border)}
+.rpt{font-size:.66rem;font-weight:700;color:var(--muted2);letter-spacing:.8px;text-transform:uppercase;margin-bottom:10px}
+
+/* Part badge */
+.pbadge{background:rgba(200,169,110,.08);border:1px solid rgba(200,169,110,.2);border-radius:8px;padding:7px 12px;font-size:.79rem;color:var(--accent2);font-weight:600;display:flex;align-items:center;gap:7px}
+.pdot{width:7px;height:7px;border-radius:50%;background:var(--accent);flex-shrink:0}
+
+/* SIZE CONTROLS */
+.size-grid{display:flex;flex-direction:column;gap:10px}
+.size-row{display:flex;flex-direction:column;gap:4px}
+.size-row label{font-size:.72rem;color:var(--muted);display:flex;justify-content:space-between}
+.size-row label span{color:var(--accent2);font-weight:600}
+.slider{-webkit-appearance:none;appearance:none;width:100%;height:4px;background:var(--bg3);border-radius:2px;outline:none;cursor:pointer}
+.slider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--accent);cursor:pointer;border:2px solid var(--bg2)}
+.slider::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--accent);cursor:pointer;border:2px solid var(--bg2)}
+.section-btns{display:flex;gap:6px;margin-top:6px}
+.sec-n{flex:1;padding:6px 4px;border-radius:7px;font-size:.75rem;font-weight:700;cursor:pointer;border:1px solid var(--border2);background:var(--bg3);color:var(--muted);text-align:center;transition:all .15s}
+.sec-n.on{background:rgba(200,169,110,.15);border-color:var(--accent);color:var(--accent)}
+
+/* STYLE CHIPS */
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{background:var(--bg3);border:1px solid var(--border2);border-radius:20px;padding:5px 11px;font-size:.73rem;font-weight:600;color:var(--muted);cursor:pointer;transition:all .15s}
+.chip:hover{border-color:rgba(200,169,110,.4);color:var(--text)}
+.chip.on{background:rgba(200,169,110,.15);border-color:var(--accent);color:var(--accent)}
+
+/* TEXTURE SWATCHES */
+.txgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:16px}
+.sw{aspect-ratio:1;border-radius:7px;cursor:pointer;border:2.5px solid transparent;transition:all .15s;position:relative}
+.sw:hover{transform:scale(1.08)}
+.sw.on{border-color:var(--accent);box-shadow:0 0 0 2px rgba(200,169,110,.2)}
+.sw-tip{position:absolute;bottom:-17px;left:50%;transform:translateX(-50%);font-size:.55rem;color:var(--muted2);white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .15s}
+.sw:hover .sw-tip{opacity:1}
+.s1{background:linear-gradient(135deg,#c8a050,#8b6635)}
+.s2{background:linear-gradient(135deg,#5c4a38,#3d2e1e)}
+.s3{background:linear-gradient(135deg,#f5f0e8,#e8e0d0)}
+.s4{background:linear-gradient(135deg,#1a1a1a,#2d2d2d)}
+.s5{background:linear-gradient(135deg,#d4c5a8,#b8a880)}
+.s6{background:linear-gradient(135deg,#6a4030,#4a2818)}
+.s7{background:linear-gradient(135deg,#e0d8cc,#c8bfb0)}
+.s8{background:linear-gradient(135deg,#4a4a4a,#666)}
+.s9{background:linear-gradient(135deg,#2a3a2a,#3d5c3d)}
+.s10{background:linear-gradient(135deg,#1a2840,#2a3d60)}
+.s11{background:linear-gradient(135deg,#b0c0d0,#d8e8f8)}
+.s12{background:linear-gradient(135deg,#f0ece0,#d8d0c0)}
+
+/* OPTION LIST */
+.optlist{display:flex;flex-direction:column;gap:5px}
+.opt{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:7px;cursor:pointer;background:var(--bg3);border:1px solid var(--border);font-size:.77rem;font-weight:500;color:var(--muted);transition:all .15s}
+.opt:hover{border-color:rgba(200,169,110,.4);color:var(--text)}
+.opt.on{border-color:var(--accent);color:var(--accent);background:rgba(200,169,110,.08)}
+
+/* LED ROW */
+.ledrow{display:flex;gap:5px}
+.lb{flex:1;padding:6px 4px;border-radius:7px;font-size:.72rem;font-weight:600;cursor:pointer;border:1px solid var(--border2);background:var(--bg3);color:var(--muted);text-align:center;transition:all .15s}
+.lb.on{background:rgba(200,169,110,.12);border-color:var(--accent);color:var(--accent)}
+
+/* AI box */
+.aibox{background:var(--bg3);border:1px solid rgba(200,169,110,.22);border-radius:9px;overflow:hidden}
+.aibox textarea{width:100%;background:none;border:none;outline:none;resize:none;color:var(--text);font-family:'Inter',sans-serif;font-size:.81rem;line-height:1.5;padding:9px 11px;height:60px}
+.aibox textarea::placeholder{color:var(--muted2)}
+.aifoot{display:flex;align-items:center;justify-content:space-between;padding:5px 9px;border-top:1px solid var(--border)}
+.aiex-list{display:flex;gap:5px;flex-wrap:wrap}
+.aiex{font-size:.64rem;color:var(--muted2);cursor:pointer;transition:color .15s}
+.aiex:hover{color:var(--accent)}
+.aiapply{background:var(--accent);color:#0c0c0e;border:none;border-radius:6px;padding:5px 11px;font-size:.73rem;font-weight:700;cursor:pointer;white-space:nowrap}
+
+/* Versions */
+.vi{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:7px;cursor:pointer;border:1px solid var(--border);margin-bottom:5px;background:var(--bg3);transition:border-color .15s}
+.vi:hover{border-color:rgba(200,169,110,.3)}
+.vi.on{border-color:var(--accent)}
+.vthumb{width:32px;height:32px;border-radius:5px;flex-shrink:0}
+.vinfo h5{font-size:.73rem;font-weight:600;margin-bottom:1px}
+.vinfo p{font-size:.66rem;color:var(--muted2)}
+.vsave{width:100%;margin-top:5px;background:var(--bg3);border:1px dashed var(--border2);border-radius:7px;padding:7px;font-size:.73rem;color:var(--muted2);cursor:pointer}
+.vsave:hover{border-color:rgba(200,169,110,.4);color:var(--accent)}
+
+/* Notif */
+.notif{position:fixed;top:62px;right:14px;background:rgba(17,17,20,.95);backdrop-filter:blur(12px);border:1px solid rgba(200,169,110,.3);border-radius:9px;padding:9px 14px;font-size:.79rem;font-weight:600;color:var(--accent2);transform:translateY(-8px);opacity:0;transition:all .3s;pointer-events:none;z-index:999}
+.notif.show{transform:translateY(0);opacity:1}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">Furni AI</div>
+  <div class="file-name"><span>🗂️</span><input value="Custom Wardrobe — 3D"/><span style="color:var(--muted2)">· Auto-saved</span></div>
+  <div class="top-right">
+    <div class="vtog">
+      <button class="vb on" id="v3d">3D</button>
+      <button class="vb" id="vFront">Front</button>
+      <button class="vb" id="vSide">Side</button>
+      <button class="vb" id="vTop">Top</button>
+    </div>
+    <button class="tb" onclick="notify('Link copied!')">Share</button>
+    <button class="tb gold" onclick="notify('Exporting…')">Export ↓</button>
+  </div>
+</div>
+
+<div class="workspace">
+
+  <!-- LEFT -->
+  <div class="lsb">
+    <div class="lsb-sec" style="padding-top:14px">
+      <div class="sec-label">Furniture Type</div>
+      <div class="ftype on">🚪 Wardrobe</div>
+      <div class="ftype">🍳 Kitchen</div>
+      <div class="ftype">💼 Office</div>
+      <div class="ftype">📺 TV Wall</div>
+      <div class="ftype">🗄️ Cabinet</div>
+      <div class="ftype">🛏️ Bed</div>
+      <div class="ftype">📚 Shelves</div>
+      <div class="ftype">🪞 Dressing Table</div>
+    </div>
+    <div class="divider"></div>
+    <div class="lsb-sec"><div class="sec-label">Scene</div></div>
+    <button class="scene-btn" id="btnDoors" onclick="toggleDoors()">🚪 Open Doors</button>
+    <button class="scene-btn" id="btnShelves" onclick="toggleShelves()">📦 Show Interior</button>
+    <button class="scene-btn" onclick="resetCam()">🎥 Reset Camera</button>
+    <button class="scene-btn" onclick="selectAllDoors()">✦ Select All Doors</button>
+    <div class="divider"></div>
+    <div style="padding:0 12px 12px">
+      <div class="sec-label" style="margin-bottom:8px">Recent</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+        <div style="aspect-ratio:1;background:var(--bg3);border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;cursor:pointer">🚪</div>
+        <div style="aspect-ratio:1;background:var(--bg3);border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;cursor:pointer">🍳</div>
+        <div style="aspect-ratio:1;background:var(--bg3);border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;cursor:pointer">📚</div>
+        <div style="aspect-ratio:1;background:var(--bg3);border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.9rem;color:var(--muted2);cursor:pointer;border-style:dashed">＋</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CANVAS -->
+  <div class="cw" id="cw">
+    <canvas id="c"></canvas>
+    <div class="hud" id="hud">✦ Click a part to customise</div>
+    <div class="hint">🖱 Drag to orbit · Scroll to zoom · Click any part</div>
+    <div class="bbbar">
+      <input class="bbi" id="bbi" placeholder="Describe style… e.g. Luxury gold wardrobe with LED" onkeydown="if(event.key==='Enter')doAI()"/>
+      <button class="bbs" onclick="doAI()">Apply AI</button>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="rp">
+
+    <div class="rps">
+      <div class="rpt">✦ AI Prompt</div>
+      <div class="aibox">
+        <textarea id="ait" placeholder="Describe your style…&#10;e.g. Dark walnut with gold handles and warm LED"></textarea>
+        <div class="aifoot">
+          <div class="aiex-list">
+            <span class="aiex" onclick="setai('Luxury gold')">Luxury</span>
+            <span class="aiex" onclick="setai('Minimal white')">Minimal</span>
+            <span class="aiex" onclick="setai('Dark walnut')">Walnut</span>
+            <span class="aiex" onclick="setai('Add warm LED')">LED</span>
+            <span class="aiex" onclick="setai('Mirror doors')">Mirror</span>
+            <span class="aiex" onclick="setai('Navy modern')">Navy</span>
+          </div>
+          <button class="aiapply" onclick="doAIpanel()">Apply</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="rps">
+      <div class="rpt">Selected Part</div>
+      <div class="pbadge"><div class="pdot"></div><span id="pname">Click any part to edit</span></div>
+    </div>
+
+    <div class="rps">
+      <div class="rpt">Size & Structure</div>
+      <div class="size-grid">
+        <div class="size-row">
+          <label>Width <span id="wVal">2.4 m</span></label>
+          <input type="range" class="slider" id="slW" min="1.6" max="3.2" step="0.1" value="2.4" oninput="onSize()"/>
+        </div>
+        <div class="size-row">
+          <label>Height <span id="hVal">2.8 m</span></label>
+          <input type="range" class="slider" id="slH" min="1.8" max="3.0" step="0.1" value="2.8" oninput="onSize()"/>
+        </div>
+        <div class="size-row">
+          <label>Depth <span id="dVal">0.60 m</span></label>
+          <input type="range" class="slider" id="slD" min="0.4" max="0.8" step="0.05" value="0.6" oninput="onSize()"/>
+        </div>
+        <div class="size-row">
+          <label>Door Sections</label>
+          <div class="section-btns">
+            <div class="sec-n" onclick="setSec(this,2)">2</div>
+            <div class="sec-n on" onclick="setSec(this,3)">3</div>
+            <div class="sec-n" onclick="setSec(this,4)">4</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rps">
+      <div class="rpt">Style Preset</div>
+      <div class="chips">
+        <div class="chip on" onclick="applyPreset(this,'luxury')">Luxury</div>
+        <div class="chip" onclick="applyPreset(this,'minimal')">Minimal</div>
+        <div class="chip" onclick="applyPreset(this,'scandi')">Scandi</div>
+        <div class="chip" onclick="applyPreset(this,'industrial')">Industrial</div>
+        <div class="chip" onclick="applyPreset(this,'classic')">Classic</div>
+        <div class="chip" onclick="applyPreset(this,'modern')">Modern</div>
+        <div class="chip" onclick="applyPreset(this,'navy')">Navy</div>
+      </div>
+    </div>
+
+    <div class="rps">
+      <div class="rpt">Surface Colour</div>
+      <div class="txgrid">
+        <div class="sw s1 on"  onclick="applyColor(this,'oak')"   ><span class="sw-tip">Oak</span></div>
+        <div class="sw s2"     onclick="applyColor(this,'walnut')" ><span class="sw-tip">Walnut</span></div>
+        <div class="sw s3"     onclick="applyColor(this,'white')"  ><span class="sw-tip">White</span></div>
+        <div class="sw s4"     onclick="applyColor(this,'black')"  ><span class="sw-tip">Black</span></div>
+        <div class="sw s5"     onclick="applyColor(this,'beige')"  ><span class="sw-tip">Beige</span></div>
+        <div class="sw s6"     onclick="applyColor(this,'mahog')"  ><span class="sw-tip">Mahog.</span></div>
+        <div class="sw s7"     onclick="applyColor(this,'linen')"  ><span class="sw-tip">Linen</span></div>
+        <div class="sw s8"     onclick="applyColor(this,'graph')"  ><span class="sw-tip">Graphite</span></div>
+        <div class="sw s9"     onclick="applyColor(this,'sage')"     ><span class="sw-tip">Sage</span></div>
+        <div class="sw s10"    onclick="applyColor(this,'navy')"     ><span class="sw-tip">Navy</span></div>
+        <div class="sw s11"    onclick="applyColor(this,'concrete')" style="background:linear-gradient(135deg,#c4c0b8,#a8a49c)"><span class="sw-tip">Concrete</span></div>
+        <div class="sw s12"    onclick="applyColor(this,'darkwood')" style="background:linear-gradient(135deg,#2a2422,#1a1614)"><span class="sw-tip">Dark Wood</span></div>
+      </div>
+    </div>
+
+    <div class="rps">
+      <div class="rpt">Door Style</div>
+      <div class="optlist">
+        <div class="opt on" onclick="applyDoor(this,'solid')">🪵 Solid Panel</div>
+        <div class="opt" onclick="applyDoor(this,'glass')">🔷 Glass Panel</div>
+        <div class="opt" onclick="applyDoor(this,'mirror')">🪞 Full Mirror</div>
+        <div class="opt" onclick="applyDoor(this,'frosted')">❄️ Frosted Glass</div>
+      </div>
+    </div>
+
+    <div class="rps">
+      <div class="rpt">Handle Style</div>
+      <div class="optlist">
+        <div class="opt on" onclick="applyHandle(this,'gold')">— Gold Bar</div>
+        <div class="opt" onclick="applyHandle(this,'silver')">◎ Silver Knob</div>
+        <div class="opt" onclick="applyHandle(this,'black')">▬ Black Strip</div>
+        <div class="opt" onclick="applyHandle(this,'hidden')">⊘ Hidden Push</div>
+        <div class="opt" onclick="applyHandle(this,'chrome')">✦ Chrome</div>
+      </div>
+    </div>
+
+    <div class="rps">
+      <div class="rpt">Drawers</div>
+      <div class="size-row" style="margin-bottom:8px">
+        <label style="margin-bottom:5px">Exterior Drawer Rows</label>
+        <div class="section-btns">
+          <div class="dr-n sec-n on"  onclick="setDrawerRows(this,0)">None</div>
+          <div class="dr-n sec-n"     onclick="setDrawerRows(this,1)">1 Row</div>
+          <div class="dr-n sec-n"     onclick="setDrawerRows(this,2)">2 Rows</div>
+          <div class="dr-n sec-n"     onclick="setDrawerRows(this,3)">3 Rows</div>
+        </div>
+      </div>
+      <button class="scene-btn" id="btnIntDrawers" style="margin:0 0 7px 0;width:100%" onclick="toggleIntDrawers(this)">📥 Add Interior Drawers</button>
+      <button class="scene-btn" id="btnAllDrawers" style="margin:0;width:100%" onclick="toggleAllDrawers()">📦 Open All Drawers</button>
+      <p style="font-size:.68rem;color:var(--muted2);margin-top:7px">💡 Click any drawer to open/close it individually</p>
+    </div>
+
+    <div class="rps">
+      <div class="rpt">LED Lighting</div>
+      <div class="ledrow">
+        <div class="lb on" onclick="applyLED(this,'off')">Off</div>
+        <div class="lb" onclick="applyLED(this,'warm')">Warm</div>
+        <div class="lb" onclick="applyLED(this,'cool')">Cool</div>
+        <div class="lb" onclick="applyLED(this,'rgb')">RGB</div>
+      </div>
+    </div>
+
+    <div class="rps">
+      <div class="rpt">Versions</div>
+      <div class="vi on"><div class="vthumb s1"></div><div class="vinfo"><h5>Golden Oak</h5><p>Current · now</p></div></div>
+      <div class="vi" onclick="loadVer(this,'walnut')"><div class="vthumb s2"></div><div class="vinfo"><h5>Dark Walnut</h5><p>v2 · 5 min ago</p></div></div>
+      <div class="vi" onclick="loadVer(this,'white')"><div class="vthumb s3"></div><div class="vinfo"><h5>Glossy White</h5><p>v3 · 12 min ago</p></div></div>
+      <button class="vsave" onclick="notify('Version saved!')">+ Save current version</button>
+    </div>
+
+  </div>
+</div>
+<div class="notif" id="notif"></div>
+
+<script>
+// ══════════════════════════════════════════════════════
+//  FURNI AI — 3D EDITOR  (Three.js r128)
+// ══════════════════════════════════════════════════════
+
+const canvas = document.getElementById('c');
+const wrap   = document.getElementById('cw');
+
+// ── RENDERER ─────────────────────────────────────────
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputEncoding = THREE.sRGBEncoding;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.15;
+
+// ── SCENE ────────────────────────────────────────────
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0d0d10);
+scene.fog = new THREE.Fog(0x0d0d10, 12, 24);
+
+// ── CAMERA ───────────────────────────────────────────
+const camera = new THREE.PerspectiveCamera(40, 1, 0.05, 40);
+const TARGET = new THREE.Vector3(0, 1.3, 0);
+let sph = { t: 0.38, p: 1.25, r: 5.6 };
+
+function moveCam() {
+  camera.position.set(
+    sph.r * Math.sin(sph.p) * Math.sin(sph.t),
+    sph.r * Math.cos(sph.p) + TARGET.y,
+    sph.r * Math.sin(sph.p) * Math.cos(sph.t)
+  );
+  camera.lookAt(TARGET);
+}
+moveCam();
+
+function resizeFn() {
+  const W = wrap.clientWidth, H = wrap.clientHeight;
+  renderer.setSize(W, H, false);
+  camera.aspect = W / H;
+  camera.updateProjectionMatrix();
+}
+new ResizeObserver(resizeFn).observe(wrap);
+resizeFn();
+
+// ── LIGHTS ───────────────────────────────────────────
+scene.add(new THREE.HemisphereLight(0x1e1c28, 0x080808, 0.55));
+
+const sun = new THREE.DirectionalLight(0xfff0e0, 1.5);
+sun.position.set(3.5, 7, 4.5);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, { near: 0.5, far: 24, left: -5, right: 5, top: 6, bottom: -1 });
+sun.shadow.bias = -0.001;
+scene.add(sun);
+
+const fill = new THREE.PointLight(0x6080c0, 0.45, 14);
+fill.position.set(-4, 2.5, 2);
+scene.add(fill);
+
+const spot = new THREE.SpotLight(0xc8a96e, 0.6, 16, Math.PI / 7, 0.5);
+spot.position.set(0, 7, -3);
+spot.target.position.set(0, 1.5, 0);
+scene.add(spot, spot.target);
+
+// ── FLOOR ────────────────────────────────────────────
+const floorMesh = new THREE.Mesh(
+  new THREE.PlaneGeometry(22, 22),
+  new THREE.MeshStandardMaterial({ color: 0x0d0d10, roughness: 0.9, metalness: 0.08 })
+);
+floorMesh.rotation.x = -Math.PI / 2;
+floorMesh.receiveShadow = true;
+scene.add(floorMesh);
+
+// subtle grid lines on floor
+const gridHelper = new THREE.GridHelper(20, 20, 0x1a1a22, 0x1a1a22);
+gridHelper.position.y = 0.001;
+gridHelper.material.opacity = 0.5;
+gridHelper.material.transparent = true;
+scene.add(gridHelper);
+
+// ══════════════════════════════════════════════════════
+//  COLOUR PALETTE
+// ══════════════════════════════════════════════════════
+const PALETTE = {
+  oak:      { c: 0xA07040, r: 0.75, m: 0.02 },
+  walnut:   { c: 0x3D2010, r: 0.80, m: 0.02 },
+  white:    { c: 0xF2EDE6, r: 0.30, m: 0.06 },
+  black:    { c: 0x1C1C1C, r: 0.42, m: 0.12 },
+  beige:    { c: 0xD0C0A0, r: 0.72, m: 0.02 },
+  mahog:    { c: 0x6A2820, r: 0.76, m: 0.02 },
+  linen:    { c: 0xDDD4C4, r: 0.68, m: 0.02 },
+  graph:    { c: 0x363232, r: 0.48, m: 0.18 },
+  sage:     { c: 0x3A5040, r: 0.72, m: 0.02 },
+  navy:     { c: 0x1A2840, r: 0.55, m: 0.10 },
+  ice:      { c: 0xB0C4D8, r: 0.38, m: 0.12 },
+  marble:   { c: 0xF0ECE4, r: 0.15, m: 0.08 },
+  concrete: { c: 0xBCB8B0, r: 0.92, m: 0.00 },
+  darkwood: { c: 0x282422, r: 0.80, m: 0.04 },
+};
+
+// ══════════════════════════════════════════════════════
+//  SHARED MATERIALS  — single instance, changes update everywhere
+// ══════════════════════════════════════════════════════
+const M = {
+  body:   new THREE.MeshStandardMaterial({ color: 0x282422, roughness: 0.80, metalness: 0.04 }), // dark body
+  door:   new THREE.MeshStandardMaterial({ color: 0xBCB8B0, roughness: 0.92, metalness: 0.00 }), // concrete grey
+  handle: new THREE.MeshStandardMaterial({ color: 0x1A1A1A, roughness: 0.45, metalness: 0.30 }), // black handles
+  plinth: new THREE.MeshStandardMaterial({ color: 0x1E1C1A, roughness: 0.85, metalness: 0.04 }), // near-black plinth
+  led:    new THREE.MeshStandardMaterial({ color: 0xFFDD88, emissive: new THREE.Color(0xFFDD88), emissiveIntensity: 0 }),
+};
+
+// ── STATE ─────────────────────────────────────────────
+let cfg = { W: 2.4, H: 2.8, D: 0.60, sections: 3, extDrawerRows: 0, intDrawers: false };
+let doorsOpen      = false;
+let drawersAllOpen = false;
+let interiorVisible = false;
+let ledMode = 'off';
+
+const root = new THREE.Group();
+scene.add(root);
+
+let selectables   = [];
+let doorPivots    = [];
+let drawerPivots  = []; // { group, targetZ, restZ, openZ, open }
+let ledMesh = null;
+let ledLight = null;
+let shelvesMeshes = [];
+
+// ══════════════════════════════════════════════════════
+//  WARDROBE BUILDER
+// ══════════════════════════════════════════════════════
+function box(w, h, d) { return new THREE.BoxGeometry(w, h, d); }
+
+function mesh(geo, mat, x, y, z, name) {
+  const m = new THREE.Mesh(geo, mat);
+  m.position.set(x, y, z);
+  m.castShadow = true;
+  m.receiveShadow = true;
+  m.name = name || '';
+  return m;
+}
+
+function buildWardrobe() {
+  // ── CLEAR ─────────────────────────────────────────
+  while (root.children.length) root.remove(root.children[0]);
+  selectables = [];
+  doorPivots = [];
+  drawerPivots = [];
+  shelvesMeshes = [];
+
+  const { W, H, D, sections } = cfg;
+  const T   = 0.022;
+  const PL  = 0.09;
+  const FT  = 0.04;
+  const FH  = 0.07;
+  const GAP = 0.004;
+
+  // Exterior drawer section lives at the bottom above the plinth
+  const ROW_H     = 0.205;                         // height per drawer row
+  const EXT_DH    = cfg.extDrawerRows * ROW_H;     // total exterior drawer height
+  const SLIDE_OUT = D * 0.74;                      // how far drawers slide forward
+
+  // Door zone starts above the drawer section
+  const DOOR_H = H - PL - T - EXT_DH;
+  const DOOR_Y = PL + T + EXT_DH + DOOR_H / 2;
+  const DOOR_Z = D / 2 + T / 2;
+
+  // ── BODY PANELS ───────────────────────────────────
+  const addBody = (w, h, d, x, y, z, n) => {
+    const m = mesh(box(w, h, d), M.body, x, y, z, n);
+    m.userData.group = 'body';
+    root.add(m);
+    selectables.push(m);
+    return m;
+  };
+  const BODY_H = H - PL;
+  addBody(W, BODY_H, T,  0, PL + BODY_H / 2, -(D / 2 - T / 2), 'back');
+  addBody(T, BODY_H, D, -(W / 2 - T / 2), PL + BODY_H / 2, 0, 'sideL');
+  addBody(T, BODY_H, D,  (W / 2 - T / 2), PL + BODY_H / 2, 0, 'sideR');
+  addBody(W, T, D,  0, H - T / 2, 0, 'top');
+
+  // Top rail accent
+  const topRail = mesh(box(W, 0.018, D + 0.004), M.plinth, 0, H + 0.009, 0, 'topRail');
+  topRail.userData.group = 'body'; root.add(topRail);
+
+  // Plinth
+  const plinth = mesh(box(W, PL, D - 0.06), M.plinth, 0, PL / 2, 0.01, 'plinth');
+  plinth.userData.group = 'plinth'; root.add(plinth); selectables.push(plinth);
+
+  // Feet
+  const footGeo = new THREE.BoxGeometry(FT, FH, FT);
+  const foX = W / 2 - 0.08, foZ = D / 2 - 0.08;
+  [[-foX,-foZ],[foX,-foZ],[-foX,foZ],[foX,foZ]].forEach(([fx,fz],i)=>{
+    const fm = new THREE.Mesh(footGeo, M.plinth);
+    fm.position.set(fx, FH/2, fz); fm.castShadow = true;
+    fm.name='foot'+i; fm.userData={group:'body',selectable:false};
+    root.add(fm);
+  });
+
+  // Separator panel between exterior drawers and door zone
+  if (cfg.extDrawerRows > 0) {
+    const sep = mesh(box(W - T * 2, T * 0.8, D - T), M.body, 0, PL + T + EXT_DH, 0, 'sepH');
+    sep.userData.group = 'body'; root.add(sep);
+  }
+
+  // ── EXTERIOR DRAWERS ──────────────────────────────
+  const cols = sections;
+  const dW   = (W - T * 2 - GAP * (cols + 1)) / cols;
+
+  // Light interior material (birch-like) — same for all drawer trays
+  const drawerIntMat = new THREE.MeshStandardMaterial({ color: 0xC8B898, roughness: 0.82, metalness: 0.0 });
+  const WT = 0.014; // wall thickness for drawer tray panels
+
+  for (let row = 0; row < cfg.extDrawerRows; row++) {
+    const cy = PL + T + row * ROW_H + ROW_H / 2;
+
+    for (let col = 0; col < cols; col++) {
+      const cx = -W / 2 + T + GAP + col * (dW + GAP) + dW / 2;
+
+      const dg = new THREE.Group();
+      dg.position.set(cx, cy, 0);
+      dg.userData.isDrawerGroup = true;
+
+      const frontZ = D / 2 + T / 2;   // z of drawer front face in group space
+      const boxD   = D - T * 2.0;     // drawer tray depth
+      const trayW  = dW - GAP * 2;    // outer tray width
+      const trayH  = ROW_H - GAP * 2; // outer tray height
+      const backZ  = frontZ - T - boxD; // back wall z
+      const midZ   = frontZ - T / 2 - boxD / 2; // centre z of tray depth
+
+      // ── Front decorative face ──
+      const dFront = mesh(box(trayW, trayH, T), M.door, 0, 0, frontZ, 'dFront_r'+row+'_c'+col);
+      dFront.userData.group = 'ext-drawer';
+      dFront.userData.drawerGroup = dg;
+      dg.add(dFront); selectables.push(dFront);
+
+      // ── Open-top tray (left wall, right wall, bottom, back) ──
+      // Left wall
+      dg.add(Object.assign(mesh(box(WT, trayH, boxD), drawerIntMat,
+        -(trayW / 2 - WT / 2), 0, midZ, 'dLW_r'+row+'_c'+col),
+        { userData: { group:'body' } }));
+      // Right wall
+      dg.add(Object.assign(mesh(box(WT, trayH, boxD), drawerIntMat,
+        (trayW / 2 - WT / 2), 0, midZ, 'dRW_r'+row+'_c'+col),
+        { userData: { group:'body' } }));
+      // Bottom panel
+      dg.add(Object.assign(mesh(box(trayW - WT * 2, WT, boxD), drawerIntMat,
+        0, -(trayH / 2 - WT / 2), midZ, 'dBot_r'+row+'_c'+col),
+        { userData: { group:'body' } }));
+      // Back wall (no top — open tray)
+      dg.add(Object.assign(mesh(box(trayW - WT * 2, trayH - WT, WT), drawerIntMat,
+        0, WT / 2, backZ, 'dBk_r'+row+'_c'+col),
+        { userData: { group:'body' } }));
+
+      // Handle
+      const dHandle = mesh(box(trayW * 0.44, 0.022, 0.026), M.handle, 0, 0, frontZ + T / 2 + 0.016, 'dHandle_r'+row+'_c'+col);
+      dHandle.userData.group = 'handles'; dg.add(dHandle); selectables.push(dHandle);
+
+      root.add(dg);
+      drawerPivots.push({ group: dg, targetZ: 0, openZ: SLIDE_OUT, open: false, row, col });
+    }
+
+    // Horizontal divider strip between rows (visual separation)
+    if (row < cfg.extDrawerRows - 1) {
+      const ds = mesh(box(W - T * 2, T * 0.5, T), M.plinth,
+        0, PL + T + (row + 1) * ROW_H, D / 2 + T * 0.25, 'drDiv'+row);
+      ds.userData.group = 'body'; root.add(ds);
+    }
+
+    // Vertical col dividers per row
+    for (let c = 1; c < cols; c++) {
+      const vx = -W / 2 + T + GAP + c * (dW + GAP) - GAP / 2;
+      const vcd = mesh(box(T * 0.6, ROW_H - GAP, T), M.plinth,
+        vx, PL + T + row * ROW_H + ROW_H / 2, D / 2 + T * 0.3, 'drVDiv_r'+row+'_c'+c);
+      vcd.userData.group = 'body'; root.add(vcd);
+    }
+  }
+
+  // ── DOORS ─────────────────────────────────────────
+  const doorW = (W - T * 2 - GAP * (sections + 1)) / sections;
+
+  for (let i = 0; i < sections; i++) {
+    const leftHinge = (i % 2 === 0);
+    const slotLeft  = -W / 2 + T + GAP + i * (doorW + GAP);
+    const hingeX    = leftHinge ? slotLeft : slotLeft + doorW;
+
+    const pivot = new THREE.Group();
+    pivot.position.set(hingeX, DOOR_Y, DOOR_Z);
+
+    const dmOffX = leftHinge ? doorW / 2 : -doorW / 2;
+    const dm = mesh(box(doorW, DOOR_H - GAP * 2, T), M.door, dmOffX, 0, 0, 'door' + i);
+    dm.userData.group = 'doors'; pivot.add(dm); selectables.push(dm);
+
+    const hx = leftHinge ? doorW * 0.72 : -doorW * 0.72;
+    const hBar = mesh(new THREE.BoxGeometry(0.022, 0.20, 0.028), M.handle, hx, 0, T / 2 + 0.018, 'handle' + i);
+    hBar.userData.group = 'handles'; pivot.add(hBar); selectables.push(hBar);
+
+    root.add(pivot);
+    const openDir = leftHinge ? -Math.PI / 2 : Math.PI / 2;
+    doorPivots.push({ pivot, target: 0, openDir, i });
+  }
+
+  // Vertical dividers between door columns
+  for (let i = 1; i < sections; i++) {
+    const vx = -W / 2 + T + GAP + i * (doorW + GAP) - GAP / 2;
+    const vd = mesh(box(T * 0.8, DOOR_H, D - T * 0.5), M.body, vx, DOOR_Y, -T * 0.2, 'vdiv' + i);
+    vd.userData.group = 'body'; root.add(vd);
+  }
+
+  // ── INTERIOR DRAWERS (inside wardrobe) ────────────
+  if (cfg.intDrawers) {
+    const iDW   = (W - T * 2) / sections - GAP * 2;  // same col width as doors
+    const iDH   = 0.16;                               // interior drawer height
+    const iRows = 4;
+    const iCol  = 0;                                  // leftmost column
+    const icx   = -W / 2 + T + GAP + iCol * (doorW + GAP) + doorW / 2;
+    const iBoxD = D - T * 3;
+
+    for (let r = 0; r < iRows; r++) {
+      const iy = PL + T + EXT_DH + 0.05 + r * (iDH + GAP * 3);
+      const ig = new THREE.Group();
+      ig.position.set(icx, iy, 0);
+      ig.userData.isDrawerGroup = true;
+
+      // Front face (sits behind the door, visible when door opens)
+      const iFront = mesh(box(iDW, iDH - GAP, T), M.door, 0, 0, D / 2 - T, 'idFront_r' + r);
+      iFront.userData.group = 'int-drawer';
+      iFront.userData.drawerGroup = ig;
+      ig.add(iFront); selectables.push(iFront);
+
+      const iBoxMesh = mesh(box(iDW - T * 0.5, iDH - GAP - T * 0.4, iBoxD), M.body, 0, 0, D / 2 - T - iBoxD / 2, 'idBox_r' + r);
+      iBoxMesh.userData.group = 'body'; ig.add(iBoxMesh);
+
+      const iHandle = mesh(box(iDW * 0.38, 0.018, 0.022), M.handle, 0, 0, D / 2 - T + 0.014, 'idHandle_r' + r);
+      iHandle.userData.group = 'handles'; ig.add(iHandle); selectables.push(iHandle);
+
+      ig.visible = false; // hidden until doors open
+      root.add(ig);
+      shelvesMeshes.push(ig); // re-use shelf visibility toggle
+      drawerPivots.push({ group: ig, targetZ: 0, openZ: (D - T * 2) * 0.68, open: false, row: r, col: iCol, interior: true });
+    }
+  }
+
+  // ── INTERIOR SHELVES ──────────────────────────────
+  const shelfMat = new THREE.MeshStandardMaterial({ color: M.body.color.getHex(), roughness: 0.78, metalness: 0.03 });
+  const innerW = W - T * 2 - 0.008;
+  const innerD = D - T * 1.5;
+  for (let i = 1; i <= 4; i++) {
+    const sy = PL + T + EXT_DH + DOOR_H * (i / 5);
+    const sm = mesh(box(innerW, T, innerD), shelfMat, 0, sy, -T * 0.25, 'shelf' + i);
+    sm.userData.group = 'shelf'; sm.visible = false;
+    root.add(sm); shelvesMeshes.push(sm); selectables.push(sm);
+  }
+
+  // ── LED STRIP ─────────────────────────────────────
+  ledMesh = mesh(new THREE.BoxGeometry(W - T * 2 - 0.02, 0.014, 0.014), M.led, 0, PL + T + EXT_DH + 0.01, D / 2 - 0.008, 'led');
+  ledMesh.visible = false; root.add(ledMesh);
+
+  ledLight = new THREE.PointLight(0xFFDD88, 0, 4);
+  ledLight.position.set(0, PL + T + EXT_DH + 0.06, D / 2 + 0.12);
+  root.add(ledLight);
+
+  applyLEDstate(ledMode);
+}
+
+// Initial build
+buildWardrobe();
+
+// ══════════════════════════════════════════════════════
+//  ORBIT / MOUSE
+// ══════════════════════════════════════════════════════
+let dragging = false, prev = { x: 0, y: 0 };
+canvas.addEventListener('mousedown', e => { if (e.button === 0) { dragging = true; prev = { x: e.clientX, y: e.clientY }; } });
+window.addEventListener('mouseup', () => dragging = false);
+window.addEventListener('mousemove', e => {
+  if (!dragging) return;
+  sph.t -= (e.clientX - prev.x) * 0.007;
+  sph.p = Math.max(0.25, Math.min(1.52, sph.p - (e.clientY - prev.y) * 0.007));
+  prev = { x: e.clientX, y: e.clientY };
+  moveCam();
+});
+canvas.addEventListener('wheel', e => {
+  e.preventDefault();
+  sph.r = Math.max(2.2, Math.min(11, sph.r + e.deltaY * 0.009));
+  moveCam();
+}, { passive: false });
+
+// Touch
+canvas.addEventListener('touchstart', e => { if (e.touches.length === 1) { dragging = true; prev = { x: e.touches[0].clientX, y: e.touches[0].clientY }; } });
+canvas.addEventListener('touchend',   () => dragging = false);
+canvas.addEventListener('touchmove',  e => {
+  if (!dragging || e.touches.length !== 1) return;
+  sph.t -= (e.touches[0].clientX - prev.x) * 0.007;
+  sph.p = Math.max(0.25, Math.min(1.52, sph.p - (e.touches[0].clientY - prev.y) * 0.007));
+  prev = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  moveCam();
+});
+
+// ══════════════════════════════════════════════════════
+//  RAYCASTER + SELECTION
+// ══════════════════════════════════════════════════════
+const rc = new THREE.Raycaster();
+const mp = new THREE.Vector2();
+let selectedMesh = null;
+
+let mouseDownPos = { x: 0, y: 0 };
+canvas.addEventListener('mousedown', ev => { mouseDownPos = { x: ev.clientX, y: ev.clientY }; }, { capture: true });
+
+canvas.addEventListener('click', e => {
+  // Ignore if the user was dragging (moved more than 6px)
+  if (Math.hypot(e.clientX - mouseDownPos.x, e.clientY - mouseDownPos.y) > 6) return;
+  const r = canvas.getBoundingClientRect();
+  mp.x =  (e.clientX - r.left) / canvas.clientWidth  * 2 - 1;
+  mp.y = -(e.clientY - r.top)  / canvas.clientHeight * 2 + 1;
+  rc.setFromCamera(mp, camera);
+  const hits = rc.intersectObjects(selectables, false);
+  if (hits.length) pickMesh(hits[0].object);
+  else clearPick();
+});
+
+function pickMesh(m) {
+  const grp = m.userData.group;
+
+  // ── DOOR click → toggle that door open/closed ──────
+  if (grp === 'doors' || (grp === 'handles' && m.parent && m.parent !== root)) {
+    // find the pivot that owns this mesh
+    const dp = doorPivots.find(d => d.pivot === m.parent);
+    if (dp) {
+      const isOpen = Math.abs(dp.pivot.rotation.y) > 0.05;
+      dp.target = isOpen ? 0 : dp.openDir;
+      flashHUD(isOpen ? '🚪 Door closed' : '🚪 Door opened');
+    }
+    return;
+  }
+
+  // ── DRAWER click → toggle that drawer open/closed ──
+  if (grp === 'ext-drawer' || grp === 'int-drawer') {
+    const dg = m.userData.drawerGroup;
+    const dp = drawerPivots.find(d => d.group === dg);
+    if (dp) {
+      dp.open = !dp.open;
+      dp.targetZ = dp.open ? dp.openZ : 0;
+      flashHUD(dp.open ? '📦 Drawer opened' : '📦 Drawer closed');
+    }
+    return;
+  }
+
+  // ── OTHER parts → just update the label, NO colour change ──
+  selectedMesh = m;
+  const labels = {
+    body: 'Body / Panel', plinth: 'Plinth', shelf: 'Interior Shelf',
+  };
+  const label = labels[grp] || grp || m.name;
+  document.getElementById('pname').textContent = label;
+  // no emissive highlight — colours only change via the sidebar
+}
+
+function clearPick() {
+  if (selectedMesh) {
+    selectedMesh = null;
+    document.getElementById('pname').textContent = 'Click any part to edit';
+  }
+}
+
+function flashHUD(msg) {
+  const h = document.getElementById('hud');
+  h.textContent = msg;
+  h.classList.add('show');
+  clearTimeout(h._t);
+  h._t = setTimeout(() => h.classList.remove('show'), 2200);
+}
+
+// ══════════════════════════════════════════════════════
+//  CUSTOMISATION FUNCTIONS
+// ══════════════════════════════════════════════════════
+
+// Apply hex color to a shared material (or selected group)
+function setMatColor(mat, key) {
+  const p = PALETTE[key];
+  if (!p) return;
+  mat.color.setHex(p.c);
+  mat.roughness = p.r;
+  mat.metalness = p.m;
+  mat.transparent = false;
+  mat.opacity = 1;
+  mat.needsUpdate = true;
+}
+
+function applyColor(el, key) {
+  document.querySelectorAll('.sw').forEach(s => s.classList.remove('on'));
+  el.classList.add('on');
+
+  const grp = selectedMesh ? selectedMesh.userData.group : null;
+  const p = PALETTE[key];
+  if (!p) return;
+
+  // Apply to doors
+  if (!grp || grp === 'doors') {
+    setMatColor(M.door, key);
+  }
+  // Apply to body + shelves
+  if (!grp || grp === 'body' || grp === 'plinth') {
+    setMatColor(M.body, key);
+    shelvesMeshes.forEach(s => {
+      s.material.color.setHex(p.c);
+      s.material.needsUpdate = true;
+    });
+    // plinth slightly darker
+    M.plinth.color.setHex(p.c);
+    M.plinth.color.multiplyScalar(0.60);
+    M.plinth.roughness = p.r;
+    M.plinth.needsUpdate = true;
+  }
+
+  notify('Colour: ' + (el.querySelector('.sw-tip')?.textContent || key));
+}
+
+function applyDoor(el, style) {
+  document.querySelectorAll('.optlist .opt').forEach((o, i, arr) => {
+    if (arr[0].parentElement === el.parentElement) o.classList.remove('on');
+  });
+  el.classList.add('on');
+
+  if (style === 'glass') {
+    M.door.color.setHex(0xCCE0F4);
+    M.door.roughness = 0.06; M.door.metalness = 0.05;
+    M.door.transparent = true; M.door.opacity = 0.22;
+  } else if (style === 'mirror') {
+    M.door.color.setHex(0xCCDEEE);
+    M.door.roughness = 0.02; M.door.metalness = 0.95;
+    M.door.transparent = false; M.door.opacity = 1;
+  } else if (style === 'frosted') {
+    M.door.color.setHex(0xE4ECF8);
+    M.door.roughness = 0.55; M.door.metalness = 0.0;
+    M.door.transparent = true; M.door.opacity = 0.48;
+  } else {
+    // restore solid — keep current door colour, just reset transparency
+    M.door.roughness = 0.90; M.door.metalness = 0.00;
+    M.door.transparent = false; M.door.opacity = 1;
+  }
+  M.door.needsUpdate = true;
+  notify('Door: ' + style);
+}
+
+function applyHandle(el, style) {
+  document.querySelectorAll('.optlist .opt').forEach(o => {
+    if (o.parentElement === el.parentElement) o.classList.remove('on');
+  });
+  el.classList.add('on');
+
+  const vis = style !== 'hidden';
+  const cols = { gold: { c: 0xC8A050, r: 0.18, m: 0.88 }, silver: { c: 0xC0C8D0, r: 0.15, m: 0.90 }, black: { c: 0x1A1A1A, r: 0.5, m: 0.3 }, chrome: { c: 0xDDE8F0, r: 0.04, m: 0.96 }, hidden: { c: 0x1A1A1A, r: 0.5, m: 0.3 } };
+  const p = cols[style] || cols.gold;
+  M.handle.color.setHex(p.c);
+  M.handle.roughness = p.r;
+  M.handle.metalness = p.m;
+  M.handle.needsUpdate = true;
+
+  // show/hide handle meshes
+  selectables.filter(m => m.userData.group === 'handles').forEach(m => m.visible = vis);
+  notify('Handle: ' + style);
+}
+
+function applyLEDstate(mode) {
+  ledMode = mode;
+  const cols = { off: 0xFFDD88, warm: 0xFFCC44, cool: 0x88AAFF, rgb: 0xFF55BB };
+  const emI  = { off: 0, warm: 2.2, cool: 2.0, rgb: 2.5 };
+  const lInt = { off: 0, warm: 1.0, cool: 0.8, rgb: 1.3 };
+
+  if (ledMesh) {
+    ledMesh.visible = mode !== 'off';
+    M.led.color.setHex(cols[mode]);
+    M.led.emissive.setHex(cols[mode]);
+    M.led.emissiveIntensity = emI[mode];
+    M.led.needsUpdate = true;
+  }
+  if (ledLight) {
+    ledLight.color.setHex(cols[mode]);
+    ledLight.intensity = lInt[mode];
+  }
+}
+
+function applyLED(el, mode) {
+  document.querySelectorAll('.lb').forEach(b => b.classList.remove('on'));
+  el.classList.add('on');
+  applyLEDstate(mode);
+  notify(mode === 'off' ? 'LED off' : 'LED: ' + mode);
+}
+
+// ── STYLE PRESETS ──────────────────────────────────────
+const PRESETS = {
+  luxury:     { color: 'oak',    handle: 'gold',   door: 'solid',  led: 'warm'  },
+  minimal:    { color: 'white',  handle: 'hidden',  door: 'solid',  led: 'off'   },
+  scandi:     { color: 'linen',  handle: 'silver',  door: 'solid',  led: 'off'   },
+  industrial: { color: 'graph',  handle: 'black',   door: 'solid',  led: 'cool'  },
+  classic:    { color: 'walnut', handle: 'gold',    door: 'solid',  led: 'warm'  },
+  modern:     { color: 'black',  handle: 'chrome',  door: 'solid',  led: 'cool'  },
+  navy:       { color: 'navy',   handle: 'chrome',  door: 'glass',  led: 'cool'  },
+};
+
+function applyPreset(el, key) {
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('on'));
+  el.classList.add('on');
+  const p = PRESETS[key];
+  if (!p) return;
+
+  // color
+  const sw = document.querySelector(`.sw[onclick*="${p.color}"]`);
+  if (sw) applyColor(sw, p.color);
+
+  // handle
+  const ho = document.querySelector(`.optlist .opt[onclick*="${p.handle}"]`);
+  if (ho) applyHandle(ho, p.handle);
+
+  // door style
+  const ds = document.querySelector(`.rps:has(.optlist) .opt[onclick*="${p.door}"]`) ||
+             [...document.querySelectorAll('.optlist .opt')].find(o => o.getAttribute('onclick')?.includes(p.door));
+  // find door style opts (first optlist section)
+  const doorOpts = document.querySelectorAll('.rps .optlist .opt');
+  // door style opts are in the "Door Style" rps (first 4 opts = door, next 5 = handle)
+  const doorSection = [...document.querySelectorAll('.optlist')][0];
+  const doorEl = doorSection?.querySelector(`[onclick*="${p.door}"]`);
+  if (doorEl) applyDoor(doorEl, p.door);
+
+  // led
+  const le = document.querySelector(`.lb[onclick*="${p.led}"]`);
+  if (le) applyLED(le, p.led);
+
+  notify('Style: ' + key.charAt(0).toUpperCase() + key.slice(1));
+}
+
+// ── SIZE + REBUILD ─────────────────────────────────────
+let rebuildTimer = null;
+function onSize() {
+  cfg.W = parseFloat(document.getElementById('slW').value);
+  cfg.H = parseFloat(document.getElementById('slH').value);
+  cfg.D = parseFloat(document.getElementById('slD').value);
+  document.getElementById('wVal').textContent = cfg.W.toFixed(1) + ' m';
+  document.getElementById('hVal').textContent = cfg.H.toFixed(1) + ' m';
+  document.getElementById('dVal').textContent = cfg.D.toFixed(2) + ' m';
+  clearTimeout(rebuildTimer);
+  rebuildTimer = setTimeout(() => { buildWardrobe(); notify('Size updated'); }, 180);
+}
+
+function setSec(el, n) {
+  document.querySelectorAll('.sec-n').forEach(s => s.classList.remove('on'));
+  el.classList.add('on');
+  cfg.sections = n;
+  buildWardrobe();
+  notify(n + '-section wardrobe built');
+}
+
+// ── DOORS + SHELVES ────────────────────────────────────
+function toggleDoors() {
+  doorsOpen = !doorsOpen;
+  const btn = document.getElementById('btnDoors');
+  btn.classList.toggle('on', doorsOpen);
+  btn.textContent = doorsOpen ? '🚪 Close Doors' : '🚪 Open Doors';
+  // Each door knows its own open direction (set during build)
+  doorPivots.forEach(dp => {
+    dp.target = doorsOpen ? dp.openDir : 0;
+  });
+  if (doorsOpen) shelvesMeshes.forEach(s => s.visible = true);
+  else if (!interiorVisible) shelvesMeshes.forEach(s => s.visible = false);
+  notify(doorsOpen ? 'Doors opened' : 'Doors closed');
+}
+
+function toggleShelves() {
+  interiorVisible = !interiorVisible;
+  shelvesMeshes.forEach(s => s.visible = interiorVisible || doorsOpen);
+  const btn = document.getElementById('btnShelves');
+  btn.classList.toggle('on', interiorVisible);
+  notify(interiorVisible ? 'Interior shown' : 'Interior hidden');
+}
+
+// ── DRAWER CONTROLS ───────────────────────────────────
+function setDrawerRows(el, n) {
+  document.querySelectorAll('.dr-n').forEach(s => s.classList.remove('on'));
+  el.classList.add('on');
+  cfg.extDrawerRows = n;
+  buildWardrobe();
+  notify(n === 0 ? 'Exterior drawers removed' : n + ' drawer row' + (n > 1 ? 's' : '') + ' added');
+}
+
+function toggleIntDrawers(el) {
+  cfg.intDrawers = !cfg.intDrawers;
+  el.classList.toggle('on', cfg.intDrawers);
+  el.textContent = cfg.intDrawers ? '📥 Remove Interior Drawers' : '📥 Add Interior Drawers';
+  buildWardrobe();
+  notify(cfg.intDrawers ? 'Interior drawers added' : 'Interior drawers removed');
+}
+
+function toggleAllDrawers() {
+  drawersAllOpen = !drawersAllOpen;
+  drawerPivots.forEach(dp => {
+    dp.open = drawersAllOpen;
+    dp.targetZ = drawersAllOpen ? dp.openZ : 0;
+  });
+  const btn = document.getElementById('btnAllDrawers');
+  if (btn) { btn.classList.toggle('on', drawersAllOpen); btn.textContent = drawersAllOpen ? '📦 Close All Drawers' : '📦 Open All Drawers'; }
+  notify(drawersAllOpen ? 'All drawers opened' : 'All drawers closed');
+}
+
+function selectAllDoors() {
+  const doors = selectables.filter(m => m.userData.group === 'doors');
+  if (doors.length) pickMesh(doors[0]);
+}
+
+function resetCam() {
+  sph = { t: 0.38, p: 1.25, r: 5.6 };
+  moveCam();
+  notify('Camera reset');
+}
+
+// ── CAMERA VIEWS ──────────────────────────────────────
+['v3d','vFront','vSide','vTop'].forEach(id => {
+  document.getElementById(id).addEventListener('click', function() {
+    document.querySelectorAll('.vb').forEach(b => b.classList.remove('on'));
+    this.classList.add('on');
+    const views = { v3d: [0.38,1.25,5.6], vFront: [0,Math.PI/2,5.0], vSide: [Math.PI/2,Math.PI/2,5.0], vTop: [0,0.08,5.5] };
+    const [t,p,r] = views[id];
+    sph = { t, p, r };
+    moveCam();
+  });
+});
+
+// ── AI PROMPT ─────────────────────────────────────────
+function setai(t) { document.getElementById('ait').value = t; }
+function doAIpanel() { runAI(document.getElementById('ait').value); }
+function doAI() {
+  const t = document.getElementById('bbi').value.trim();
+  document.getElementById('bbi').value = '';
+  runAI(t);
+}
+
+function runAI(text) {
+  if (!text) return;
+  const t = text.toLowerCase();
+  const presetKeys = Object.keys(PRESETS);
+  let matched = null;
+
+  if (t.includes('luxury') || t.includes('gold')) matched = 'luxury';
+  else if (t.includes('white') || t.includes('minimal')) matched = 'minimal';
+  else if (t.includes('scandi') || t.includes('linen')) matched = 'scandi';
+  else if (t.includes('industrial') || t.includes('graphite')) matched = 'industrial';
+  else if (t.includes('walnut') || t.includes('classic')) matched = 'classic';
+  else if (t.includes('modern') || t.includes('chrome')) matched = 'modern';
+  else if (t.includes('navy') || t.includes('blue')) matched = 'navy';
+
+  if (matched) {
+    const el = document.querySelector(`.chip[onclick*="${matched}"]`);
+    if (el) applyPreset(el, matched);
+  }
+  if (t.includes('mirror')) {
+    const el = document.querySelector('.optlist .opt[onclick*="mirror"]');
+    if (el) applyDoor(el, 'mirror');
+  }
+  if (t.includes('glass')) {
+    const el = document.querySelector('.optlist .opt[onclick*="glass"]');
+    if (el) applyDoor(el, 'glass');
+  }
+  if (t.includes('led') || t.includes('warm light')) {
+    const el = document.querySelector('.lb[onclick*="warm"]');
+    if (el) applyLED(el, 'warm');
+  }
+  if (t.includes('open')) toggleDoors();
+
+  notify('✦ AI applied: "' + text.slice(0, 42) + (text.length > 42 ? '…' : '') + '"');
+}
+
+// ── VERSIONS ─────────────────────────────────────────
+function loadVer(el, key) {
+  document.querySelectorAll('.vi').forEach(v => v.classList.remove('on'));
+  el.classList.add('on');
+  const sw = document.querySelector(`.sw[onclick*="${key}"]`);
+  if (sw) applyColor(sw, key);
+}
+
+// ── NOTIFICATION ──────────────────────────────────────
+function notify(msg) {
+  const n = document.getElementById('notif');
+  n.textContent = msg;
+  n.classList.add('show');
+  clearTimeout(n._t);
+  n._t = setTimeout(() => n.classList.remove('show'), 2400);
+}
+
+// ── LEFT SIDEBAR FTYPES ───────────────────────────────
+document.querySelectorAll('.ftype').forEach(f => {
+  f.addEventListener('click', () => {
+    document.querySelectorAll('.ftype').forEach(x => x.classList.remove('on'));
+    f.classList.add('on');
+    notify('Switched to ' + f.textContent.trim());
+  });
+});
+
+// ── RENDER LOOP ───────────────────────────────────────
+const clock = new THREE.Clock();
+(function animate() {
+  requestAnimationFrame(animate);
+  const dt = Math.min(clock.getDelta(), 0.05);
+  const lf = 1 - Math.pow(0.012, dt); // ~0.28s smooth lerp
+
+  // Door rotation animation
+  doorPivots.forEach(dp => {
+    dp.pivot.rotation.y += (dp.target - dp.pivot.rotation.y) * lf;
+  });
+
+  // Drawer slide animation
+  drawerPivots.forEach(dp => {
+    const cur = dp.group.position.z;
+    dp.group.position.z += (dp.targetZ - cur) * lf;
+  });
+
+  renderer.render(scene, camera);
+})();
+
+</script>
+</body>
+</html>

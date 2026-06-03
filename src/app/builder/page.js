@@ -60,6 +60,10 @@ export default function BuilderPage() {
   const [hudText, setHudText] = useState("✦ Click a part to customise");
   const [showHud, setShowHud] = useState(false);
 
+  // ─── Mobile Responsive Toggle States ───
+  const [mobileLeftOpen, setMobileLeftOpen] = useState(false);
+  const [mobileRightOpen, setMobileRightOpen] = useState(false);
+
   // ─── Kitchen Designer States ───
   const [roomWidth, setRoomWidth] = useState(2.6); // 2.6 m (260 cm)
   const [roomLength, setRoomLength] = useState(2.2); // 2.2 m (220 cm)
@@ -3577,6 +3581,93 @@ ${activeCategory === "kitchen" ? `
           transform: translateY(0);
           opacity: 1;
         }
+
+        /* ─── MOBILE-ONLY UTILITY ─── */
+        .mob-only { display: none; }
+
+        /* ─── TABLET: max-width 1024px ─── */
+        @media (max-width: 1024px) {
+          .lsb { width: 160px; }
+          .rp { width: 230px; }
+          .topbar .file-name input { width: 120px; }
+        }
+
+        /* ─── MOBILE: max-width 768px ─── */
+        @media (max-width: 768px) {
+          .mob-only { display: flex; }
+
+          .lsb {
+            position: fixed;
+            left: 0;
+            top: 52px;
+            bottom: 0;
+            width: 240px;
+            z-index: 50;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            will-change: transform;
+          }
+          .lsb.mob-open { transform: translateX(0); }
+
+          .rp {
+            position: fixed;
+            right: 0;
+            top: 52px;
+            bottom: 0;
+            width: 280px;
+            z-index: 50;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            will-change: transform;
+          }
+          .rp.mob-open { transform: translateX(0); }
+
+          .mob-overlay {
+            position: fixed;
+            inset: 0;
+            top: 52px;
+            background: rgba(0,0,0,0.5);
+            z-index: 40;
+            backdrop-filter: blur(2px);
+          }
+
+          .topbar .file-name { display: none; }
+          .topbar .vtog { display: none; }
+
+          .mob-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: var(--bg3);
+            border: 1px solid var(--border2);
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            cursor: pointer;
+            flex-shrink: 0;
+          }
+
+          .bbbar {
+            width: calc(100vw - 24px);
+            left: 12px;
+            transform: none;
+            bottom: 12px;
+          }
+
+          .hint { display: none; }
+        }
+
+        /* ─── SMALL PHONE: max-width 480px ─── */
+        @media (max-width: 480px) {
+          .topbar { padding: 0 8px; height: 46px; }
+          .workspace { height: calc(100vh - 46px); }
+          .lsb.mob-open { width: 100vw; }
+          .rp.mob-open { width: 100vw; }
+          .logo { font-size: 0.85rem; }
+          .tb { padding: 5px 10px; font-size: 0.72rem; }
+        }
       ` }} />
 
       {/* TOPBAR */}
@@ -3588,6 +3679,8 @@ ${activeCategory === "kitchen" ? `
           <span style={{ color: "var(--muted2)" }}>· Auto-saved</span>
         </div>
         <div className="top-right">
+          <button className="mob-btn mob-only" onClick={() => { setMobileLeftOpen(!mobileLeftOpen); setMobileRightOpen(false); }} title="Tools">☰</button>
+          <button className="mob-btn mob-only" onClick={() => { setMobileRightOpen(!mobileRightOpen); setMobileLeftOpen(false); }} title="Properties">⚙</button>
           <div className="vtog">
             {["v3d", "vFront", "vSide", "vTop"].map((v) => (
               <button
@@ -3606,8 +3699,11 @@ ${activeCategory === "kitchen" ? `
 
       {/* WORKSPACE LAYOUT */}
       <div className="workspace">
+        {(mobileLeftOpen || mobileRightOpen) && (
+          <div className="mob-overlay" onClick={() => { setMobileLeftOpen(false); setMobileRightOpen(false); }} />
+        )}
         {/* LEFT PANEL */}
-        <div className="lsb">
+        <div className={`lsb ${mobileLeftOpen ? 'mob-open' : ''}`}>
           <div className="lsb-sec" style={{ paddingTop: "14px" }}>
             <div className="sec-label">Furniture Type</div>
             {[
@@ -3726,7 +3822,7 @@ ${activeCategory === "kitchen" ? `
         </div>
 
         {/* RIGHT PANEL CONTROL BAR */}
-        <div className="rp">
+        <div className={`rp ${mobileRightOpen ? 'mob-open' : ''}`}>
           {activeCategory === "kitchen" ? (
             <>
               {/* KITCHEN PANELS */}

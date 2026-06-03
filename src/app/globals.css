@@ -544,5 +544,53 @@ select {
   opacity: 0.7;
 }
 
+/* ─── Mobile Responsive Enhancements ─── */
+@media (max-width: 768px) {
+  /* Background attachment fixed causes jank on mobile */
+  .bg-img-hero,
+  .bg-img-about,
+  .bg-img-materials {
+    background-attachment: scroll !important;
+  }
+  
+  /* Reduce floating card padding on mobile */
+  .glass-pro {
+    padding: 1.5rem !important;
+  }
+  
+  /* Reduce button sizes */
+  .btn-premium-primary,
+  .btn-premium-secondary {
+    padding: 0.75rem 1.5rem;
+    font-size: 0.8rem;
+  }
+  
+  /* Reduce floating layer hover effects on mobile (no hover on touch) */
+  .floating-layer:hover {
+    transform: none;
+  }
+  
+  /* Footer grid single column on mobile */
+  footer .grid {
+    grid-template-columns: 1fr !important;
+  }
+}
 
+@media (max-width: 480px) {
+  .glass-pro {
+    padding: 1rem !important;
+    border-radius: 1rem;
+  }
+  
+  .btn-premium-primary,
+  .btn-premium-secondary {
+    padding: 0.625rem 1.25rem;
+    font-size: 0.75rem;
+  }
+  
+  /* Pricing card highlighted scale causes overflow */
+  .scale-105 {
+    transform: scale(1) !important;
+  }
+}
 

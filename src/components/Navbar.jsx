@@ -73,7 +73,7 @@ export default function Navbar() {
         </div>
 
         {/* Mobile: theme toggle + hamburger */}
-        <div className="md:hidden flex items-center gap-2">
+        <div className="lg:hidden flex items-center gap-2">
           <button
             onClick={toggle}
             className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/5 transition-colors text-white"
@@ -119,7 +119,7 @@ export default function Navbar() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden glass-strong border-t border-white/10"
+            className="lg:hidden glass-strong border-t border-white/10"
           >
             <div className="px-6 py-4 flex flex-col gap-1">
               {links.map((link) => (
