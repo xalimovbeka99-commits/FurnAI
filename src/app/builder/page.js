@@ -33,6 +33,87 @@ const PRESETS = {
   navy:       { color: 'navy',   faceColor: 'navy',   handle: 'chrome', door: 'glass', led: 'cool', dr: 0, ro: false },
 };
 
+// ─── OFFICE DESIGNER PROCEDURAL TEXTURES ───
+function woodTex(c1, c2, dens = 1) {
+  if (typeof window === "undefined") return null;
+  const cv = document.createElement("canvas");
+  cv.width = cv.height = 512;
+  const ctx = cv.getContext("2d");
+  ctx.fillStyle = c1;
+  ctx.fillRect(0, 0, 512, 512);
+  const n = Math.floor(68 * dens);
+  for (let i = 0; i < n; i++) {
+    ctx.strokeStyle = c2;
+    ctx.globalAlpha = 0.1 + Math.random() * 0.2;
+    ctx.lineWidth = 0.5 + Math.random() * 1.8;
+    const y = (i / (n - 1)) * 512;
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    for (let x = 0; x <= 512; x += 20) {
+      ctx.lineTo(x, y + (Math.random() - 0.5) * 4.5);
+    }
+    ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+  const t = new THREE.CanvasTexture(cv);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  return t;
+}
+
+function marbleTex(base, vein, alpha = 0.35) {
+  if (typeof window === "undefined") return null;
+  const cv = document.createElement("canvas");
+  cv.width = cv.height = 512;
+  const ctx = cv.getContext("2d");
+  ctx.fillStyle = base;
+  ctx.fillRect(0, 0, 512, 512);
+  for (let i = 0; i < 22; i++) {
+    ctx.strokeStyle = vein;
+    ctx.globalAlpha = alpha * (0.25 + Math.random() * 0.75);
+    ctx.lineWidth = 0.3 + Math.random() * 1.4;
+    ctx.beginPath();
+    ctx.moveTo(Math.random() * 512, Math.random() * 512);
+    ctx.bezierCurveTo(
+      Math.random() * 512,
+      Math.random() * 512,
+      Math.random() * 512,
+      Math.random() * 512,
+      Math.random() * 512,
+      Math.random() * 512
+    );
+    ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+  const t = new THREE.CanvasTexture(cv);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  return t;
+}
+
+function noiseTex(hexA, hexB) {
+  if (typeof window === "undefined") return null;
+  const toRgb = (h) => {
+    const n = parseInt(h, 16);
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  };
+  const cv = document.createElement("canvas");
+  cv.width = cv.height = 256;
+  const ctx = cv.getContext("2d");
+  const id = ctx.createImageData(256, 256);
+  const [r1, g1, b1] = toRgb(hexA);
+  const [r2, g2, b2] = toRgb(hexB);
+  for (let i = 0; i < id.data.length; i += 4) {
+    const t = Math.random();
+    id.data[i] = r1 + (r2 - r1) * t;
+    id.data[i + 1] = g1 + (g2 - g1) * t;
+    id.data[i + 2] = b1 + (b2 - b1) * t;
+    id.data[i + 3] = 255;
+  }
+  ctx.putImageData(id, 0, 0);
+  const tex = new THREE.CanvasTexture(cv);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  return tex;
+}
+
 export default function BuilderPage() {
   const canvasRef = useRef(null);
   const wrapRef = useRef(null);
@@ -192,103 +273,40 @@ export default function BuilderPage() {
     triggerNotification(`Added ${newMod.label}`);
   };
 
-  // ─── Office Designer States ───
-  const [officeLayoutType, setOfficeLayoutType] = useState("executive"); // executive, home, study, workspace
-  const [officeRoomWidth, setOfficeRoomWidth] = useState(3.6);
-  const [officeRoomLength, setOfficeRoomLength] = useState(3.0);
-  const [officeRoomHeight, setOfficeRoomHeight] = useState(2.7);
-
-  // Feature Wall
-  const [officeFeatureWallStyle, setOfficeFeatureWallStyle] = useState("wood-slat"); // wood-slat, marble, painted, concrete, wallpaper, acoustic
-  const [officeFeatureWallWidth, setOfficeFeatureWallWidth] = useState(2.4);
-  const [officeFeatureWallHeight, setOfficeFeatureWallHeight] = useState(2.7);
-  const [officeFeatureWallThickness, setOfficeFeatureWallThickness] = useState(0.08);
-  const [officeFeatureWallColor, setOfficeFeatureWallColor] = useState("walnut"); // oak, walnut, charcoal, beige, sage
-  const [officeFeatureWallSlatSpacing, setOfficeFeatureWallSlatSpacing] = useState(0.06);
-
-  // Cabinet & Shelf Modules
-  const [officeCabinets, setOfficeCabinets] = useState([
-    { id: "oc-1", type: "tall", subType: "bookshelf", width: 0.8, height: 2.2, depth: 0.4, color: "walnut", doorType: "glass" },
-    { id: "oc-2", type: "floor", subType: "storage", width: 0.6, height: 0.8, depth: 0.4, color: "walnut", doorType: "solid" },
-    { id: "oc-3", type: "wall", subType: "display", width: 0.6, height: 0.8, depth: 0.3, color: "walnut", doorType: "open" },
-    { id: "oc-4", type: "shelves", subType: "led-shelf", width: 0.8, height: 1.6, depth: 0.35, color: "charcoal", shelfCount: 3 }
-  ]);
-  const [selectedOfficeCabinetId, setSelectedOfficeCabinetId] = useState(null);
-
-  // Desk System
-  const [officeDeskType, setOfficeDeskType] = useState("executive"); // executive, l-shape, u-shape, floating, compact
-  const [officeDeskWidth, setOfficeDeskWidth] = useState(1.8);
-  const [officeDeskDepth, setOfficeDeskDepth] = useState(0.85);
-  const [officeDeskHeight, setOfficeDeskHeight] = useState(0.76);
-  const [officeDeskTopThickness, setOfficeDeskTopThickness] = useState(0.04);
-  const [officeDeskTopMaterial, setOfficeDeskTopMaterial] = useState("marble"); // wood, marble, quartz, glass, concrete, metal
-  const [officeDeskTopColor, setOfficeDeskTopColor] = useState("white"); // oak, walnut, white, black, gray
-  const [officeDeskDrawerPos, setOfficeDeskDrawerPos] = useState("left"); // left, right, center, dual, none
+  // ─── Office Designer States (Rebuilt from Reference HTML) ───
+  const officeMatsRef = useRef(null);
+  const [officeDeskW, setOfficeDeskW] = useState(2.4);
+  const [officeDeskD, setOfficeDeskD] = useState(1.0);
+  const [officeDeskH, setOfficeDeskH] = useState(0.75);
+  const [officeDeskT, setOfficeDeskT] = useState(0.06);
+  const [officeDeskTopMat, setOfficeDeskTopMat] = useState("natural_oak");
+  const [officeDeskBaseMat, setOfficeDeskBaseMat] = useState("matte_beige");
+  const [officeDeskDrawer, setOfficeDeskDrawer] = useState(true);
   const [officeDeskDrawerCount, setOfficeDeskDrawerCount] = useState(3);
-  const [officeDeskDrawersOpen, setOfficeDeskDrawersOpen] = useState(false);
-  const [officeDeskLockOption, setOfficeDeskLockOption] = useState(false);
+  const [officeDeskDrawerSide, setOfficeDeskDrawerSide] = useState("left");
+  const [officeDeskDrawerStyle, setOfficeDeskDrawerStyle] = useState("closed");
+  const [officeDeskFileCab, setOfficeDeskFileCab] = useState(false);
 
-  // Chair System
-  const [officeChairType, setOfficeChairType] = useState("executive"); // executive, visitor
-  const [officeChairColor, setOfficeChairColor] = useState("black"); // black, brown, gray, cream, red, blue
-  const [officeChairMaterial, setOfficeChairMaterial] = useState("leather"); // leather, fabric, mesh
-  const [officeChairHeight, setOfficeChairHeight] = useState(0.95);
-  const [officeChairFrame, setOfficeChairFrame] = useState("chrome"); // chrome, black, silver
+  const [officeCabW, setOfficeCabW] = useState(4.0);
+  const [officeCabH, setOfficeCabH] = useState(2.8);
+  const [officeCabD, setOfficeCabD] = useState(0.40);
+  const [officeCabSections, setOfficeCabSections] = useState(3);
+  const [officeCabOpenShelves, setOfficeCabOpenShelves] = useState(3);
+  const [officeCabLowerDoors, setOfficeCabLowerDoors] = useState(4);
+  const [officeCabLowerHRatio, setOfficeCabLowerHRatio] = useState(0.40);
+  const [officeCabColor, setOfficeCabColor] = useState("beige");
+  const [officeCabPanelMat, setOfficeCabPanelMat] = useState("natural_oak");
+  const [officeCabShelfSpacing, setOfficeCabShelfSpacing] = useState("even");
+  const [officeCabAutoSync, setOfficeCabAutoSync] = useState(true);
 
-  // Tech & Decor Libraries (active elements toggles)
-  const [officeTechItems, setOfficeTechItems] = useState(["laptop", "pc", "monitor", "speakers"]);
-  const [officeDecorItems, setOfficeDecorItems] = useState(["books", "plant", "award", "lamp"]);
+  const [officeLedOn, setOfficeLedOn] = useState(true);
+  const [officeLedColor, setOfficeLedColor] = useState("warm");
+  const [officeLedBright, setOfficeLedBright] = useState(0.70);
+  const [officeLedUnder, setOfficeLedUnder] = useState(true);
+  const [officeLedBack, setOfficeLedBack] = useState(false);
+  const [officeLedTop, setOfficeLedTop] = useState(false);
 
-  // Flooring System
-  const [officeFlooringType, setOfficeFlooringType] = useState("wood"); // wood, herringbone, marble, porcelain, concrete, carpet, rug
-  const [officeFlooringColor, setOfficeFlooringColor] = useState("oak");
-  const [officeFlooringScale, setOfficeFlooringScale] = useState(1.0);
-  const [officeFlooringGloss, setOfficeFlooringGloss] = useState(0.45);
-
-  // Lighting System
-  const [officeLightingType, setOfficeLightingType] = useState("spotlights"); // spotlights, linear, track, cove, wall
-  const [officeLightingBrightness, setOfficeLightingBrightness] = useState(1.0);
-  const [officeLightingColorTemp, setOfficeLightingColorTemp] = useState("warm"); // warm, cool, neutral
-  const [officeShelvesLEDPosition, setOfficeShelvesLEDPosition] = useState("back"); // top, bottom, back, sides, off
-  const [officeShelvesLEDBrightness, setOfficeShelvesLEDBrightness] = useState(0.8);
-
-  // Generic selected 3D item states for viewport edit actions
-  const [selectedOfficeObject, setSelectedOfficeObject] = useState(null); // metadata of selected object
-  const [officeCustomObjects, setOfficeCustomObjects] = useState([]);
-
-  // Office state handlers
-  const handleUpdateOfficeCabinetWidth = (id, w) => {
-    setOfficeCabinets(prev => prev.map(c => c.id === id ? { ...c, width: parseFloat(w) } : c));
-  };
-  const handleUpdateOfficeCabinetHeight = (id, h) => {
-    setOfficeCabinets(prev => prev.map(c => c.id === id ? { ...c, height: parseFloat(h) } : c));
-  };
-  const handleUpdateOfficeCabinetDepth = (id, d) => {
-    setOfficeCabinets(prev => prev.map(c => c.id === id ? { ...c, depth: parseFloat(d) } : c));
-  };
-  const handleUpdateOfficeCabinetDoor = (id, door) => {
-    setOfficeCabinets(prev => prev.map(c => c.id === id ? { ...c, doorType: door } : c));
-  };
-  const handleDeleteOfficeCabinet = (id) => {
-    setOfficeCabinets(prev => prev.filter(c => c.id !== id));
-    triggerNotification("Office cabinet removed");
-  };
-  const handleAddOfficeCabinet = (type, subType, width) => {
-    const newId = `oc-${Date.now()}`;
-    const newMod = {
-      id: newId,
-      type,
-      subType,
-      width,
-      height: type === "tall" ? 2.2 : type === "floor" ? 0.8 : 0.8,
-      depth: type === "wall" ? 0.3 : 0.4,
-      color: "walnut",
-      doorType: type === "shelves" ? "open" : "solid",
-      shelfCount: 3
-    };
-    setOfficeCabinets(prev => [...prev, newMod]);
-    triggerNotification("Added Office Cabinet module");
-  };
+  const [selectedOfficeObject, setSelectedOfficeObject] = useState(null);
 
   // References for ThreeJS instances to communicate with React handlers
   const appRef = useRef({
@@ -1201,15 +1219,15 @@ const buildWardrobe = useCallback(() => {
     roomWidth, roomLength, roomHeight, kitchenLayout,
     baseCabinetWidth, baseCabinetHeight, baseCabinetDepth, toeKickHeight, kitchenHandleType,
     wallCabinetsEnabled, wallCabinetHeight, wallCabinetDepth, wallCabinetDistance, wallCabinetGlass, wallCabinetOpen,
-    tallCabinetType, tallCabinetsCount, countertopMaterial, countertopThickness, countertopWaterfall, countertopColor,
+tallCabinetType, tallCabinetsCount, countertopMaterial, countertopThickness, countertopWaterfall, countertopColor,
     islandEnabled, islandWidth, islandDepth, islandSeating, islandSink, islandCooker,
     applianceFridge, applianceOven, applianceCooker, applianceHood, applianceDishwasher,
     sinkType, sinkPosition, faucetType, kitchenCabinetMaterial, kitchenCabinetWoodType, kitchenCabinetMatteColor,
     wallColor, floorColor, backsplashColor, textureScale, textureRotation, glossLevel, roughnessVal, bumpStrength,
-    kitchenCabinetPremiumFinish, backsplashMaterial, countertopColor, applianceSink, kitchenModules, showWalls
+    kitchenCabinetPremiumFinish
   ]);
 
-  // ─── 3D OFFICE MESH GENERATOR ───
+  // ─── 3D OFFICE MESH GENERATOR (Rebuilt from Reference HTML) ───
   const buildOffice = useCallback(() => {
     const app = appRef.current;
     if (!app.root) return;
@@ -1223,752 +1241,264 @@ const buildWardrobe = useCallback(() => {
     app.drawerPivots = [];
     app.shelvesMeshes = [];
 
-    const box = (w, h, d) => new THREE.BoxGeometry(w, h, d);
-    const mesh = (geo, mat, x, y, z, name) => {
-      const m = new THREE.Mesh(geo, mat);
+    // Helper: bx box builder
+    const bx = (w, h, d, mat, x = 0, y = 0, z = 0) => {
+      const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
       m.position.set(x, y, z);
       m.castShadow = true;
       m.receiveShadow = true;
-      m.name = name || "";
       return m;
     };
 
-    const RW = officeRoomWidth;
-    const RL = officeRoomLength;
-    const RH = officeRoomHeight;
-
-    // --- Create Custom Office Materials ---
-    let cabColor = 0x5c4a38; // walnut default
-    if (officeFeatureWallColor === "oak") cabColor = 0xA07040;
-    else if (officeFeatureWallColor === "charcoal") cabColor = 0x242424;
-    else if (officeFeatureWallColor === "beige") cabColor = 0xd4c5a8;
-    else if (officeFeatureWallColor === "sage") cabColor = 0x4f6352;
-    const mCabinet = new THREE.MeshStandardMaterial({ color: cabColor, roughness: 0.72, metalness: 0.05 });
-
-    let topColor = 0xf5f5f7;
-    let topRoughness = 0.08;
-    let topMetal = 0.12;
-    let topTrans = false;
-    let topOpac = 1.0;
-    if (officeDeskTopMaterial === "wood") {
-      topColor = officeDeskTopColor === "walnut" ? 0x3d2e1e : 0xa07040;
-      topRoughness = 0.75;
-      topMetal = 0.02;
-    } else if (officeDeskTopMaterial === "marble") {
-      topColor = 0xf5f5f7;
-      topRoughness = 0.08;
-      topMetal = 0.12;
-    } else if (officeDeskTopMaterial === "quartz") {
-      topColor = 0xe2e2e6;
-      topRoughness = 0.22;
-      topMetal = 0.02;
-    } else if (officeDeskTopMaterial === "glass") {
-      topColor = 0xddeeff;
-      topRoughness = 0.02;
-      topMetal = 0.90;
-      topTrans = true;
-      topOpac = 0.35;
-    } else if (officeDeskTopMaterial === "concrete") {
-      topColor = 0x88888b;
-      topRoughness = 0.85;
-      topMetal = 0.02;
-    } else if (officeDeskTopMaterial === "metal") {
-      topColor = 0xaaaaaf;
-      topRoughness = 0.25;
-      topMetal = 0.85;
-    }
-    const mDeskTop = new THREE.MeshStandardMaterial({ color: topColor, roughness: topRoughness, metalness: topMetal, transparent: topTrans, opacity: topOpac });
-
-    const mSteel = new THREE.MeshStandardMaterial({ color: 0xcccccc, roughness: 0.15, metalness: 0.85 });
-    const mDarkSteel = new THREE.MeshStandardMaterial({ color: 0x222224, roughness: 0.5, metalness: 0.2 });
-
-    let chairColVal = 0x111111; // black cushion
-    if (officeChairColor === "brown") chairColVal = 0x5a3e2e;
-    else if (officeChairColor === "gray") chairColVal = 0x555558;
-    else if (officeChairColor === "cream") chairColVal = 0xf2ece0;
-    else if (officeChairColor === "red") chairColVal = 0x8c2520;
-    else if (officeChairColor === "blue") chairColVal = 0x20355a;
-    const mLeather = new THREE.MeshStandardMaterial({ color: chairColVal, roughness: 0.65, metalness: 0.08 });
-
-    let ledColorVal = 0xffcc44; // warm
-    if (officeLightingColorTemp === "cool") ledColorVal = 0x88aaff;
-    else if (officeLightingColorTemp === "neutral") ledColorVal = 0xffffff;
-    const mLED = new THREE.MeshStandardMaterial({ color: ledColorVal, emissive: new THREE.Color(ledColorVal), emissiveIntensity: officeShelvesLEDBrightness * 2.5 });
-
-    const mGlass = new THREE.MeshStandardMaterial({ color: 0xddeeff, transparent: true, opacity: 0.3, roughness: 0.05, metalness: 0.1 });
-
-    // Flooring Setup
-    const canvas = document.createElement("canvas");
-    canvas.width = 512;
-    canvas.height = 512;
-    const ctx = canvas.getContext("2d");
-    let baseCol = "#a07040"; // oak
-    let darkCol = "#704820";
-    if (officeFlooringColor === "walnut") { baseCol = "#3d2010"; darkCol = "#261208"; }
-    else if (officeFlooringColor === "charcoal") { baseCol = "#2b2b2b"; darkCol = "#1c1c1c"; }
-    else if (officeFlooringColor === "beige") { baseCol = "#d8cbb5"; darkCol = "#b5a790"; }
-    ctx.fillStyle = baseCol;
-    ctx.fillRect(0, 0, 512, 512);
-    ctx.strokeStyle = darkCol;
-    ctx.lineWidth = 2.0;
-
-    if (officeFlooringType === "herringbone") {
-      for (let y = 0; y < 512; y += 64) {
-        for (let x = 0; x < 512; x += 128) {
-          ctx.beginPath();
-          ctx.moveTo(x, y);
-          ctx.lineTo(x + 64, y + 64);
-          ctx.lineTo(x + 128, y);
-          ctx.stroke();
-          ctx.beginPath();
-          ctx.moveTo(x + 64, y + 64);
-          ctx.lineTo(x + 64, y + 128);
-          ctx.stroke();
-        }
+    // Initialize/cache office materials
+    if (!officeMatsRef.current) {
+      const M_off = {};
+      M_off.natural_oak  = new THREE.MeshStandardMaterial({map:woodTex('#C8A96E','#8C6A3A'),roughness:.75,metalness:.02});
+      M_off.walnut       = new THREE.MeshStandardMaterial({map:woodTex('#6B3F1E','#3A1E08'),roughness:.78,metalness:.02});
+      M_off.dark_walnut  = new THREE.MeshStandardMaterial({map:woodTex('#3A2010','#1A0E06'),roughness:.80,metalness:.02});
+      M_off.ash          = new THREE.MeshStandardMaterial({map:woodTex('#D8C9A8','#A89060',1.4),roughness:.72,metalness:.02});
+      M_off.black_wood   = new THREE.MeshStandardMaterial({map:woodTex('#1A1614','#0A0806'),roughness:.82,metalness:.04});
+      M_off.white_wood   = new THREE.MeshStandardMaterial({map:woodTex('#EDE8DF','#C8C0B0',1.4),roughness:.72,metalness:0});
+      M_off.matte_lam    = new THREE.MeshStandardMaterial({color:0xD0C9BE,roughness:.95,metalness:0});
+      M_off.high_gloss   = new THREE.MeshStandardMaterial({color:0xEAE6E0,roughness:.04,metalness:.08});
+      M_off.white_marble = new THREE.MeshStandardMaterial({map:marbleTex('#F5F5F0','#C8C4C0',.28),roughness:.14,metalness:.08});
+      M_off.black_marble = new THREE.MeshStandardMaterial({map:marbleTex('#1A1A1C','#3C3C42',.40),roughness:.20,metalness:.12});
+      M_off.grey_marble  = new THREE.MeshStandardMaterial({map:marbleTex('#B0AFAC','#787674',.33),roughness:.18,metalness:.10});
+      M_off.travertine   = new THREE.MeshStandardMaterial({map:noiseTex('D4C4A0','B8A884'),roughness:.88,metalness:0});
+      M_off.matte_beige  = new THREE.MeshStandardMaterial({color:0xBEB4A6,roughness:.92,metalness:0});
+      M_off.matte_white  = new THREE.MeshStandardMaterial({color:0xEFEFED,roughness:.90,metalness:0});
+      M_off.matte_black  = new THREE.MeshStandardMaterial({color:0x1C1C1E,roughness:.88,metalness:.05});
+      M_off.dark_grey_base=new THREE.MeshStandardMaterial({color:0x3A3A3C,roughness:.85,metalness:.05});
+      M_off.metal_dark   = new THREE.MeshStandardMaterial({color:0x2A2826,roughness:.28,metalness:.9});
+      M_off.metal_gold   = new THREE.MeshStandardMaterial({color:0xBD8D3C,roughness:.22,metalness:.92});
+      M_off.floor        = new THREE.MeshStandardMaterial({map:woodTex('#D4C098','#A88C60',1.8),roughness:.84,metalness:0});
+      M_off.wall         = new THREE.MeshStandardMaterial({color:0xF0EDE5,roughness:1,metalness:0});
+      M_off.wall_side    = new THREE.MeshStandardMaterial({color:0xECE9E1,roughness:1,metalness:0});
+      if (M_off.floor && M_off.floor.map) {
+        M_off.floor.map.repeat.set(6, 6);
       }
-    } else {
-      for (let x = 0; x < 512; x += 64) {
-        ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, 512);
-        ctx.stroke();
-      }
+      officeMatsRef.current = M_off;
     }
-    const tex = new THREE.CanvasTexture(canvas);
-    tex.wrapS = THREE.RepeatWrapping;
-    tex.wrapT = THREE.RepeatWrapping;
-    tex.repeat.set(officeFlooringScale * 2, officeFlooringScale * 2);
 
-    const mFloor = new THREE.MeshStandardMaterial({
-      map: tex,
-      roughness: 1.0 - officeFlooringGloss,
-      metalness: officeFlooringGloss * 0.2
+    const M_off = officeMatsRef.current;
+    const CAB_HEX = {
+      beige:0xBEB4A6, sand:0xC5B99A, white:0xEFEFED, ivory:0xEEE8D6,
+      light_grey:0xCACAC6, dark_grey:0x3A3A3C, taupe:0x8A8274,
+      black:0x1A1A1C, walnut_col:0x6B3F1E, oak_col:0xC8A96E
+    };
+
+    // Dynamic Materials
+    const cabColorHex = CAB_HEX[officeCabColor] || 0xBEB4A6;
+    const _cabMat = new THREE.MeshStandardMaterial({ color: cabColorHex, roughness: 0.90, metalness: 0 });
+
+    const cols = { warm: 0xFFD070, neutral: 0xFFF5CC, cool: 0xD0E8FF };
+    const ledCol = cols[officeLedColor] || 0xFFD070;
+    const _ledMat = new THREE.MeshStandardMaterial({
+      emissive: new THREE.Color(ledCol),
+      emissiveIntensity: officeLedBright * 3.8,
+      roughness: 1,
+      metalness: 0
     });
 
-    // Floor Plane
-    const floorMesh = mesh(box(RW, 0.02, RL), mFloor, 0, -0.01, 0, "officeFloor");
-    app.root.add(floorMesh);
+    const getTopMat = () => M_off[officeDeskTopMat] || M_off.natural_oak;
+    const getBaseMat = () => officeDeskBaseMat === 'match_top' ? getTopMat() : (M_off[officeDeskBaseMat] || M_off.matte_beige);
+    const getPanelMat = () => M_off[officeCabAutoSync ? officeDeskTopMat : officeCabPanelMat] || M_off.natural_oak;
 
-    // Subtle office Rug under the desk
-    const rug = mesh(box(officeDeskWidth + 0.6, 0.005, officeDeskDepth + 1.0), new THREE.MeshStandardMaterial({ color: 0xe2dcd3, roughness: 0.95 }), 0, 0.002, 0.2, "officeRug");
-    app.root.add(rug);
+    // ─── ENVIRONMENT ────────────────────────────────
+    // Floor
+    const fl = bx(18, .03, 18, M_off.floor, 0, -.015, 0);
+    fl.castShadow = false;
+    app.root.add(fl);
+    // Back wall
+    app.root.add(bx(18, 5, .1, M_off.wall, 0, 2.5, -4.2));
+    // Side walls
+    app.root.add(bx(.1, 5, 18, M_off.wall_side, -7.5, 2.5, 0));
+    app.root.add(bx(.1, 5, 18, M_off.wall_side, 7.5, 2.5, 0));
 
-    // --- Build Feature Wall ---
-    const fwG = new THREE.Group();
-    fwG.name = "featureWall";
-    fwG.userData = { group: "feature-wall", id: "feature-wall" };
-    
-    if (officeFeatureWallStyle === "wood-slat") {
-      const backWallPanel = mesh(box(officeFeatureWallWidth, officeFeatureWallHeight, officeFeatureWallThickness), mCabinet, 0, officeFeatureWallHeight / 2, -RL / 2 + officeFeatureWallThickness / 2, "fwBackPanel");
-      fwG.add(backWallPanel);
-      
-      const slatW = 0.035;
-      const slatD = 0.02;
-      const slatMat = mCabinet.clone();
-      slatMat.color.multiplyScalar(0.72);
-      const slatCount = Math.floor(officeFeatureWallWidth / (slatW + officeFeatureWallSlatSpacing));
-      const startX = -((slatCount - 1) * (slatW + officeFeatureWallSlatSpacing)) / 2;
-      for (let s = 0; s < slatCount; s++) {
-        const sx = startX + s * (slatW + officeFeatureWallSlatSpacing);
-        const slat = mesh(box(slatW, officeFeatureWallHeight, slatD), slatMat, sx, officeFeatureWallHeight / 2, -RL / 2 + officeFeatureWallThickness + slatD / 2, `fwSlat_${s}`);
-        fwG.add(slat);
+    // ─── DESK ───────────────────────────────────────
+    const deskGrp = new THREE.Group();
+    const topM = getTopMat();
+    const baseM = getBaseMat();
+    const metalM = M_off.metal_dark;
+    const goldM = M_off.metal_gold;
+
+    // — Tabletop
+    deskGrp.add(bx(officeDeskW + .04, officeDeskT, officeDeskD + .04, topM, 0, officeDeskH - officeDeskT / 2, 0));
+    // Accent edge strip (gold/metal)
+    deskGrp.add(bx(officeDeskW + .04, .005, .012, goldM, 0, officeDeskH - officeDeskT - .003, officeDeskD / 2 + .018));
+
+    // — Left pedestal (main, wider)
+    const pW = .56;
+    const pH = officeDeskH - officeDeskT;
+    const pD = officeDeskD * .93;
+    deskGrp.add(bx(pW, pH, pD, baseM, -officeDeskW / 2 + pW / 2, pH / 2, 0));
+
+    // — Right pedestal (narrower)
+    const rW = .32;
+    deskGrp.add(bx(rW, pH, pD, baseM, officeDeskW / 2 - rW / 2, pH / 2, 0));
+
+    // — Drawers on left pedestal
+    if (officeDeskDrawer) {
+      const dH = (pH - .04) / officeDeskDrawerCount;
+      for (let i = 0; i < officeDeskDrawerCount; i++) {
+        const dy = .03 + i * (dH + .007) + dH / 2;
+        const df = bx(pW - .04, dH - .006, .019, officeDeskDrawerStyle === 'open' ? M_off.metal_dark : baseM,
+          -officeDeskW / 2 + pW / 2, dy, pD / 2 + .005);
+        df.userData = { group: "ext-drawer" };
+        deskGrp.add(df);
+        // Thin gap line
+        deskGrp.add(bx(pW - .04, .0025, .022, metalM, -officeDeskW / 2 + pW / 2, dy + dH / 2 - .005, pD / 2 + .005));
+        // Handle bar
+        deskGrp.add(bx(.14, .007, .014, metalM, -officeDeskW / 2 + pW / 2, dy, pD / 2 + .018));
       }
-    } else if (officeFeatureWallStyle === "marble") {
-      const marblePanel = mesh(box(officeFeatureWallWidth, officeFeatureWallHeight, officeFeatureWallThickness), mDeskTop, 0, officeFeatureWallHeight / 2, -RL / 2 + officeFeatureWallThickness / 2, "fwMarblePanel");
-      fwG.add(marblePanel);
-      [-0.6, 0, 0.6].forEach((offset, idx) => {
-        const strip = mesh(box(0.015, officeFeatureWallHeight, 0.006), mSteel, offset, officeFeatureWallHeight / 2, -RL / 2 + officeFeatureWallThickness + 0.003, `fwMarbleStrip_${idx}`);
-        fwG.add(strip);
-      });
-    } else if (officeFeatureWallStyle === "acoustic") {
-      const acousticPanel = mesh(box(officeFeatureWallWidth, officeFeatureWallHeight, officeFeatureWallThickness), new THREE.MeshStandardMaterial({ color: 0x3a4f41, roughness: 0.90 }), 0, officeFeatureWallHeight / 2, -RL / 2 + officeFeatureWallThickness / 2, "fwAcousticPanel");
-      fwG.add(acousticPanel);
-      for (let h = 0.6; h < officeFeatureWallHeight; h += 0.6) {
-        const seam = mesh(box(officeFeatureWallWidth, 0.008, 0.008), mDarkSteel, 0, h, -RL / 2 + officeFeatureWallThickness + 0.003, `fwAcousticSeam_${h}`);
-        fwG.add(seam);
-      }
-    } else {
-      let fCol = 0xeae6df;
-      if (officeFeatureWallStyle === "concrete") fCol = 0x8c8c90;
-      const paintedWall = mesh(box(officeFeatureWallWidth, officeFeatureWallHeight, officeFeatureWallThickness), new THREE.MeshStandardMaterial({ color: fCol, roughness: 0.85 }), 0, officeFeatureWallHeight / 2, -RL / 2 + officeFeatureWallThickness / 2, "fwPaintedPanel");
-      fwG.add(paintedWall);
     }
-    app.root.add(fwG);
-    app.selectables.push(fwG.children[0]);
 
-    // --- Build Modular Built-in Cabinets ---
-    officeCabinets.forEach((cab, idx) => {
-      const cabG = new THREE.Group();
-      cabG.name = `cabinet_${cab.id}`;
-      cabG.userData = { id: cab.id, group: "cabinet", type: cab.type };
-      
-      const isTall = cab.type === "tall";
-      const isWall = cab.type === "wall";
-      const isShelves = cab.type === "shelves";
-      const cabH = cab.height || (isTall ? 2.2 : 0.8);
-      const cabW = cab.width || 0.6;
-      const cabD = cab.depth || (isWall ? 0.3 : 0.4);
-      
-      const isLeft = idx % 2 === 0;
-      const marginOffset = 0.02;
-      const cx = isLeft ? -officeFeatureWallWidth / 2 - cabW / 2 - marginOffset : officeFeatureWallWidth / 2 + cabW / 2 + marginOffset;
-      const cy = isWall ? officeRoomHeight - cabH - 0.1 : 0;
-      const cz = -RL / 2 + cabD / 2;
+    // — Right side drawers if 'both' or 'right'
+    if (officeDeskDrawer && (officeDeskDrawerSide === 'right' || officeDeskDrawerSide === 'both')) {
+      const n = Math.max(2, officeDeskDrawerCount - 1);
+      const dH2 = (pH - .04) / n;
+      for (let i = 0; i < n; i++) {
+        const dy = .03 + i * (dH2 + .007) + dH2 / 2;
+        const df = bx(rW - .04, dH2 - .006, .019, baseM, officeDeskW / 2 - rW / 2, dy, pD / 2 + .005);
+        df.userData = { group: "ext-drawer" };
+        deskGrp.add(df);
+        deskGrp.add(bx(.09, .007, .014, metalM, officeDeskW / 2 - rW / 2, dy, pD / 2 + .018));
+      }
+    }
 
-      cabG.position.set(cx, cy, cz);
+    // — File cabinet extension
+    if (officeDeskFileCab) {
+      const fcW = rW + .12;
+      const fcH = pH * .48;
+      const fcD = pD;
+      deskGrp.add(bx(fcW, fcH, fcD, baseM, officeDeskW / 2 - rW / 2 + fcW * .55, fcH / 2, 0));
+      for (let i = 0; i < 2; i++) {
+        const fy = .03 + i * (fcH * .5 - .03) + fcH * .25;
+        deskGrp.add(bx(fcW - .04, fcH * .5 - .016, .02, baseM, officeDeskW / 2 - rW / 2 + fcW * .55, fy, pD / 2 + .006));
+      }
+    }
 
-      const frame = mesh(box(cabW, cabH, cabD), mCabinet, 0, cabH / 2, 0, `cabFrame_${cab.id}`);
-      cabG.add(frame);
-      app.selectables.push(frame);
+    // — Modesty back panel
+    const mpW = officeDeskW - pW - rW - .08;
+    deskGrp.add(bx(mpW, .46, .022, baseM, (rW - pW) / 2 * .5, .23, -officeDeskD / 2 + .013));
 
-      if (isShelves || cab.doorType === "open" || cab.subType === "bookshelf") {
-        const sCount = cab.shelfCount || 3;
-        const innerW = cabW - 0.04;
-        const innerD = cabD - 0.04;
-        for (let s = 1; s <= sCount; s++) {
-          const sy = (cabH / (sCount + 1)) * s;
-          const shelf = mesh(box(innerW, 0.02, innerD), mCabinet, 0, sy, 0.01, `cabShelf_${cab.id}_${s}`);
-          cabG.add(shelf);
-          app.shelvesMeshes.push(shelf);
+    deskGrp.position.set(0, 0, 1.6);
+    app.root.add(deskGrp);
 
-          if (officeShelvesLEDPosition !== "off") {
-            let ledY = sy;
-            let ledZ = -innerD / 2 + 0.01;
-            let ledX = 0;
-            if (officeShelvesLEDPosition === "top") ledY += 0.015;
-            if (officeShelvesLEDPosition === "bottom") ledY -= 0.015;
-            
-            const led = mesh(box(innerW, 0.008, 0.012), mLED, ledX, ledY, ledZ, `cabShelfLED_${cab.id}_${s}`);
-            cabG.add(led);
-          }
+    // ─── WALL CABINET ───────────────────────────────
+    const cabGrp = new THREE.Group();
+    const lH = officeCabH * officeCabLowerHRatio;
+    const uH = officeCabH - lH;
+    const sideW = Math.max(.36, officeCabW * .10);
+    const cenW = officeCabW - sideW * 2;
+    const shT = .026;
+    const panM = getPanelMat();
+
+    // — Full back panel
+    cabGrp.add(bx(officeCabW, officeCabH, .022, _cabMat, 0, officeCabH / 2, -officeCabD / 2 + .012));
+    // — Top cap
+    cabGrp.add(bx(officeCabW + .02, .028, officeCabD, _cabMat, 0, officeCabH - .014, 0));
+    // — Bottom base
+    cabGrp.add(bx(officeCabW + .02, .04, officeCabD, _cabMat, 0, .02, 0));
+
+    // — Left tall side unit
+    cabGrp.add(bx(sideW, officeCabH, officeCabD, _cabMat, -officeCabW / 2 + sideW / 2, officeCabH / 2, 0));
+    cabGrp.add(bx(sideW - .02, officeCabH - .03, .02, _cabMat, -officeCabW / 2 + sideW / 2, officeCabH / 2, officeCabD / 2 - .009));
+    // — Right tall side unit
+    cabGrp.add(bx(sideW, officeCabH, officeCabD, _cabMat, officeCabW / 2 - sideW / 2, officeCabH / 2, 0));
+    cabGrp.add(bx(sideW - .02, officeCabH - .03, .02, _cabMat, officeCabW / 2 - sideW / 2, officeCabH / 2, officeCabD / 2 - .009));
+
+    // — Center vertical dividers
+    const secW = cenW / officeCabSections;
+    for (let i = 1; i < officeCabSections; i++) {
+      const dvX = -cenW / 2 + i * secW;
+      cabGrp.add(bx(.024, uH, officeCabD, _cabMat, dvX, lH + uH / 2, 0));
+    }
+
+    // — Decorative back panels per upper section
+    for (let i = 0; i < officeCabSections; i++) {
+      const sx = -cenW / 2 + i * secW + secW / 2;
+      cabGrp.add(bx(secW - .048, uH - .05, .018, panM, sx, lH + uH / 2, -officeCabD / 2 + .028));
+    }
+
+    // — Open shelves in upper zone
+    const ns = officeCabOpenShelves;
+    const aH = uH - .04;
+    for (let sh = 0; sh <= ns; sh++) {
+      let y;
+      if (officeCabShelfSpacing === 'even') y = lH + .02 + aH / (ns + 1) * (sh + 1);
+      else if (officeCabShelfSpacing === 'top') y = lH + .02 + aH * (1 - Math.pow(1 - (sh + 1) / (ns + 1), 1.55));
+      else y = lH + .02 + aH * Math.pow((sh + 1) / (ns + 1), 1.55);
+
+      cabGrp.add(bx(cenW + .005, shT, officeCabD - .022, _cabMat, 0, y, 0));
+
+      if (officeLedOn && sh > 0) {
+        const cols_led = { warm: 0xFFCC60, neutral: 0xFFFCCC, cool: 0xCCE8FF };
+        const lc = cols_led[officeLedColor] || 0xFFCC60;
+        
+        if (officeLedUnder) {
+          cabGrp.add(bx(cenW * .88, .009, .016, _ledMat, 0, y - shT / 2 - .005, -officeCabD / 2 + .056));
+          const pl = new THREE.PointLight(lc, officeLedBright * 0.5, 2.2, 2);
+          pl.position.set(0, y - .04, -officeCabD / 2 + .12);
+          cabGrp.add(pl);
         }
-      } else {
-        const doorW = cabW - 0.006;
-        const doorH = cabH - 0.01;
-        const doorZ = cabD / 2 + 0.01;
-
-        if (cab.doorType === "glass") {
-          const doorBorder = mesh(box(doorW, doorH, 0.015), mCabinet, 0, cabH / 2, doorZ, `cabDoorBorder_${cab.id}`);
-          const glassPane = mesh(box(doorW - 0.08, doorH - 0.08, 0.008), mGlass, 0, cabH / 2, doorZ + 0.004, `cabDoorGlass_${cab.id}`);
-          cabG.add(doorBorder, glassPane);
-          app.selectables.push(doorBorder);
-        } else {
-          const door = mesh(box(doorW, doorH, 0.015), mCabinet, 0, cabH / 2, doorZ, `cabDoor_${cab.id}`);
-          cabG.add(door);
-          app.selectables.push(door);
-        }
-
-        const handle = mesh(box(0.015, 0.16, 0.02), mSteel, doorW / 2 - 0.04, cabH / 2, doorZ + 0.012, `cabHandle_${cab.id}`);
-        cabG.add(handle);
-      }
-
-      app.root.add(cabG);
-    });
-
-    // --- Build Desk System ---
-    const deskG = new THREE.Group();
-    deskG.name = "officeDesk";
-    deskG.userData = { id: "office-desk", group: "desk", type: officeDeskType };
-    
-    const deskY = officeDeskHeight;
-    const deskW = officeDeskWidth;
-    const deskD = officeDeskDepth;
-    const deskThickness = officeDeskTopThickness;
-    const deskZ = 0.2;
-
-    deskG.position.set(0, 0, deskZ);
-
-    let topGeo = box(deskW, deskThickness, deskD);
-    if (officeDeskType === "l-shape") {
-      topGeo = box(deskW, deskThickness, deskD);
-      const returnW = 0.5;
-      const returnD = 1.0;
-      const deskReturn = mesh(box(returnW, deskThickness, returnD), mDeskTop, -deskW / 2 + returnW / 2, deskY - deskThickness / 2, -deskD / 2 - returnD / 2, "deskReturnTop");
-      deskG.add(deskReturn);
-      app.selectables.push(deskReturn);
-    } else if (officeDeskType === "u-shape") {
-      topGeo = box(deskW, deskThickness, deskD);
-      const rW = 0.5;
-      const rD = 1.0;
-      const retL = mesh(box(rW, deskThickness, rD), mDeskTop, -deskW / 2 + rW / 2, deskY - deskThickness / 2, -deskD / 2 - rD / 2, "deskReturnLTop");
-      const retR = mesh(box(rW, deskThickness, rD), mDeskTop, deskW / 2 - rW / 2, deskY - deskThickness / 2, -deskD / 2 - rD / 2, "deskReturnRTop");
-      deskG.add(retL, retR);
-      app.selectables.push(retL, retR);
-    }
-    
-    const topMesh = mesh(topGeo, mDeskTop, 0, deskY - deskThickness / 2, 0, "deskTop");
-    deskG.add(topMesh);
-    app.selectables.push(topMesh);
-
-    if (officeDeskType === "floating") {
-      const bracket = mesh(box(deskW - 0.1, 0.2, 0.05), mDarkSteel, 0, deskY - 0.1, -deskD / 2 + 0.025, "deskFloatingBracket");
-      deskG.add(bracket);
-    } else if (officeDeskType === "compact") {
-      const legR = 0.024;
-      const legH = deskY - deskThickness;
-      const lx = deskW / 2 - 0.06;
-      const lz = deskD / 2 - 0.06;
-      [[-lx, -lz], [lx, -lz], [-lx, lz], [lx, lz]].forEach(([xVal, zVal], idx) => {
-        const leg = mesh(new THREE.CylinderGeometry(legR, legR, legH, 12), mSteel, xVal, legH / 2, zVal, `deskLeg_${idx}`);
-        deskG.add(leg);
-      });
-    } else {
-      const panelThickness = 0.08;
-      const legH = deskY - deskThickness;
-      const sideL = mesh(box(panelThickness, legH, deskD - 0.02), mCabinet, -deskW / 2 + panelThickness / 2 + 0.02, legH / 2, 0, "deskSideSupportL");
-      const sideR = mesh(box(panelThickness, legH, deskD - 0.02), mCabinet, deskW / 2 - panelThickness / 2 - 0.02, legH / 2, 0, "deskSideSupportR");
-      const modesty = mesh(box(deskW - panelThickness * 2 - 0.06, legH * 0.8, 0.018), mCabinet, 0, legH * 0.6, -deskD / 2 + 0.08, "deskModestyPanel");
-      deskG.add(sideL, sideR, modesty);
-      app.selectables.push(sideL, sideR);
-    }
-
-    // --- Drawer System (Desk Drawers) ---
-    if (officeDeskDrawerPos !== "none" && officeDeskType !== "floating") {
-      const hasL = officeDeskDrawerPos === "left" || officeDeskDrawerPos === "dual";
-      const hasR = officeDeskDrawerPos === "right" || officeDeskDrawerPos === "dual";
-      const hasC = officeDeskDrawerPos === "center";
-
-      const pedW = 0.44;
-      const pedH = deskY - deskThickness - 0.02;
-      const pedD = deskD - 0.06;
-      const drawerCount = officeDeskDrawerCount || 3;
-      const rowHeight = pedH / drawerCount;
-      const slideOutZ = pedD * 0.7;
-
-      const buildPedestalDrawers = (xOffset, suffix) => {
-        const pedGroup = new THREE.Group();
-        pedGroup.position.set(xOffset, pedH / 2, 0.02);
-
-        const caseMesh = mesh(box(pedW, pedH, pedD), mCabinet, 0, 0, 0, `pedCase_${suffix}`);
-        pedGroup.add(caseMesh);
-
-        for (let row = 0; row < drawerCount; row++) {
-          const dy = -pedH / 2 + row * rowHeight + rowHeight / 2;
-          const dg = new THREE.Group();
-          dg.position.set(0, dy, 0);
-          dg.userData = { isDrawerGroup: true, drawerIndex: row };
-
-          const trayW = pedW - 0.02;
-          const trayH = rowHeight - 0.02;
-          const trayD = pedD - 0.02;
-          
-          const frontFace = mesh(box(trayW, trayH, 0.02), mCabinet, 0, 0, pedD / 2 + 0.01, `drawerFace_${suffix}_${row}`);
-          frontFace.userData = { group: "ext-drawer", drawerGroup: dg };
-          dg.add(frontFace);
-          app.selectables.push(frontFace);
-
-          const handle = mesh(box(0.12, 0.015, 0.018), mSteel, 0, 0, pedD / 2 + 0.024, `drawerHandle_${suffix}_${row}`);
-          dg.add(handle);
-
-          const trayBody = mesh(box(trayW - 0.02, trayH * 0.8, trayD), new THREE.MeshStandardMaterial({ color: 0xc8b898, roughness: 0.8 }), 0, -trayH * 0.1, 0, `drawerInner_${suffix}_${row}`);
-          dg.add(trayBody);
-
-          if (row === drawerCount - 1) {
-            [-0.08, 0, 0.08].forEach((itemX, i) => {
-              const fileBox = mesh(box(0.04, trayH * 0.6, 0.15), new THREE.MeshStandardMaterial({ color: i === 0 ? 0xcc4444 : i === 1 ? 0x4488cc : 0x44cc88 }), itemX, trayH * 0.2, 0, `drawerFile_${suffix}_${i}`);
-              dg.add(fileBox);
-            });
-          }
-
-          pedGroup.add(dg);
-          app.drawerPivots.push({
-            group: dg,
-            targetZ: 0,
-            openZ: slideOutZ,
-            open: officeDeskDrawersOpen,
-            row,
-            col: suffix === "L" ? 0 : 1
+        if (officeLedBack) {
+          const seg = aH / (ns + 1);
+          const blY = y - seg * .35;
+          [cenW / 2 + .002, -cenW / 2 - .002].forEach(bx_ => {
+            const bl = bx(.01, seg * .65, .009, _ledMat, bx_, blY, -officeCabD / 2 + .028);
+            cabGrp.add(bl);
           });
-
-          if (officeDeskLockOption && row === drawerCount - 1) {
-            const lockMesh = mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.004, 8), mDarkSteel, 0, trayH / 2 - 0.02, pedD / 2 + 0.022, `drawerLock_${suffix}`);
-            lockMesh.rotation.x = Math.PI / 2;
-            dg.add(lockMesh);
-          }
         }
-        deskG.add(pedGroup);
-      };
-
-      if (hasL) buildPedestalDrawers(-deskW / 2 + pedW / 2 + 0.05, "L");
-      if (hasR) buildPedestalDrawers(deskW / 2 - pedW / 2 - 0.05, "R");
-      
-      if (hasC) {
-        const cW = deskW - 0.4;
-        const cH = 0.08;
-        const cD = deskD - 0.08;
-        const cg = new THREE.Group();
-        cg.position.set(0, deskY - deskThickness - cH / 2 - 0.005, 0.02);
-        
-        const centerFront = mesh(box(cW - 0.01, cH - 0.01, 0.016), mCabinet, 0, 0, cD / 2 + 0.008, "drawerCenterFace");
-        centerFront.userData = { group: "ext-drawer", drawerGroup: cg };
-        cg.add(centerFront);
-        app.selectables.push(centerFront);
-
-        const centerHandle = mesh(box(0.18, 0.01, 0.016), mSteel, 0, 0, cD / 2 + 0.018, "drawerCenterHandle");
-        cg.add(centerHandle);
-
-        const centerTray = mesh(box(cW - 0.04, cH - 0.02, cD), new THREE.MeshStandardMaterial({ color: 0xc8b898, roughness: 0.85 }), 0, 0, 0, "drawerCenterTray");
-        cg.add(centerTray);
-
-        deskG.add(cg);
-        app.drawerPivots.push({
-          group: cg,
-          targetZ: 0,
-          openZ: slideOutZ * 0.8,
-          open: officeDeskDrawersOpen,
-          row: 0,
-          col: 3
-        });
       }
     }
-    app.root.add(deskG);
 
-    // --- Chair System ---
-    const buildExecutiveChair = (x, y, z, rotY, isVisitor) => {
-      const chairG = new THREE.Group();
-      chairG.name = isVisitor ? "visitorChair" : "executiveChair";
-      chairG.userData = { id: isVisitor ? "visitor-chair" : "office-chair", group: "chair" };
-      chairG.position.set(x, y, z);
-      chairG.rotation.y = rotY;
-
-      if (isVisitor) {
-        const frameG = new THREE.Group();
-        const baseTube = mesh(box(0.5, 0.03, 0.5), mSteel, 0, 0.015, 0, "visitorBaseTube");
-        const backLegs = mesh(box(0.03, 0.44, 0.03), mSteel, -0.22, 0.22, -0.22, "visitorBackLegL");
-        const backLegsR = mesh(box(0.03, 0.44, 0.03), mSteel, 0.22, 0.22, -0.22, "visitorBackLegR");
-        frameG.add(baseTube, backLegs, backLegsR);
-        chairG.add(frameG);
-        
-        const seat = mesh(box(0.48, 0.04, 0.46), mLeather, 0, 0.44, 0, "visitorSeat");
-        const back = mesh(box(0.46, 0.42, 0.04), mLeather, 0, 0.72, -0.21, "visitorBackrest");
-        chairG.add(seat, back);
-        app.selectables.push(seat, back);
-      } else {
-        const baseG = new THREE.Group();
-        for (let arm = 0; arm < 5; arm++) {
-          const angle = (arm / 5) * Math.PI * 2;
-          const baseLeg = mesh(new THREE.CylinderGeometry(0.012, 0.016, 0.28, 8), mSteel, 0, 0.06, 0.14, `chairStarLeg_${arm}`);
-          baseLeg.rotation.x = Math.PI / 2;
-          baseLeg.rotation.y = angle;
-          baseG.add(baseLeg);
-          
-          const wheel = mesh(new THREE.SphereGeometry(0.024, 8, 8), mDarkSteel, 0.24 * Math.sin(angle), 0.024, 0.24 * Math.cos(angle), `chairWheel_${arm}`);
-          baseG.add(wheel);
-        }
-        const stem = mesh(new THREE.CylinderGeometry(0.024, 0.028, 0.32, 10), mSteel, 0, 0.22, 0, "chairStem");
-        baseG.add(stem);
-        chairG.add(baseG);
-
-        const seatHeight = 0.44;
-        const seat = mesh(box(0.54, 0.07, 0.52), mLeather, 0, seatHeight, 0, "chairSeat");
-        
-        const backG = new THREE.Group();
-        backG.position.set(0, seatHeight + 0.035, -0.22);
-        
-        const spine = mesh(box(0.06, 0.58, 0.03), mSteel, 0, 0.29, -0.01, "chairSpineSupport");
-        const backrest = mesh(box(0.48, 0.62, 0.06), mLeather, 0, 0.35, 0.02, "chairBackrestPanel");
-        const headrest = mesh(box(0.28, 0.16, 0.08), mLeather, 0, 0.72, 0.04, "chairHeadrest");
-        backG.add(spine, backrest, headrest);
-        
-        [-0.28, 0.28].forEach((offsetX, idx) => {
-          const armSupport = mesh(new THREE.CylinderGeometry(0.01, 0.01, 0.2, 8), mSteel, offsetX, seatHeight + 0.1, 0.08, `chairArmStem_${idx}`);
-          const armPad = mesh(box(0.05, 0.024, 0.28), mLeather, offsetX, seatHeight + 0.2, 0.06, `chairArmPad_${idx}`);
-          chairG.add(armSupport, armPad);
-        });
-
-        chairG.add(seat, backG);
-        app.selectables.push(seat, backrest);
-      }
-      app.root.add(chairG);
-    };
-
-    buildExecutiveChair(0, 0.01, deskZ - deskD / 2 - 0.45, 0, false);
-    buildExecutiveChair(-0.6, 0.01, deskZ + deskD / 2 + 0.55, Math.PI + 0.18, true);
-    buildExecutiveChair(0.6, 0.01, deskZ + deskD / 2 + 0.55, Math.PI - 0.18, true);
-
-    // --- Technology Items ---
-    const buildDeskTechnology = () => {
-      const topY = deskY + 0.002;
-      
-      if (officeTechItems.includes("monitor") || officeTechItems.includes("dual-monitors")) {
-        const isDual = officeTechItems.includes("dual-monitors");
-        
-        const buildSingleMonitor = (x, rotY, nameSuffix) => {
-          const monG = new THREE.Group();
-          monG.position.set(x, topY, 0.06);
-          monG.rotation.y = rotY;
-
-          const mBase = mesh(box(0.18, 0.006, 0.14), mSteel, 0, 0.003, 0, `monBase_${nameSuffix}`);
-          const mPole = mesh(new THREE.CylinderGeometry(0.01, 0.01, 0.28, 8), mSteel, 0, 0.14, -0.04, `monPole_${nameSuffix}`);
-          monG.add(mBase, mPole);
-
-          const screenFrame = mesh(box(0.52, 0.32, 0.016), mDarkSteel, 0, 0.28, 0, `monFrame_${nameSuffix}`);
-          const screenGlass = mesh(box(0.50, 0.30, 0.008), mGlass, 0, 0.28, 0.005, `monScreen_${nameSuffix}`);
-          screenGlass.material = screenGlass.material.clone();
-          screenGlass.material.color.setHex(0x111116);
-          screenGlass.material.roughness = 0.08;
-          monG.add(screenFrame, screenGlass);
-          app.selectables.push(screenFrame);
-
-          deskG.add(monG);
-        };
-
-        if (isDual) {
-          buildSingleMonitor(-0.32, 0.15, "L");
-          buildSingleMonitor(0.32, -0.15, "R");
-        } else {
-          buildSingleMonitor(0, 0, "C");
-        }
-      }
-
-      if (officeTechItems.includes("pc")) {
-        const kboard = mesh(box(0.38, 0.008, 0.13), mSteel, 0, topY, 0.26, "pcKeyboard");
-        const mouseObj = mesh(box(0.05, 0.012, 0.08), mDarkSteel, 0.25, topY, 0.26, "pcMouse");
-        deskG.add(kboard, mouseObj);
-        
-        const tower = mesh(box(0.2, 0.42, 0.44), mDarkSteel, deskW / 2 - 0.18, 0.22, -0.06, "pcTowerUnit");
-        deskG.add(tower);
-        app.selectables.push(tower);
-      }
-
-      if (officeTechItems.includes("laptop")) {
-        const lapG = new THREE.Group();
-        lapG.position.set(-0.35, topY, 0.25);
-        lapG.rotation.y = 0.22;
-
-        const lapBase = mesh(box(0.32, 0.008, 0.22), mSteel, 0, 0.004, 0, "laptopBase");
-        lapG.add(lapBase);
-        app.selectables.push(lapBase);
-
-        const screenPivot = new THREE.Group();
-        screenPivot.position.set(0, 0.004, -0.11);
-        screenPivot.rotation.x = -Math.PI / 1.6;
-        
-        const lapLid = mesh(box(0.32, 0.22, 0.006), mSteel, 0, 0.11, 0, "laptopLid");
-        const glowScreen = mesh(box(0.30, 0.20, 0.004), new THREE.MeshStandardMaterial({ color: 0x90c0f0, emissive: 0x90c0f0, emissiveIntensity: 1.2 }), 0, 0.11, 0.002, "laptopGlowScreen");
-        screenPivot.add(lapLid, glowScreen);
-        lapG.add(screenPivot);
-
-        deskG.add(lapG);
-      }
-
-      if (officeTechItems.includes("speakers")) {
-        const spL = mesh(box(0.08, 0.14, 0.08), mDarkSteel, -deskW / 2 + 0.1, topY + 0.07, -0.12, "speakerL");
-        const spR = mesh(box(0.08, 0.14, 0.08), mDarkSteel, deskW / 2 - 0.1, topY + 0.07, -0.12, "speakerR");
-        deskG.add(spL, spR);
-        app.selectables.push(spL, spR);
-      }
-
-      if (officeTechItems.includes("tv")) {
-        const tv = mesh(box(1.4, 0.8, 0.03), mDarkSteel, 0, 1.7, -RL / 2 + officeFeatureWallThickness + 0.02, "featureWallTV");
-        const tvGlass = mesh(box(1.36, 0.76, 0.005), new THREE.MeshStandardMaterial({ color: 0x0a0a0c, roughness: 0.02 }), 0, 1.7, -RL / 2 + officeFeatureWallThickness + 0.038, "tvGlassPane");
-        app.root.add(tv, tvGlass);
-        app.selectables.push(tv);
-      }
-    };
-    buildDeskTechnology();
-
-    const buildDecorations = () => {
-      const topY = deskY + 0.002;
-
-      if (officeDecorItems.includes("plant")) {
-        const plantG = new THREE.Group();
-        plantG.name = "decorPlant";
-        plantG.position.set(deskW / 2 - 0.18, topY, 0.22);
-        
-        const pot = mesh(new THREE.CylinderGeometry(0.07, 0.05, 0.15, 12), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.2 }), 0, 0.075, 0, "plantPot");
-        plantG.add(pot);
-        
-        const plantMat = new THREE.MeshStandardMaterial({ color: 0x2e6f40, roughness: 0.9 });
-        for (let leaf = 0; leaf < 3; leaf++) {
-          const leafPl = mesh(new THREE.CircleGeometry(0.12, 6), plantMat, 0, 0.2, 0, `leafPlane_${leaf}`);
-          leafPl.rotation.y = (leaf / 3) * Math.PI;
-          leafPl.rotation.x = -Math.PI / 4;
-          plantG.add(leafPl);
-        }
-        deskG.add(plantG);
-        app.selectables.push(pot);
-      }
-
-      if (officeDecorItems.includes("lamp")) {
-        const lampG = new THREE.Group();
-        lampG.position.set(-deskW / 2 + 0.16, topY, -0.15);
-
-        const lBase = mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.01, 12), mSteel, 0, 0.005, 0, "lampBase");
-        const lPole = mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.26, 8), mSteel, 0, 0.13, 0, "lampPole");
-        lPole.rotation.z = -0.15;
-        
-        const shade = mesh(new THREE.CylinderGeometry(0.04, 0.06, 0.08, 12), mSteel, -0.04, 0.26, 0, "lampShade");
-        shade.rotation.z = -Math.PI / 4;
-        
-        const bulb = mesh(new THREE.SphereGeometry(0.02, 8, 8), mLED, -0.04, 0.24, 0, "lampBulb");
-        lampG.add(lBase, lPole, shade, bulb);
-        
-        deskG.add(lampG);
-        app.selectables.push(lBase);
-      }
-
-      if (officeDecorItems.includes("books")) {
-        const bookStack = new THREE.Group();
-        bookStack.position.set(-officeFeatureWallWidth / 2 - 0.3, 0.82, -RL / 2 + 0.3);
-        [-0.04, 0, 0.04].forEach((bx, idx) => {
-          const book = mesh(box(0.03, 0.16, 0.12), new THREE.MeshStandardMaterial({ color: idx === 0 ? 0xaa4444 : idx === 1 ? 0x44aa88 : 0xaa8833 }), bx, 0.08, 0, `book_${idx}`);
-          book.rotation.z = -0.1 + Math.random() * 0.2;
-          bookStack.add(book);
-        });
-        app.root.add(bookStack);
-      }
-    };
-    buildDecorations();
-
-    // --- Custom Objects ---
-    officeCustomObjects.forEach(obj => {
-      let customMesh = null;
-      
-      if (obj.type === "chair-visitor" || obj.group === "chair") {
-        customMesh = mesh(box(0.48, 0.44, 0.46), mLeather, 0, 0.22, 0, obj.name);
-        const backing = mesh(box(0.46, 0.42, 0.04), mLeather, 0, 0.65, -0.21, `${obj.name}_back`);
-        const framePipe = mesh(box(0.5, 0.03, 0.5), mSteel, 0, 0.015, 0, `${obj.name}_frame`);
-        customMesh.add(backing, framePipe);
-      } else if (obj.type === "potted-plant") {
-        customMesh = new THREE.Group();
-        customMesh.name = obj.name;
-        const pot = mesh(new THREE.CylinderGeometry(0.12, 0.08, 0.22, 12), new THREE.MeshStandardMaterial({ color: 0xeeeeee }), 0, 0.11, 0, `${obj.name}_pot`);
-        const green = mesh(new THREE.SphereGeometry(0.18, 8, 8), new THREE.MeshStandardMaterial({ color: 0x3d7042, roughness: 0.95 }), 0, 0.28, 0, `${obj.name}_green`);
-        customMesh.add(pot, green);
-      } else {
-        customMesh = mesh(box(obj.width || 0.4, obj.height || 0.4, obj.depth || 0.4), mCabinet, 0, (obj.height || 0.4) / 2, 0, obj.name);
-      }
-
-      if (customMesh) {
-        customMesh.position.set(obj.posX, obj.posY, obj.posZ);
-        customMesh.rotation.y = obj.rotY * (Math.PI / 180);
-        customMesh.scale.set(obj.scaleW || 1, obj.scaleH || 1, obj.scaleD || 1);
-        customMesh.userData = { id: obj.id, group: obj.group || "custom", type: obj.type };
-        app.root.add(customMesh);
-        
-        customMesh.traverse(child => {
-          if (child.isMesh) {
-            child.userData = { group: obj.group || "custom", id: obj.id };
-            app.selectables.push(child);
-          }
-        });
-      }
-    });
-
-    const trackLight = new THREE.PointLight(ledColorVal, officeLightingBrightness, 6);
-    trackLight.position.set(0, RH - 0.2, 0.5);
-    app.root.add(trackLight);
-
-    if (selectedOfficeObject) {
-      const app = appRef.current;
-      const meshObj = app.root.getObjectByName(selectedOfficeObject.name) || app.root.children.find(c => c.uuid === selectedOfficeObject.id || c.name === selectedOfficeObject.name);
-      if (meshObj) {
-        const wireGeo = new THREE.BoxHelper(meshObj, 0xcc4444);
-        wireGeo.name = "dimensionWireframeHUD";
-        app.root.add(wireGeo);
-      }
+    // — Top cove LED
+    if (officeLedOn && officeLedTop) {
+      cabGrp.add(bx(officeCabW * .82, .009, .014, _ledMat, 0, officeCabH - .042, -officeCabD / 2 + .042));
+      const pl = new THREE.PointLight(0xFFEE99, officeLedBright * 0.6, 3, 2);
+      pl.position.set(0, officeCabH - .1, 0);
+      cabGrp.add(pl);
     }
+
+    // — Lower zone: floor shelf at lH
+    cabGrp.add(bx(cenW + .005, shT, officeCabD - .022, _cabMat, 0, lH, 0));
+    // — Lower side panels
+    cabGrp.add(bx(sideW, lH, officeCabD, _cabMat, -officeCabW / 2 + sideW / 2, lH / 2, 0));
+    cabGrp.add(bx(sideW, lH, officeCabD, _cabMat, officeCabW / 2 - sideW / 2, lH / 2, 0));
+
+    // — Lower door panels
+    const nd = Math.max(1, officeCabLowerDoors);
+    const dW = (cenW - .01 * (nd - 1)) / nd;
+    const dH = lH - .065;
+    for (let d = 0; d < nd; d++) {
+      const dx = -cenW / 2 + d * (dW + .01) + dW / 2;
+      cabGrp.add(bx(dW - .01, dH, .02, _cabMat, dx, lH / 2 + .01, officeCabD / 2 - .004));
+      // gap lines
+      cabGrp.add(bx(dW - .01, .002, .022, metalM, dx, lH + .01, officeCabD / 2 - .001));
+      // minimal handle
+      cabGrp.add(bx(.058, .007, .016, metalM, dx, lH * .4, officeCabD / 2 + .009));
+    }
+
+    cabGrp.position.set(0, 0, -2.9);
+    app.root.add(cabGrp);
+
+    // Studio lighting spot lights
+    const studioSpot = (x, y, z, intensity) => {
+      const s = new THREE.SpotLight(0xFFFCF5, intensity, 15, Math.PI / 6.5, 0.55, 1.2);
+      s.position.set(x, y, z);
+      s.castShadow = true;
+      s.shadow.mapSize.set(1024, 1024);
+      app.root.add(s);
+    };
+    studioSpot(-1.5, 5.5, 3, 0.7);
+    studioSpot(2.5, 5.5, 3, 0.55);
 
   }, [
-    officeRoomWidth, officeRoomLength, officeRoomHeight,
-    officeFeatureWallStyle, officeFeatureWallWidth, officeFeatureWallHeight, officeFeatureWallThickness, officeFeatureWallColor, officeFeatureWallSlatSpacing,
-    officeCabinets, officeDeskType, officeDeskWidth, officeDeskDepth, officeDeskHeight, officeDeskTopThickness, officeDeskTopMaterial, officeDeskTopColor, officeDeskDrawerPos, officeDeskDrawerCount, officeDeskDrawersOpen, officeDeskLockOption,
-    officeChairType, officeChairColor, officeChairMaterial, officeChairHeight, officeChairFrame,
-    officeTechItems, officeDecorItems, officeFlooringType, officeFlooringColor, officeFlooringScale, officeFlooringGloss,
-    officeLightingType, officeLightingBrightness, officeLightingColorTemp, officeShelvesLEDPosition, officeShelvesLEDBrightness,
-    officeCustomObjects, selectedOfficeObject
+    officeDeskW, officeDeskD, officeDeskH, officeDeskT, officeDeskTopMat, officeDeskBaseMat, officeDeskDrawer, officeDeskDrawerCount, officeDeskDrawerSide, officeDeskDrawerStyle, officeDeskFileCab,
+    officeCabW, officeCabH, officeCabD, officeCabSections, officeCabOpenShelves, officeCabLowerDoors, officeCabLowerHRatio, officeCabColor, officeCabPanelMat, officeCabShelfSpacing, officeCabAutoSync,
+    officeLedOn, officeLedColor, officeLedBright, officeLedUnder, officeLedBack, officeLedTop
   ]);
-
-  const handleUpdateSelectedObject = (field, val) => {
-    if (!selectedOfficeObject) return;
-    const v = parseFloat(val);
-    
-    setSelectedOfficeObject(prev => {
-      const updated = { ...prev, [field]: v };
-      const app = appRef.current;
-      if (app.root) {
-        const meshObj = app.root.getObjectByName(prev.name) || app.root.children.find(c => c.uuid === prev.id || c.name === prev.name);
-        if (meshObj) {
-          if (field === "posX") meshObj.position.x = v;
-          if (field === "posY") meshObj.position.y = v;
-          if (field === "posZ") meshObj.position.z = v;
-          if (field === "rotY") meshObj.rotation.y = v * (Math.PI / 180);
-          if (field === "scaleW") meshObj.scale.x = v;
-          if (field === "scaleH") meshObj.scale.y = v;
-          if (field === "scaleD") meshObj.scale.z = v;
-        }
-      }
-      return updated;
-    });
-  };
-
-  const handleDuplicateSelectedObject = () => {
-    if (!selectedOfficeObject) return;
-    const newId = `custom-${Date.now()}`;
-    const newObj = {
-      id: newId,
-      name: `copy-${selectedOfficeObject.name}-${Date.now().toString().slice(-4)}`,
-      type: selectedOfficeObject.type || "custom",
-      group: selectedOfficeObject.group || "custom",
-      posX: selectedOfficeObject.posX + 0.3,
-      posY: selectedOfficeObject.posY,
-      posZ: selectedOfficeObject.posZ + 0.3,
-      rotY: selectedOfficeObject.rotY,
-      scaleW: selectedOfficeObject.scaleW,
-      scaleH: selectedOfficeObject.scaleH,
-      scaleD: selectedOfficeObject.scaleD,
-      color: selectedOfficeObject.color,
-      material: selectedOfficeObject.material
-    };
-    setOfficeCustomObjects(prev => [...prev, newObj]);
-    triggerNotification("Object duplicated! Adjust sliders to move.");
-  };
-
-  const handleDeleteSelectedObject = () => {
-    if (!selectedOfficeObject) return;
-    const id = selectedOfficeObject.id;
-    setOfficeCustomObjects(prev => prev.filter(obj => obj.id !== id && obj.name !== selectedOfficeObject.name));
-    setOfficeCabinets(prev => prev.filter(c => c.id !== id));
-    
-    setSelectedOfficeObject(null);
-    setSelectedPart("Click any part to edit");
-    triggerNotification("Object deleted");
-    setTimeout(() => buildOffice(), 10);
-  };
-
-  const handleReplaceSelectedMaterial = (mat) => {
-    if (!selectedOfficeObject) return;
-    setSelectedOfficeObject(prev => ({ ...prev, material: mat }));
-    
-    const app = appRef.current;
-    const meshObj = app.root.getObjectByName(selectedOfficeObject.name) || app.root.children.find(c => c.uuid === selectedOfficeObject.id || c.name === selectedOfficeObject.name);
-    if (meshObj) {
-      meshObj.traverse(child => {
-        if (child.isMesh && child.material) {
-          child.material = child.material.clone();
-          if (mat === "wood") { child.material.color.setHex(0xa07040); child.material.roughness = 0.75; child.material.metalness = 0.05; }
-          else if (mat === "marble") { child.material.color.setHex(0xf5f5f7); child.material.roughness = 0.08; child.material.metalness = 0.12; }
-          else if (mat === "glass") { child.material.color.setHex(0xddeeff); child.material.roughness = 0.02; child.material.transparent = true; child.material.opacity = 0.35; }
-          else if (mat === "metal") { child.material.color.setHex(0xcccccc); child.material.roughness = 0.15; child.material.metalness = 0.85; }
-          else if (mat === "fabric") { child.material.color.setHex(0x5a3e2e); child.material.roughness = 0.90; child.material.metalness = 0.0; }
-          child.material.needsUpdate = true;
-        }
-      });
-    }
-    triggerNotification("Material replaced");
-  };
-
-  const handleReplaceSelectedModel = (model) => {
-    if (!selectedOfficeObject) return;
-    if (selectedOfficeObject.group === "chair") {
-      setOfficeChairType(model);
-      triggerNotification(`Chair style swapped to: ${model}`);
-    } else if (selectedOfficeObject.group === "desk") {
-      setOfficeDeskType(model);
-      triggerNotification(`Desk style swapped to: ${model}`);
-    }
-  };
 
   const calculateEstimatedCost = () => {
     if (activeCategory === "wardrobe") {
@@ -1991,34 +1521,14 @@ const buildWardrobe = useCallback(() => {
       if (applianceCooker !== "none") cost += 350;
       return cost.toFixed(2);
     } else if (activeCategory === "office") {
-      let cost = officeFeatureWallWidth * officeFeatureWallHeight * 95;
-      if (officeFeatureWallStyle === "wood-slat") cost += 280;
-      else if (officeFeatureWallStyle === "marble") cost += 450;
-      
-      cost += officeDeskWidth * officeDeskDepth * 180;
-      if (officeDeskTopMaterial === "marble") cost += 350;
-      else if (officeDeskTopMaterial === "quartz") cost += 250;
-      else if (officeDeskTopMaterial === "glass") cost += 180;
-
-      if (officeDeskDrawerPos !== "none") {
-        cost += officeDeskDrawerCount * 60;
-      }
-
-      cost += officeChairType === "executive" ? 320 : 180;
-      cost += 2 * 140;
-
-      cost += officeCabinets.length * 190;
-
-      if (officeTechItems.includes("dual-monitors")) cost += 450;
-      else if (officeTechItems.includes("monitor")) cost += 250;
-      if (officeTechItems.includes("laptop")) cost += 900;
-      if (officeTechItems.includes("pc")) cost += 800;
-      if (officeTechItems.includes("tv")) cost += 500;
-
-      cost += officeDecorItems.length * 35;
-      cost += officeRoomWidth * officeRoomLength * 45;
-
-      return cost.toFixed(2);
+      const base = 1400 + officeDeskW * 900 + (officeCabW * officeCabH) * 280;
+      const mm = {
+        natural_oak: 1, walnut: 1.3, dark_walnut: 1.2, ash: 1.1, black_wood: 1.15,
+        white_wood: 1.1, matte_lam: 0.85, high_gloss: 0.9, white_marble: 1.9,
+        black_marble: 2.0, grey_marble: 1.75, travertine: 1.55
+      };
+      const total = Math.round(base * (mm[officeDeskTopMat] || 1) / 100) * 100;
+      return total.toFixed(2);
     }
     return "0.00";
   };
@@ -2426,13 +1936,9 @@ const buildWardrobe = useCallback(() => {
     sinkType, sinkPosition, faucetType, kitchenCabinetMaterial, kitchenCabinetWoodType, kitchenCabinetMatteColor,
     wallColor, floorColor, backsplashColor, textureScale, textureRotation, glossLevel, roughnessVal, bumpStrength,
     buildKitchen, showWalls,
-    officeRoomWidth, officeRoomLength, officeRoomHeight,
-    officeFeatureWallStyle, officeFeatureWallWidth, officeFeatureWallHeight, officeFeatureWallThickness, officeFeatureWallColor, officeFeatureWallSlatSpacing,
-    officeCabinets, officeDeskType, officeDeskWidth, officeDeskDepth, officeDeskHeight, officeDeskTopThickness, officeDeskTopMaterial, officeDeskTopColor, officeDeskDrawerPos, officeDeskDrawerCount, officeDeskDrawersOpen, officeDeskLockOption,
-    officeChairType, officeChairColor, officeChairMaterial, officeChairHeight, officeChairFrame,
-    officeTechItems, officeDecorItems, officeFlooringType, officeFlooringColor, officeFlooringScale, officeFlooringGloss,
-    officeLightingType, officeLightingBrightness, officeLightingColorTemp, officeShelvesLEDPosition, officeShelvesLEDBrightness,
-    officeCustomObjects, selectedOfficeObject, buildOffice
+    officeDeskW, officeDeskD, officeDeskH, officeDeskT, officeDeskTopMat, officeDeskBaseMat, officeDeskDrawer, officeDeskDrawerCount, officeDeskDrawerSide, officeDeskDrawerStyle, officeDeskFileCab,
+    officeCabW, officeCabH, officeCabD, officeCabSections, officeCabOpenShelves, officeCabLowerDoors, officeCabLowerHRatio, officeCabColor, officeCabPanelMat, officeCabShelfSpacing, officeCabAutoSync,
+    officeLedOn, officeLedColor, officeLedBright, officeLedUnder, officeLedBack, officeLedTop, buildOffice
   ]);
 
   // Hinge swing state trigger
@@ -2623,9 +2129,9 @@ const buildWardrobe = useCallback(() => {
 Generated on: ${new Date().toLocaleString()}
 Category: ${activeCategory.toUpperCase()}
 Room Dimensions:
-  - Width: ${activeCategory === "kitchen" ? roomWidth * 100 : activeCategory === "office" ? officeRoomWidth * 100 : width * 100} cm
-  - Height: ${activeCategory === "kitchen" ? roomHeight * 100 : activeCategory === "office" ? officeRoomHeight * 100 : height * 100} cm
-  - Depth: ${activeCategory === "kitchen" ? roomLength * 100 : activeCategory === "office" ? officeRoomLength * 100 : depth * 100} cm
+  - Width: ${activeCategory === "kitchen" ? roomWidth * 100 : activeCategory === "office" ? officeDeskW * 100 : width * 100} cm
+  - Height: ${activeCategory === "kitchen" ? roomHeight * 100 : activeCategory === "office" ? officeDeskH * 100 : height * 100} cm
+  - Depth: ${activeCategory === "kitchen" ? roomLength * 100 : activeCategory === "office" ? officeDeskD * 100 : depth * 100} cm
 Estimated Cost: $${calculateEstimatedCost()}
 
 ---------------------------------------------
@@ -2641,13 +2147,13 @@ ${activeCategory === "kitchen" ? `
       * Cooker: ${applianceCooker}
       * Hood: ${applianceHood}
 ` : activeCategory === "office" ? `
-  - Layout Preset: ${officeLayoutType}
-  - Feature Wall Style: ${officeFeatureWallStyle} (${officeFeatureWallColor})
-  - Desk Style: ${officeDeskType} (Top: ${officeDeskTopMaterial}, Drawers: ${officeDeskDrawerPos})
-  - Cabinet Modules: ${officeCabinets.length} units
-  - Enabled Tech: ${officeTechItems.join(", ")}
-  - Enabled Decor: ${officeDecorItems.join(", ")}
-  - Floor Cover: ${officeFlooringType}
+  - Desk Dimensions: ${officeDeskW * 100} x ${officeDeskD * 100} x ${officeDeskH * 100} cm
+  - Cabinet Dimensions: ${officeCabW * 100} x ${officeCabH * 100} x ${officeCabD * 100} cm
+  - Desk Material: ${officeDeskTopMat} (Base: ${officeDeskBaseMat})
+  - Cabinet Finish: Body: ${officeCabColor}, Panel: ${officeCabPanelMat}
+  - Drawers: ${officeDeskDrawer ? `${officeDeskDrawerCount} drawers on ${officeDeskDrawerSide}` : "None"}
+  - File Cabinet: ${officeDeskFileCab ? "Yes" : "No"}
+  - LED Shelf Lights: ${officeLedOn ? `${officeLedColor} (under: ${officeLedUnder ? 'yes' : 'no'}, back: ${officeLedBack ? 'yes' : 'no'}, top: ${officeLedTop ? 'yes' : 'no'})` : "Off"}
 ` : `
   - Sections: ${sections}
   - Style Preset: ${activePreset}
@@ -2669,9 +2175,9 @@ ${activeCategory === "kitchen" ? `
     const data = `# Furni AI Export
 # Format: ${fmt.toUpperCase()}
 # Category: ${activeCategory}
-# Dimensions: ${activeCategory === "kitchen" ? roomWidth : activeCategory === "office" ? officeRoomWidth : width} x ${activeCategory === "kitchen" ? roomHeight : activeCategory === "office" ? officeRoomHeight : height} x ${activeCategory === "kitchen" ? roomLength : activeCategory === "office" ? officeRoomLength : depth}
+# Dimensions: ${activeCategory === "kitchen" ? roomWidth : activeCategory === "office" ? officeDeskW : width} x ${activeCategory === "kitchen" ? roomHeight : activeCategory === "office" ? officeDeskH : height} x ${activeCategory === "kitchen" ? roomLength : activeCategory === "office" ? officeDeskD : depth}
 # This file contains the 3D layout data for imports in SketchUp, AutoCAD, or Blender.
-# Selected Materials: ${activeCategory === "kitchen" ? kitchenCabinetMaterial : activeCategory === "office" ? officeDeskTopMaterial : activeColor}
+# Selected Materials: ${activeCategory === "kitchen" ? kitchenCabinetMaterial : activeCategory === "office" ? officeDeskTopMat : activeColor}
 # Countertop: ${activeCategory === "kitchen" ? countertopMaterial : "N/A"}`;
     const blob = new Blob([data], { type: "text/plain" });
     const link = document.createElement("a");
@@ -2695,60 +2201,33 @@ ${activeCategory === "kitchen" ? `
 
     if (activeCategory === "office" || t.includes("office") || t.includes("desk") || t.includes("chair") || t.includes("workspace") || t.includes("study")) {
       if (t.includes("walnut")) {
-        setOfficeFeatureWallColor("walnut");
-        setOfficeDeskTopColor("walnut");
+        setOfficeDeskTopMat("walnut");
+        setOfficeCabPanelMat("walnut");
+        setOfficeCabColor("beige");
       } else if (t.includes("oak")) {
-        setOfficeFeatureWallColor("oak");
-        setOfficeDeskTopColor("oak");
-      } else if (t.includes("charcoal") || t.includes("black")) {
-        setOfficeFeatureWallColor("charcoal");
-        setOfficeDeskTopColor("black");
+        setOfficeDeskTopMat("natural_oak");
+        setOfficeCabPanelMat("natural_oak");
+        setOfficeCabColor("beige");
+      } else if (t.includes("marble") || t.includes("luxury")) {
+        setOfficeDeskTopMat("white_marble");
+        setOfficeCabPanelMat("white_marble");
+        setOfficeCabColor("white");
+      } else if (t.includes("dark") || t.includes("black")) {
+        setOfficeDeskTopMat("black_marble");
+        setOfficeDeskBaseMat("matte_black");
+        setOfficeCabColor("dark_grey");
       }
       
-      if (t.includes("marble")) {
-        setOfficeDeskTopMaterial("marble");
-      } else if (t.includes("wood")) {
-        setOfficeDeskTopMaterial("wood");
-      } else if (t.includes("glass")) {
-        setOfficeDeskTopMaterial("glass");
-      }
-
-      if (t.includes("leather")) {
-        setOfficeChairMaterial("leather");
-        setOfficeChairColor("black");
-      } else if (t.includes("fabric")) {
-        setOfficeChairMaterial("fabric");
-      }
-
-      if (t.includes("led")) {
-        setOfficeShelvesLEDPosition("back");
+      if (t.includes("led") || t.includes("light")) {
+        setOfficeLedOn(true);
       }
 
       if (t.includes("warm")) {
-        setOfficeLightingColorTemp("warm");
+        setOfficeLedColor("warm");
       } else if (t.includes("cool")) {
-        setOfficeLightingColorTemp("cool");
+        setOfficeLedColor("cool");
       } else if (t.includes("neutral")) {
-        setOfficeLightingColorTemp("neutral");
-      }
-
-      if (t.includes("plant") || t.includes("plants")) {
-        if (!officeDecorItems.includes("plant")) {
-          setOfficeDecorItems(prev => [...prev, "plant"]);
-        }
-      }
-
-      if (t.includes("executive")) {
-        setOfficeLayoutType("executive");
-        setOfficeDeskType("executive");
-        setOfficeChairType("executive");
-      } else if (t.includes("home") || t.includes("study")) {
-        setOfficeLayoutType("home");
-        setOfficeDeskType("compact");
-        setOfficeChairType("visitor");
-      } else if (t.includes("modern") || t.includes("workspace")) {
-        setOfficeLayoutType("workspace");
-        setOfficeFeatureWallStyle("acoustic");
+        setOfficeLedColor("neutral");
       }
 
       triggerNotification("✦ AI generated office layout");
@@ -4642,7 +4121,7 @@ ${activeCategory === "kitchen" ? `
             </>
           ) : activeCategory === "office" ? (
             <>
-              {/* OFFICE PANELS */}
+              {/* OFFICE CONFIGURATOR PANELS */}
               {/* 1. AI Design Assistant */}
               <div className="rps">
                 <div className="rpt">✦ AI Prompt</div>
@@ -4650,751 +4129,556 @@ ${activeCategory === "kitchen" ? `
                   <textarea
                     value={prompt}
                     onChange={(e) => setPrompt(e.target.value)}
-                    placeholder="Describe your office style…&#10;e.g. Modern executive office with walnut and marble"
+                    placeholder="Describe your office style…&#10;e.g. Modern executive office with walnut and warm LED lights"
                   />
                   <div className="aifoot">
                     <div className="aiex-list">
-                      <span className="aiex cursor-pointer" onClick={() => setPrompt("Executive walnut marble")}>Executive</span>
-                      <span className="aiex cursor-pointer" onClick={() => setPrompt("Minimal wood glass")}>Minimal</span>
-                      <span className="aiex cursor-pointer" onClick={() => setPrompt("Home study warm LED")}>Study</span>
-                      <span className="aiex cursor-pointer" onClick={() => setPrompt("Modern workspace charcoal")}>Modern</span>
+                      <span className="aiex cursor-pointer" onClick={() => setPrompt("walnut and warm LED")}>Walnut</span>
+                      <span className="aiex cursor-pointer" onClick={() => setPrompt("marble luxury")}>Marble</span>
+                      <span className="aiex cursor-pointer" onClick={() => setPrompt("dark black modern")}>Dark Modern</span>
                     </div>
                     <button className="aiapply cursor-pointer" onClick={() => { handleRunAI(prompt); setPrompt(""); }}>Apply</button>
                   </div>
                 </div>
               </div>
 
-              {/* 2. Selected Part */}
+              {/* 2. Style Presets */}
               <div className="rps">
-                <div className="rpt">Selected Part</div>
-                <div className="pbadge">
-                  <div className="pdot"></div>
-                  <span>{selectedPart}</span>
+                <div className="rpt">Style Presets</div>
+                <div className="section-btns" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "6px" }}>
+                  <button 
+                    className={`sec-n cursor-pointer ${officeDeskTopMat === 'walnut' && officeCabColor === 'beige' ? 'on' : ''}`}
+                    onClick={() => {
+                      setOfficeDeskTopMat('walnut'); setOfficeDeskBaseMat('matte_beige');
+                      setOfficeCabColor('beige'); setOfficeCabPanelMat('walnut');
+                      setOfficeLedColor('warm'); setOfficeLedOn(true);
+                      triggerNotification("Applied Modern Walnut Preset");
+                    }}
+                    style={{ fontSize: "10px", padding: "6px" }}
+                  >
+                    Modern Walnut
+                  </button>
+                  <button 
+                    className={`sec-n cursor-pointer ${officeDeskTopMat === 'white_marble' && officeCabColor === 'white' ? 'on' : ''}`}
+                    onClick={() => {
+                      setOfficeDeskTopMat('white_marble'); setOfficeDeskBaseMat('matte_white');
+                      setOfficeCabColor('white'); setOfficeCabPanelMat('white_marble');
+                      setOfficeLedColor('neutral'); setOfficeLedOn(true);
+                      triggerNotification("Applied Marble Luxury Preset");
+                    }}
+                    style={{ fontSize: "10px", padding: "6px" }}
+                  >
+                    Marble Luxury
+                  </button>
+                  <button 
+                    className={`sec-n cursor-pointer ${officeDeskTopMat === 'black_marble' && officeCabColor === 'dark_grey' ? 'on' : ''}`}
+                    onClick={() => {
+                      setOfficeDeskTopMat('black_marble'); setOfficeDeskBaseMat('matte_black');
+                      setOfficeCabColor('dark_grey'); setOfficeCabPanelMat('black_marble');
+                      setOfficeLedColor('cool'); setOfficeLedOn(true);
+                      triggerNotification("Applied Dark Executive Preset");
+                    }}
+                    style={{ fontSize: "10px", padding: "6px" }}
+                  >
+                    Dark Executive
+                  </button>
                 </div>
               </div>
 
-              {/* 3. Office Layout & Room Size */}
+              {/* 3. Desk Dimensions */}
               <div className="rps">
-                <div className="rpt">Office Layout &amp; Room Size</div>
+                <div className="rpt">Desk Dimensions</div>
                 <div className="size-grid">
-                  <div className="size-row" style={{ marginBottom: "8px" }}>
-                    <label style={{ marginBottom: "5px" }}>Layout Preset</label>
-                    <div className="section-btns" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px" }}>
-                      {[
-                        { id: "executive", label: "Executive" },
-                        { id: "home", label: "Home Office" },
-                        { id: "study", label: "Study Room" },
-                        { id: "workspace", label: "Workstation" }
-                      ].map((lay) => (
-                        <div
-                          key={lay.id}
-                          className={`sec-n ${officeLayoutType === lay.id ? "on" : ""}`}
-                          onClick={() => {
-                            setOfficeLayoutType(lay.id);
-                            if (lay.id === "executive") {
-                              setOfficeDeskType("executive");
-                              setOfficeChairType("executive");
-                            } else if (lay.id === "home") {
-                              setOfficeDeskType("compact");
-                              setOfficeChairType("visitor");
-                            }
-                            triggerNotification("Layout set: " + lay.label);
-                          }}
-                          style={{ fontSize: "10.5px", padding: "6px" }}
-                        >
-                          {lay.label}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
                   <div className="size-row">
-                    <label>Room Width <span>{officeRoomWidth.toFixed(1)} m</span></label>
+                    <label>Width <span>{Math.round(officeDeskW * 100)} cm</span></label>
                     <input
                       type="range"
                       className="slider"
-                      min="2.0"
-                      max="5.0"
-                      step="0.1"
-                      value={officeRoomWidth}
-                      onChange={(e) => setOfficeRoomWidth(parseFloat(e.target.value))}
+                      min="140"
+                      max="340"
+                      step="5"
+                      value={officeDeskW * 100}
+                      onChange={(e) => setOfficeDeskW(parseFloat(e.target.value) / 100)}
                     />
                   </div>
                   <div className="size-row">
-                    <label>Room Length <span>{officeRoomLength.toFixed(1)} m</span></label>
+                    <label>Depth <span>{Math.round(officeDeskD * 100)} cm</span></label>
                     <input
                       type="range"
                       className="slider"
-                      min="2.0"
-                      max="5.0"
-                      step="0.1"
-                      value={officeRoomLength}
-                      onChange={(e) => setOfficeRoomLength(parseFloat(e.target.value))}
+                      min="60"
+                      max="140"
+                      step="5"
+                      value={officeDeskD * 100}
+                      onChange={(e) => setOfficeDeskD(parseFloat(e.target.value) / 100)}
                     />
                   </div>
                   <div className="size-row">
-                    <label>Room Height <span>{officeRoomHeight.toFixed(1)} m</span></label>
+                    <label>Height <span>{Math.round(officeDeskH * 100)} cm</span></label>
                     <input
                       type="range"
                       className="slider"
-                      min="2.2"
-                      max="3.5"
-                      step="0.1"
-                      value={officeRoomHeight}
-                      onChange={(e) => setOfficeRoomHeight(parseFloat(e.target.value))}
+                      min="65"
+                      max="90"
+                      step="1"
+                      value={officeDeskH * 100}
+                      onChange={(e) => setOfficeDeskH(parseFloat(e.target.value) / 100)}
+                    />
+                  </div>
+                  <div className="size-row">
+                    <label>Tabletop Thickness <span>{Math.round(officeDeskT * 100)} cm</span></label>
+                    <input
+                      type="range"
+                      className="slider"
+                      min="3"
+                      max="12"
+                      step="1"
+                      value={officeDeskT * 100}
+                      onChange={(e) => setOfficeDeskT(parseFloat(e.target.value) / 100)}
                     />
                   </div>
                 </div>
               </div>
 
-              {/* 4. Feature Wall Configurator */}
+              {/* 4. Desk Configuration */}
               <div className="rps">
-                <div className="rpt">Feature Wall Panel</div>
+                <div className="rpt">Desk Configuration</div>
                 <div className="size-grid">
-                  <div className="size-row" style={{ marginBottom: "6px" }}>
-                    <label style={{ marginBottom: "4px" }}>Wall Style</label>
-                    <div className="section-btns" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "4px" }}>
-                      {[
-                        { id: "wood-slat", label: "Slat" },
-                        { id: "marble", label: "Marble" },
-                        { id: "acoustic", label: "Acoustic" },
-                        { id: "painted", label: "Paint" },
-                        { id: "concrete", label: "Concrete" }
-                      ].map((st) => (
-                        <div
-                          key={st.id}
-                          className={`sec-n ${officeFeatureWallStyle === st.id ? "on" : ""}`}
-                          onClick={() => {
-                            setOfficeFeatureWallStyle(st.id);
-                            triggerNotification("Wall style: " + st.label);
-                          }}
-                          style={{ fontSize: "10px", padding: "4px" }}
-                        >
-                          {st.label}
+                  <div className="size-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                    <label style={{ margin: 0 }}>Drawer Unit</label>
+                    <button 
+                      className={`sec-n cursor-pointer ${officeDeskDrawer ? "on" : ""}`}
+                      onClick={() => setOfficeDeskDrawer(!officeDeskDrawer)}
+                      style={{ padding: "4px 10px", fontSize: "11px" }}
+                    >
+                      {officeDeskDrawer ? "ON" : "OFF"}
+                    </button>
+                  </div>
+                  
+                  {officeDeskDrawer && (
+                    <>
+                      <div className="size-row" style={{ marginBottom: "8px" }}>
+                        <label style={{ marginBottom: "4px" }}>Drawer Count</label>
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                          <button className="sec-n cursor-pointer" onClick={() => setOfficeDeskDrawerCount(Math.max(1, officeDeskDrawerCount - 1))} style={{ padding: "4px 10px" }}>−</button>
+                          <span style={{ fontSize: "14px", fontWeight: "800", flex: 1, textAlign: "center", color: "var(--accent)" }}>{officeDeskDrawerCount}</span>
+                          <button className="sec-n cursor-pointer" onClick={() => setOfficeDeskDrawerCount(Math.min(6, officeDeskDrawerCount + 1))} style={{ padding: "4px 10px" }}>+</button>
                         </div>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="size-row">
-                    <label>Wall Width <span>{officeFeatureWallWidth.toFixed(1)} m</span></label>
-                    <input
-                      type="range"
-                      className="slider"
-                      min="1.0"
-                      max="4.0"
-                      step="0.1"
-                      value={officeFeatureWallWidth}
-                      onChange={(e) => setOfficeFeatureWallWidth(parseFloat(e.target.value))}
-                    />
-                  </div>
-                  {officeFeatureWallStyle === "wood-slat" && (
-                    <div className="size-row">
-                      <label>Slat Spacing <span>{(officeFeatureWallSlatSpacing * 100).toFixed(0)} cm</span></label>
-                      <input
-                        type="range"
-                        className="slider"
-                        min="0.02"
-                        max="0.12"
-                        step="0.01"
-                        value={officeFeatureWallSlatSpacing}
-                        onChange={(e) => setOfficeFeatureWallSlatSpacing(parseFloat(e.target.value))}
-                      />
-                    </div>
-                  )}
-                  <div className="size-row">
-                    <label style={{ marginBottom: "5px" }}>Wall Finish Colour</label>
-                    <div className="txgrid">
-                      {[
-                        { id: "walnut", name: "Walnut", cls: "s2" },
-                        { id: "oak", name: "Oak", cls: "s1" },
-                        { id: "charcoal", name: "Charcoal", style: { background: "#242424" } },
-                        { id: "beige", name: "Beige", cls: "s5" },
-                        { id: "sage", name: "Sage", cls: "s9" }
-                      ].map((sw) => (
-                        <div
-                          key={sw.id}
-                          className={`sw ${sw.cls || ""} ${officeFeatureWallColor === sw.id ? "on" : ""}`}
-                          style={sw.style}
-                          onClick={() => {
-                            setOfficeFeatureWallColor(sw.id);
-                            triggerNotification("Wall finish: " + sw.name);
-                          }}
-                        >
-                          <span className="sw-tip">{sw.name}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* 5. Built-in Cabinets List Planner */}
-              <div className="rps">
-                <div className="rpt">Built-in Cabinets</div>
-                <div style={{ display: "flex", flexDirection: "column", gap: "8px", maxHeight: "250px", overflowY: "auto", marginBottom: "10px" }}>
-                  {officeCabinets.map((cab, idx) => (
-                    <div key={cab.id} style={{ display: "flex", flexDirection: "column", background: "var(--bg3)", border: "1px solid var(--border)", borderRadius: "8px", padding: "8px", gap: "6px" }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <span style={{ fontSize: "11px", fontWeight: "700", color: "var(--accent)" }}>
-                          #{idx + 1}: {cab.type.toUpperCase()} ({cab.width * 100}cm)
-                        </span>
-                        <span className="cursor-pointer" onClick={() => handleDeleteOfficeCabinet(cab.id)} style={{ fontSize: "12px", color: "#cc4444" }}>🗑️</span>
                       </div>
-                      <div className="size-row">
-                        <label style={{ fontSize: "9.5px" }}>Width slider</label>
-                        <input
-                          type="range"
-                          className="slider"
-                          min="0.4"
-                          max="1.2"
-                          step="0.1"
-                          value={cab.width}
-                          onChange={(e) => handleUpdateOfficeCabinetWidth(cab.id, e.target.value)}
-                        />
-                      </div>
-                      {cab.type !== "shelves" && (
-                        <div style={{ display: "flex", gap: "4px" }}>
-                          {["solid", "glass", "open"].map(dt => (
-                            <button
-                              key={dt}
-                              onClick={() => handleUpdateOfficeCabinetDoor(cab.id, dt)}
-                              className={`sec-n ${cab.doorType === dt ? "on" : ""}`}
-                              style={{ fontSize: "9px", padding: "3px 6px", flex: 1 }}
+                      
+                      <div className="size-row" style={{ marginBottom: "8px" }}>
+                        <label style={{ marginBottom: "4px" }}>Placement</label>
+                        <div className="section-btns" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "4px" }}>
+                          {["left", "right", "both"].map((side) => (
+                            <button 
+                              key={side}
+                              className={`sec-n cursor-pointer ${officeDeskDrawerSide === side ? "on" : ""}`}
+                              onClick={() => setOfficeDeskDrawerSide(side)}
+                              style={{ fontSize: "10px", padding: "4px", textTransform: "capitalize" }}
                             >
-                              {dt}
+                              {side}
                             </button>
                           ))}
                         </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-                <div className="section-btns" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px" }}>
-                  <button className="sec-n cursor-pointer" onClick={() => handleAddOfficeCabinet("tall", "bookshelf", 0.6)} style={{ fontSize: "10px", padding: "6px" }}>+ Tall Module</button>
-                  <button className="sec-n cursor-pointer" onClick={() => handleAddOfficeCabinet("floor", "storage", 0.6)} style={{ fontSize: "10px", padding: "6px" }}>+ Floor Module</button>
-                  <button className="sec-n cursor-pointer" onClick={() => handleAddOfficeCabinet("wall", "display", 0.6)} style={{ fontSize: "10px", padding: "6px" }}>+ Wall Module</button>
-                  <button className="sec-n cursor-pointer" onClick={() => handleAddOfficeCabinet("shelves", "led-shelf", 0.6)} style={{ fontSize: "10px", padding: "6px" }}>+ Open Shelves</button>
+                      </div>
+
+                      <div className="size-row" style={{ marginBottom: "8px" }}>
+                        <label style={{ marginBottom: "4px" }}>Style</label>
+                        <div className="section-btns" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4px" }}>
+                          {[
+                            { id: "closed", label: "Closed" },
+                            { id: "open", label: "Open Shelf" }
+                          ].map((st) => (
+                            <button 
+                              key={st.id}
+                              className={`sec-n cursor-pointer ${officeDeskDrawerStyle === st.id ? "on" : ""}`}
+                              onClick={() => setOfficeDeskDrawerStyle(st.id)}
+                              style={{ fontSize: "10px", padding: "4px" }}
+                            >
+                              {st.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  <div className="size-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <label style={{ margin: 0 }}>File Cabinet</label>
+                    <button 
+                      className={`sec-n cursor-pointer ${officeDeskFileCab ? "on" : ""}`}
+                      onClick={() => setOfficeDeskFileCab(!officeDeskFileCab)}
+                      style={{ padding: "4px 10px", fontSize: "11px" }}
+                    >
+                      {officeDeskFileCab ? "ON" : "OFF"}
+                    </button>
+                  </div>
                 </div>
               </div>
 
-              {/* 6. Desk & Table Configurator */}
+              {/* 5. Desk Materials */}
               <div className="rps">
-                <div className="rpt">Desk Configurator</div>
+                <div className="rpt">Desk Materials</div>
                 <div className="size-grid">
-                  <div className="size-row" style={{ marginBottom: "6px" }}>
-                    <label style={{ marginBottom: "4px" }}>Desk Style</label>
-                    <div className="section-btns" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "4px" }}>
+                  <div className="size-row" style={{ marginBottom: "8px" }}>
+                    <label style={{ marginBottom: "4px" }}>Tabletop Finish</label>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4px" }}>
                       {[
-                        { id: "executive", label: "Executive" },
-                        { id: "l-shape", label: "L-Shape" },
-                        { id: "u-shape", label: "U-Shape" },
-                        { id: "floating", label: "Floating" },
-                        { id: "compact", label: "Compact" }
-                      ].map((dt) => (
-                        <div
-                          key={dt.id}
-                          className={`sec-n ${officeDeskType === dt.id ? "on" : ""}`}
-                          onClick={() => {
-                            setOfficeDeskType(dt.id);
-                            triggerNotification("Desk style: " + dt.label);
-                          }}
-                          style={{ fontSize: "9px", padding: "4px", textAlign: "center" }}
-                        >
-                          {dt.label}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="size-row">
-                    <label>Desk Width <span>{officeDeskWidth.toFixed(1)} m</span></label>
-                    <input
-                      type="range"
-                      className="slider"
-                      min="1.2"
-                      max="2.4"
-                      step="0.1"
-                      value={officeDeskWidth}
-                      onChange={(e) => setOfficeDeskWidth(parseFloat(e.target.value))}
-                    />
-                  </div>
-                  <div className="size-row">
-                    <label>Desk Depth <span>{officeDeskDepth.toFixed(2)} m</span></label>
-                    <input
-                      type="range"
-                      className="slider"
-                      min="0.6"
-                      max="1.1"
-                      step="0.05"
-                      value={officeDeskDepth}
-                      onChange={(e) => setOfficeDeskDepth(parseFloat(e.target.value))}
-                    />
-                  </div>
-                  <div className="size-row">
-                    <label>Desk Height <span>{officeDeskHeight.toFixed(2)} m</span></label>
-                    <input
-                      type="range"
-                      className="slider"
-                      min="0.65"
-                      max="0.85"
-                      step="0.01"
-                      value={officeDeskHeight}
-                      onChange={(e) => setOfficeDeskHeight(parseFloat(e.target.value))}
-                    />
-                  </div>
-                  <div className="size-row" style={{ marginBottom: "6px" }}>
-                    <label style={{ marginBottom: "4px" }}>Tabletop Material</label>
-                    <div className="section-btns" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "4px" }}>
-                      {[
-                        { id: "wood", label: "Wood" },
-                        { id: "marble", label: "Marble" },
-                        { id: "quartz", label: "Quartz" },
-                        { id: "glass", label: "Glass" },
-                        { id: "concrete", label: "Concrete" },
-                        { id: "metal", label: "Metal" }
+                        { id: "natural_oak", label: "Natural Oak", bg: "#C8A96E" },
+                        { id: "walnut", label: "Walnut", bg: "#6B3F1E" },
+                        { id: "dark_walnut", label: "Dark Walnut", bg: "#3A2010" },
+                        { id: "ash", label: "Ash Wood", bg: "#D8C9A8" },
+                        { id: "black_wood", label: "Black Wood", bg: "#1A1614" },
+                        { id: "white_wood", label: "White Wood", bg: "#EDE8DF" },
+                        { id: "matte_lam", label: "Matte Lam.", bg: "#D0C9BE" },
+                        { id: "high_gloss", label: "High Gloss", bg: "#EEEAE4" },
+                        { id: "white_marble", label: "White Marble", bg: "#F5F5F0" },
+                        { id: "black_marble", label: "Black Marble", bg: "#1A1A1C" },
+                        { id: "grey_marble", label: "Grey Marble", bg: "#B0AFAC" },
+                        { id: "travertine", label: "Travertine", bg: "#D4C4A0" },
                       ].map((mat) => (
-                        <div
+                        <button
                           key={mat.id}
-                          className={`sec-n ${officeDeskTopMaterial === mat.id ? "on" : ""}`}
+                          className={`sec-n cursor-pointer ${officeDeskTopMat === mat.id ? "on" : ""}`}
                           onClick={() => {
-                            setOfficeDeskTopMaterial(mat.id);
-                            triggerNotification("Tabletop material: " + mat.label);
+                            setOfficeDeskTopMat(mat.id);
+                            if (officeCabAutoSync) setOfficeCabPanelMat(mat.id);
                           }}
-                          style={{ fontSize: "9px", padding: "4px", textAlign: "center" }}
+                          style={{ fontSize: "10.5px", padding: "5px 8px", display: "flex", alignItems: "center", gap: "6px", textAlign: "left", justifyContent: "flex-start" }}
                         >
+                          <span style={{ width: "10px", height: "10px", borderRadius: "3px", background: mat.bg, border: "1px solid rgba(0,0,0,0.1)", flexShrink: 0 }} />
                           {mat.label}
-                        </div>
+                        </button>
                       ))}
                     </div>
                   </div>
+
                   <div className="size-row">
-                    <label style={{ marginBottom: "4px" }}>Tabletop Colour</label>
-                    <div className="txgrid">
+                    <label style={{ marginBottom: "4px" }}>Base / Pedestals</label>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4px" }}>
                       {[
-                        { id: "white", name: "Gloss White", style: { background: "#ffffff", border: "1px solid #ddd" } },
-                        { id: "black", name: "Jet Black", style: { background: "#1c1c1c" } },
-                        { id: "walnut", name: "Walnut Wood", cls: "s2" },
-                        { id: "oak", name: "Oak Wood", cls: "s1" }
-                      ].map((sw) => (
-                        <div
-                          key={sw.id}
-                          className={`sw ${sw.cls || ""} ${officeDeskTopColor === sw.id ? "on" : ""}`}
-                          style={sw.style}
-                          onClick={() => {
-                            setOfficeDeskTopColor(sw.id);
-                            triggerNotification("Tabletop colour: " + sw.name);
-                          }}
+                        { id: "match_top", label: "Match Top", bg: "#C8A96E" },
+                        { id: "matte_beige", label: "Matte Beige", bg: "#BEB4A6" },
+                        { id: "matte_white", label: "Matte White", bg: "#EFEFED" },
+                        { id: "matte_black", label: "Matte Black", bg: "#1C1C1E" },
+                        { id: "dark_grey_base", label: "Dark Grey", bg: "#3A3A3C" },
+                      ].map((mat) => (
+                        <button
+                          key={mat.id}
+                          className={`sec-n cursor-pointer ${officeDeskBaseMat === mat.id ? "on" : ""}`}
+                          onClick={() => setOfficeDeskBaseMat(mat.id)}
+                          style={{ fontSize: "10.5px", padding: "5px 8px", display: "flex", alignItems: "center", gap: "6px", textAlign: "left", justifyContent: "flex-start" }}
                         >
-                          <span className="sw-tip">{sw.name}</span>
-                        </div>
+                          <span style={{ width: "10px", height: "10px", borderRadius: "3px", background: mat.id === 'match_top' ? (officeMatsRef.current && officeMatsRef.current[officeDeskTopMat] ? "#C8A96E" : "#C8A96E") : mat.bg, border: "1px solid rgba(0,0,0,0.1)", flexShrink: 0 }} />
+                          {mat.label}
+                        </button>
                       ))}
                     </div>
                   </div>
+                </div>
+              </div>
+
+              {/* 6. Cabinet Dimensions */}
+              <div className="rps">
+                <div className="rpt">Cabinet Dimensions</div>
+                <div className="size-grid">
                   <div className="size-row">
-                    <label style={{ marginBottom: "4px" }}>Desk Drawer Unit Position</label>
+                    <label>Width <span>{Math.round(officeCabW * 100)} cm</span></label>
+                    <input
+                      type="range"
+                      className="slider"
+                      min="200"
+                      max="600"
+                      step="10"
+                      value={officeCabW * 100}
+                      onChange={(e) => setOfficeCabW(parseFloat(e.target.value) / 100)}
+                    />
+                  </div>
+                  <div className="size-row">
+                    <label>Height <span>{Math.round(officeCabH * 100)} cm</span></label>
+                    <input
+                      type="range"
+                      className="slider"
+                      min="200"
+                      max="320"
+                      step="5"
+                      value={officeCabH * 100}
+                      onChange={(e) => setOfficeCabH(parseFloat(e.target.value) / 100)}
+                    />
+                  </div>
+                  <div className="size-row">
+                    <label>Depth <span>{Math.round(officeCabD * 100)} cm</span></label>
+                    <input
+                      type="range"
+                      className="slider"
+                      min="25"
+                      max="60"
+                      step="2"
+                      value={officeCabD * 100}
+                      onChange={(e) => setOfficeCabD(parseFloat(e.target.value) / 100)}
+                    />
+                  </div>
+                  <div className="size-row">
+                    <label>Sections <span>{officeCabSections}</span></label>
+                    <input
+                      type="range"
+                      className="slider"
+                      min="2"
+                      max="6"
+                      step="1"
+                      value={officeCabSections}
+                      onChange={(e) => setOfficeCabSections(parseInt(e.target.value))}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* 7. Cabinet Layout */}
+              <div className="rps">
+                <div className="rpt">Cabinet Layout</div>
+                <div className="size-grid">
+                  <div className="size-row" style={{ marginBottom: "8px" }}>
+                    <label style={{ marginBottom: "4px" }}>Open Shelves</label>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <button className="sec-n cursor-pointer" onClick={() => setOfficeCabOpenShelves(Math.max(1, officeCabOpenShelves - 1))} style={{ padding: "4px 10px" }}>−</button>
+                      <span style={{ fontSize: "14px", fontWeight: "800", flex: 1, textAlign: "center", color: "var(--accent)" }}>{officeCabOpenShelves}</span>
+                      <button className="sec-n cursor-pointer" onClick={() => setOfficeCabOpenShelves(Math.min(6, officeCabOpenShelves + 1))} style={{ padding: "4px 10px" }}>+</button>
+                    </div>
+                  </div>
+                  <div className="size-row" style={{ marginBottom: "8px" }}>
+                    <label style={{ marginBottom: "4px" }}>Lower Doors</label>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <button className="sec-n cursor-pointer" onClick={() => setOfficeCabLowerDoors(Math.max(2, officeCabLowerDoors - 1))} style={{ padding: "4px 10px" }}>−</button>
+                      <span style={{ fontSize: "14px", fontWeight: "800", flex: 1, textAlign: "center", color: "var(--accent)" }}>{officeCabLowerDoors}</span>
+                      <button className="sec-n cursor-pointer" onClick={() => setOfficeCabLowerDoors(Math.min(8, officeCabLowerDoors + 1))} style={{ padding: "4px 10px" }}>+</button>
+                    </div>
+                  </div>
+                  <div className="size-row" style={{ marginBottom: "8px" }}>
+                    <label>Lower Section Height <span>{Math.round(officeCabLowerHRatio * 100)}%</span></label>
+                    <input
+                      type="range"
+                      className="slider"
+                      min="20"
+                      max="60"
+                      step="5"
+                      value={officeCabLowerHRatio * 100}
+                      onChange={(e) => setOfficeCabLowerHRatio(parseFloat(e.target.value) / 100)}
+                    />
+                  </div>
+                  <div className="size-row">
+                    <label style={{ marginBottom: "4px" }}>Shelf Spacing</label>
                     <div className="section-btns" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "4px" }}>
                       {[
-                        { id: "left", label: "Left Pedestal" },
-                        { id: "right", label: "Right Pedestal" },
-                        { id: "dual", label: "Dual Sides" },
-                        { id: "center", label: "Center Pencil" },
-                        { id: "none", label: "No Drawer" }
-                      ].map((dp) => (
-                        <div
-                          key={dp.id}
-                          className={`sec-n ${officeDeskDrawerPos === dp.id ? "on" : ""}`}
-                          onClick={() => {
-                            setOfficeDeskDrawerPos(dp.id);
-                            triggerNotification("Desk drawer: " + dp.label);
-                          }}
-                          style={{ fontSize: "8.5px", padding: "4px", textAlign: "center" }}
+                        { id: "even", label: "Even" },
+                        { id: "top", label: "Top Heavy" },
+                        { id: "bot", label: "Bottom" }
+                      ].map((spacing) => (
+                        <button 
+                          key={spacing.id}
+                          className={`sec-n cursor-pointer ${officeCabShelfSpacing === spacing.id ? "on" : ""}`}
+                          onClick={() => setOfficeCabShelfSpacing(spacing.id)}
+                          style={{ fontSize: "9px", padding: "4px" }}
                         >
-                          {dp.label}
-                        </div>
+                          {spacing.label}
+                        </button>
                       ))}
                     </div>
                   </div>
-                  {officeDeskDrawerPos !== "none" && (
+                </div>
+              </div>
+
+              {/* 8. Cabinet Color & Material */}
+              <div className="rps">
+                <div className="rpt">Cabinet Color &amp; Material</div>
+                <div className="size-grid">
+                  <div className="size-row" style={{ marginBottom: "8px" }}>
+                    <label style={{ marginBottom: "4px" }}>Body Color</label>
+                    <div className="txgrid" style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "6px" }}>
+                      {[
+                        { id: "beige", bg: "#BEB4A6", name: "Warm Beige" },
+                        { id: "sand", bg: "#C5B99A", name: "Sand" },
+                        { id: "white", bg: "#EFEFED", name: "White" },
+                        { id: "ivory", bg: "#EEE8D6", name: "Ivory" },
+                        { id: "light_grey", bg: "#CACAC6", name: "Light Grey" },
+                        { id: "dark_grey", bg: "#3A3A3C", name: "Dark Grey" },
+                        { id: "taupe", bg: "#8A8274", name: "Taupe" },
+                        { id: "black", bg: "#1A1A1C", name: "Black" },
+                        { id: "walnut_col", bg: "#6B3F1E", name: "Walnut" },
+                        { id: "oak_col", bg: "#C8A96E", name: "Oak" },
+                      ].map((col) => (
+                        <div
+                          key={col.id}
+                          className={`sw ${officeCabColor === col.id ? "on" : ""}`}
+                          style={{ background: col.bg, width: "30px", height: "30px", borderRadius: "6px", cursor: "pointer", border: "2px solid transparent" }}
+                          onClick={() => setOfficeCabColor(col.id)}
+                          title={col.name}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="size-row" style={{ marginBottom: "8px" }}>
+                    <label style={{ marginBottom: "4px" }}>Decorative Back Panel</label>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4px" }}>
+                      {[
+                        { id: "natural_oak", label: "Natural Oak", bg: "#C8A96E" },
+                        { id: "walnut", label: "Walnut", bg: "#6B3F1E" },
+                        { id: "white_marble", label: "White Marble", bg: "#F5F5F0" },
+                        { id: "black_marble", label: "Black Marble", bg: "#1A1A1C" },
+                        { id: "grey_marble", label: "Grey Marble", bg: "#B0AFAC" },
+                        { id: "travertine", label: "Travertine", bg: "#D4C4A0" },
+                      ].map((mat) => (
+                        <button
+                          key={mat.id}
+                          className={`sec-n cursor-pointer ${!officeCabAutoSync && officeCabPanelMat === mat.id ? "on" : ""}`}
+                          onClick={() => {
+                            setOfficeCabPanelMat(mat.id);
+                            setOfficeCabAutoSync(false);
+                          }}
+                          style={{ fontSize: "10.5px", padding: "5px 8px", display: "flex", alignItems: "center", gap: "6px", textAlign: "left", justifyContent: "flex-start" }}
+                        >
+                          <span style={{ width: "10px", height: "10px", borderRadius: "3px", background: mat.bg, border: "1px solid rgba(0,0,0,0.1)", flexShrink: 0 }} />
+                          {mat.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="size-row" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px", marginTop: "8px" }}>
+                    <button 
+                      className="sec-n cursor-pointer"
+                      onClick={() => {
+                        setOfficeCabPanelMat(officeDeskTopMat);
+                        triggerNotification("Panel synced to desk top");
+                      }}
+                      style={{ fontSize: "11px", padding: "6px" }}
+                    >
+                      ↺ Sync to Desk Top
+                    </button>
+                    <button 
+                      className={`sec-n cursor-pointer ${officeCabAutoSync ? "on" : ""}`}
+                      onClick={() => {
+                        setOfficeCabAutoSync(!officeCabAutoSync);
+                        triggerNotification(!officeCabAutoSync ? "Auto sync ON" : "Auto sync OFF");
+                      }}
+                      style={{ fontSize: "11px", padding: "6px" }}
+                    >
+                      Auto Sync
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* 9. LED Lighting */}
+              <div className="rps">
+                <div className="rpt">LED Lighting</div>
+                <div className="size-grid">
+                  <div className="size-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                    <label style={{ margin: 0 }}>Shelf LEDs</label>
+                    <button 
+                      className={`sec-n cursor-pointer ${officeLedOn ? "on" : ""}`}
+                      onClick={() => setOfficeLedOn(!officeLedOn)}
+                      style={{ padding: "4px 10px", fontSize: "11px" }}
+                    >
+                      {officeLedOn ? "ON" : "OFF"}
+                    </button>
+                  </div>
+
+                  {officeLedOn && (
                     <>
-                      <div className="size-row">
-                        <label>Drawers Count <span>{officeDeskDrawerCount}</span></label>
+                      <div className="size-row" style={{ marginBottom: "8px" }}>
+                        <label style={{ marginBottom: "4px" }}>Color Temperature</label>
+                        <div className="section-btns" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "4px" }}>
+                          {[
+                            { id: "warm", label: "Warm" },
+                            { id: "neutral", label: "Neutral" },
+                            { id: "cool", label: "Cool" }
+                          ].map((temp) => (
+                            <button
+                              key={temp.id}
+                              className={`sec-n cursor-pointer ${officeLedColor === temp.id ? "on" : ""}`}
+                              onClick={() => setOfficeLedColor(temp.id)}
+                              style={{ fontSize: "10px", padding: "4px" }}
+                            >
+                              {temp.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="size-row" style={{ marginBottom: "8px" }}>
+                        <label>Brightness <span>{Math.round(officeLedBright * 100)}%</span></label>
                         <input
                           type="range"
                           className="slider"
-                          min="1"
-                          max="4"
-                          step="1"
-                          value={officeDeskDrawerCount}
-                          onChange={(e) => setOfficeDeskDrawerCount(parseInt(e.target.value))}
+                          min="10"
+                          max="100"
+                          step="5"
+                          value={officeLedBright * 100}
+                          onChange={(e) => setOfficeLedBright(parseFloat(e.target.value) / 100)}
                         />
                       </div>
-                      <div style={{ display: "flex", gap: "6px" }}>
-                        <button
-                          className={`scene-btn ${officeDeskDrawersOpen ? "on" : ""}`}
-                          style={{ margin: "0", width: "100%", fontSize: "10px", padding: "6px" }}
-                          onClick={() => setOfficeDeskDrawersOpen(!officeDeskDrawersOpen)}
-                        >
-                          🚪 {officeDeskDrawersOpen ? "Close Drawers" : "Slide Open Drawers"}
-                        </button>
-                        <button
-                          className={`scene-btn ${officeDeskLockOption ? "on" : ""}`}
-                          style={{ margin: "0", width: "100%", fontSize: "10px", padding: "6px" }}
-                          onClick={() => setOfficeDeskLockOption(!officeDeskLockOption)}
-                        >
-                          🔒 Lock Drawers
-                        </button>
+
+                      <div className="size-row">
+                        <label style={{ marginBottom: "4px" }}>Placement</label>
+                        <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <span style={{ fontSize: "11px", color: "var(--muted)" }}>Under Shelf</span>
+                            <button 
+                              className={`sec-n cursor-pointer ${officeLedUnder ? "on" : ""}`}
+                              onClick={() => setOfficeLedUnder(!officeLedUnder)}
+                              style={{ padding: "2px 8px", fontSize: "9px" }}
+                            >
+                              {officeLedUnder ? "ON" : "OFF"}
+                            </button>
+                          </div>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <span style={{ fontSize: "11px", color: "var(--muted)" }}>Back of Shelf</span>
+                            <button 
+                              className={`sec-n cursor-pointer ${officeLedBack ? "on" : ""}`}
+                              onClick={() => setOfficeLedBack(!officeLedBack)}
+                              style={{ padding: "2px 8px", fontSize: "9px" }}
+                            >
+                              {officeLedBack ? "ON" : "OFF"}
+                            </button>
+                          </div>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <span style={{ fontSize: "11px", color: "var(--muted)" }}>Top Cove</span>
+                            <button 
+                              className={`sec-n cursor-pointer ${officeLedTop ? "on" : ""}`}
+                              onClick={() => setOfficeLedTop(!officeLedTop)}
+                              style={{ padding: "2px 8px", fontSize: "9px" }}
+                            >
+                              {officeLedTop ? "ON" : "OFF"}
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     </>
                   )}
                 </div>
               </div>
 
-              {/* 7. Office Seating (Chairs) */}
-              <div className="rps">
-                <div className="rpt">Office Seating</div>
-                <div className="size-grid">
-                  <div className="size-row" style={{ marginBottom: "6px" }}>
-                    <label style={{ marginBottom: "4px" }}>Swivel Chair Base Frame</label>
-                    <div className="section-btns" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "4px" }}>
-                      {["chrome", "black", "silver"].map((fm) => (
-                        <div
-                          key={fm}
-                          className={`sec-n ${officeChairFrame === fm ? "on" : ""}`}
-                          onClick={() => {
-                            setOfficeChairFrame(fm);
-                            triggerNotification("Chair frame: " + fm);
-                          }}
-                          style={{ fontSize: "10px", padding: "4px", textTransform: "capitalize" }}
-                        >
-                          {fm}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="size-row">
-                    <label style={{ marginBottom: "4px" }}>Chair Leather Cushion Colour</label>
-                    <div className="txgrid">
-                      {[
-                        { id: "black", name: "Black Cushion", style: { background: "#111" } },
-                        { id: "brown", name: "Brown Cushion", style: { background: "#5a3e2e" } },
-                        { id: "gray", name: "Gray Cushion", style: { background: "#777" } },
-                        { id: "cream", name: "Cream Cushion", style: { background: "#eee4d8" } }
-                      ].map((sw) => (
-                        <div
-                          key={sw.id}
-                          className={`sw ${sw.cls || ""} ${officeChairColor === sw.id ? "on" : ""}`}
-                          style={sw.style}
-                          onClick={() => {
-                            setOfficeChairColor(sw.id);
-                            triggerNotification("Chair cushion: " + sw.name);
-                          }}
-                        >
-                          <span className="sw-tip">{sw.name}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* 8. Tech & Decor Library */}
-              <div className="rps">
-                <div className="rpt">Tech &amp; Decor Overlays</div>
-                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                  <div>
-                    <label style={{ fontSize: "10.5px", fontWeight: "600", color: "var(--muted)", textTransform: "uppercase" }}>Technology Library</label>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px", marginTop: "4px" }}>
-                      {[
-                        { id: "laptop", label: "💻 Laptop" },
-                        { id: "pc", label: "🖥️ Desktop PC" },
-                        { id: "monitor", label: "📺 Screen Monitor" },
-                        { id: "dual-monitors", label: "📟 Dual Screens" },
-                        { id: "speakers", label: "🔊 Speakers" },
-                        { id: "tv", label: "📺 TV Display" }
-                      ].map(item => {
-                        const active = officeTechItems.includes(item.id);
-                        return (
-                          <button
-                            key={item.id}
-                            className={`sec-n ${active ? "on" : ""}`}
-                            style={{ fontSize: "10px", padding: "6px", textAlign: "left" }}
-                            onClick={() => {
-                              setOfficeTechItems(prev => active ? prev.filter(x => x !== item.id) : [...prev, item.id]);
-                            }}
-                          >
-                            {item.label}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                  <div>
-                    <label style={{ fontSize: "10.5px", fontWeight: "600", color: "var(--muted)", textTransform: "uppercase" }}>Decorations Library</label>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px", marginTop: "4px" }}>
-                      {[
-                        { id: "plant", label: "🌿 Potted Plant" },
-                        { id: "books", label: "📚 Book Stack" },
-                        { id: "lamp", label: "💡 Desk Lamp" },
-                        { id: "award", label: "🏆 Award Trophy" }
-                      ].map(item => {
-                        const active = officeDecorItems.includes(item.id);
-                        return (
-                          <button
-                            key={item.id}
-                            className={`sec-n ${active ? "on" : ""}`}
-                            style={{ fontSize: "10px", padding: "6px", textAlign: "left" }}
-                            onClick={() => {
-                              setOfficeDecorItems(prev => active ? prev.filter(x => x !== item.id) : [...prev, item.id]);
-                            }}
-                          >
-                            {item.label}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* 9. Flooring & Room Lighting */}
-              <div className="rps">
-                <div className="rpt">Flooring &amp; Room Lights</div>
-                <div className="size-grid">
-                  <div className="size-row" style={{ marginBottom: "6px" }}>
-                    <label style={{ marginBottom: "4px" }}>Floor Material</label>
-                    <div className="section-btns" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "4px" }}>
-                      {[
-                        { id: "wood", label: "Wood Plank" },
-                        { id: "herringbone", label: "Herringbone" },
-                        { id: "marble", label: "Marble" }
-                      ].map((fl) => (
-                        <div
-                          key={fl.id}
-                          className={`sec-n ${officeFlooringType === fl.id ? "on" : ""}`}
-                          onClick={() => {
-                            setOfficeFlooringType(fl.id);
-                            triggerNotification("Floor material: " + fl.label);
-                          }}
-                          style={{ fontSize: "9.5px", padding: "4px", textAlign: "center" }}
-                        >
-                          {fl.label}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="size-row">
-                    <label>Spotlight Brightness <span>{officeLightingBrightness.toFixed(1)}</span></label>
-                    <input
-                      type="range"
-                      className="slider"
-                      min="0.1"
-                      max="2.5"
-                      step="0.1"
-                      value={officeLightingBrightness}
-                      onChange={(e) => setOfficeLightingBrightness(parseFloat(e.target.value))}
-                    />
-                  </div>
-                  <div className="size-row" style={{ marginBottom: "6px" }}>
-                    <label style={{ marginBottom: "4px" }}>LED Light Temp</label>
-                    <div className="section-btns" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "4px" }}>
-                      {["warm", "cool", "neutral"].map((temp) => (
-                        <div
-                          key={temp}
-                          className={`sec-n ${officeLightingColorTemp === temp ? "on" : ""}`}
-                          onClick={() => {
-                            setOfficeLightingColorTemp(temp);
-                            triggerNotification("LED colour temp: " + temp);
-                          }}
-                          style={{ fontSize: "10px", padding: "4px", textTransform: "capitalize" }}
-                        >
-                          {temp}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="size-row" style={{ marginBottom: "6px" }}>
-                    <label style={{ marginBottom: "4px" }}>Cabinet Shelves LED Position</label>
-                    <div className="section-btns" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "4px" }}>
-                      {[
-                        { id: "back", label: "Rear Wall" },
-                        { id: "top", label: "Top board" },
-                        { id: "bottom", label: "Undershelf" },
-                        { id: "off", label: "LED Off" }
-                      ].map((pos) => (
-                        <div
-                          key={pos.id}
-                          className={`sec-n ${officeShelvesLEDPosition === pos.id ? "on" : ""}`}
-                          onClick={() => {
-                            setOfficeShelvesLEDPosition(pos.id);
-                            triggerNotification("LED placement: " + pos.label);
-                          }}
-                          style={{ fontSize: "9px", padding: "4px", textAlign: "center" }}
-                        >
-                          {pos.label}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* 10. Interactive Selected Object Editor */}
-              <div className="rps" style={{ background: "rgba(212,165,232,0.06)" }}>
-                <div className="rpt">Interactive Object Editor</div>
-                {selectedOfficeObject ? (
-                  <div className="size-grid">
-                    <div className="pbadge" style={{ border: "1px solid rgba(212,165,232,0.3)" }}>
-                      <div className="pdot" style={{ background: "#d4a5e8" }}></div>
-                      <span style={{ fontSize: "10px" }}>Active: {selectedOfficeObject.name}</span>
-                    </div>
-                    
-                    <div className="size-row">
-                      <label>Move Horizontal (X) <span>{selectedOfficeObject.posX.toFixed(2)} m</span></label>
-                      <input
-                        type="range"
-                        className="slider"
-                        min="-2.0"
-                        max="2.0"
-                        step="0.05"
-                        value={selectedOfficeObject.posX}
-                        onChange={(e) => handleUpdateSelectedObject("posX", e.target.value)}
-                      />
-                    </div>
-                    <div className="size-row">
-                      <label>Move Height (Y) <span>{selectedOfficeObject.posY.toFixed(2)} m</span></label>
-                      <input
-                        type="range"
-                        className="slider"
-                        min="0.0"
-                        max="3.0"
-                        step="0.05"
-                        value={selectedOfficeObject.posY}
-                        onChange={(e) => handleUpdateSelectedObject("posY", e.target.value)}
-                      />
-                    </div>
-                    <div className="size-row">
-                      <label>Move Depth (Z) <span>{selectedOfficeObject.posZ.toFixed(2)} m</span></label>
-                      <input
-                        type="range"
-                        className="slider"
-                        min="-2.0"
-                        max="2.0"
-                        step="0.05"
-                        value={selectedOfficeObject.posZ}
-                        onChange={(e) => handleUpdateSelectedObject("posZ", e.target.value)}
-                      />
-                    </div>
-
-                    <div className="size-row">
-                      <label>Y Rotation <span>{selectedOfficeObject.rotY.toFixed(0)}°</span></label>
-                      <input
-                        type="range"
-                        className="slider"
-                        min="0"
-                        max="360"
-                        step="5"
-                        value={selectedOfficeObject.rotY}
-                        onChange={(e) => handleUpdateSelectedObject("rotY", e.target.value)}
-                      />
-                    </div>
-
-                    <div className="size-row">
-                      <label>Scale Width <span>{selectedOfficeObject.scaleW.toFixed(1)}x</span></label>
-                      <input
-                        type="range"
-                        className="slider"
-                        min="0.2"
-                        max="3.0"
-                        step="0.1"
-                        value={selectedOfficeObject.scaleW}
-                        onChange={(e) => handleUpdateSelectedObject("scaleW", e.target.value)}
-                      />
-                    </div>
-                    <div className="size-row">
-                      <label>Scale Height <span>{selectedOfficeObject.scaleH.toFixed(1)}x</span></label>
-                      <input
-                        type="range"
-                        className="slider"
-                        min="0.2"
-                        max="3.0"
-                        step="0.1"
-                        value={selectedOfficeObject.scaleH}
-                        onChange={(e) => handleUpdateSelectedObject("scaleH", e.target.value)}
-                      />
-                    </div>
-
-                    <div style={{ display: "flex", gap: "6px", marginTop: "5px" }}>
-                      <button className="sec-n cursor-pointer" onClick={handleDuplicateSelectedObject} style={{ fontSize: "10.5px", padding: "6px", flex: 1 }}>👥 Duplicate</button>
-                      <button className="sec-n cursor-pointer" onClick={handleDeleteSelectedObject} style={{ fontSize: "10.5px", padding: "6px", flex: 1, borderColor: "#cc4444", color: "#cc4444" }}>🗑️ Delete</button>
-                    </div>
-
-                    <div className="size-row" style={{ marginTop: "4px" }}>
-                      <label style={{ fontSize: "9.5px" }}>Quick Material Swapping</label>
-                      <div className="chips" style={{ gap: "4px" }}>
-                        {["wood", "marble", "glass", "metal", "fabric"].map(m => (
-                          <div
-                            key={m}
-                            className={`chip ${selectedOfficeObject.material === m ? "on" : ""}`}
-                            onClick={() => handleReplaceSelectedMaterial(m)}
-                            style={{ fontSize: "8.5px", padding: "3px 7px" }}
-                          >
-                            {m.toUpperCase()}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {(selectedOfficeObject.group === "chair" || selectedOfficeObject.group === "desk") && (
-                      <div className="size-row" style={{ marginTop: "4px" }}>
-                        <label style={{ fontSize: "9.5px" }}>Model Swapping</label>
-                        <div className="chips" style={{ gap: "4px" }}>
-                          {selectedOfficeObject.group === "chair" ? (
-                            <>
-                              <div className="chip" onClick={() => handleReplaceSelectedModel("executive")} style={{ fontSize: "8.5px" }}>Executive</div>
-                              <div className="chip" onClick={() => handleReplaceSelectedModel("visitor")} style={{ fontSize: "8.5px" }}>Visitor</div>
-                            </>
-                          ) : (
-                            <>
-                              <div className="chip" onClick={() => handleReplaceSelectedModel("executive")} style={{ fontSize: "8.5px" }}>Executive</div>
-                              <div className="chip" onClick={() => handleReplaceSelectedModel("floating")} style={{ fontSize: "8.5px" }}>Floating</div>
-                              <div className="chip" onClick={() => handleReplaceSelectedModel("compact")} style={{ fontSize: "8.5px" }}>Compact</div>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <p style={{ fontSize: "10.5px", color: "var(--muted)", fontStyle: "italic", textAlign: "center" }}>
-                    💡 Click on any office furniture in the 3D view to translate, rotate, duplicate, or delete it.
-                  </p>
-                )}
-                
-                <div style={{ marginTop: "12px", borderTop: "1px dashed var(--border)", paddingTop: "8px" }}>
-                  <label style={{ fontSize: "9.5px", fontWeight: "600", textTransform: "uppercase" }}>Add Custom Furniture</label>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4px", marginTop: "4px" }}>
-                    <button className="sec-n cursor-pointer" onClick={() => {
-                      setOfficeCustomObjects(prev => [...prev, {
-                        id: `c-${Date.now()}`,
-                        name: `visitorChair-${Date.now().toString().slice(-4)}`,
-                        type: "chair-visitor",
-                        group: "chair",
-                        posX: 0.8, posY: 0.01, posZ: 0.8,
-                        rotY: 180, scaleW: 1.0, scaleH: 1.0, scaleD: 1.0
-                      }]);
-                      triggerNotification("Custom Chair added to scene!");
-                    }} style={{ fontSize: "8.5px", padding: "4px" }}>+ Visitor Chair</button>
-                    <button className="sec-n cursor-pointer" onClick={() => {
-                      setOfficeCustomObjects(prev => [...prev, {
-                        id: `c-${Date.now()}`,
-                        name: `plant-${Date.now().toString().slice(-4)}`,
-                        type: "potted-plant",
-                        group: "decor",
-                        posX: -0.8, posY: 0.01, posZ: 0.8,
-                        rotY: 0, scaleW: 1.0, scaleH: 1.0, scaleD: 1.0
-                      }]);
-                      triggerNotification("Custom Plant added to scene!");
-                    }} style={{ fontSize: "8.5px", padding: "4px" }}>+ Plant Pot</button>
-                  </div>
-                </div>
+              {/* 10. Reset to Default */}
+              <div className="rps" style={{ borderBottom: "none" }}>
+                <button 
+                  className="sec-n cursor-pointer"
+                  onClick={() => {
+                    setOfficeDeskW(2.4); setOfficeDeskD(1.0); setOfficeDeskH(0.75); setOfficeDeskT(0.06);
+                    setOfficeDeskTopMat("natural_oak"); setOfficeDeskBaseMat("matte_beige");
+                    setOfficeDeskDrawer(true); setOfficeDeskDrawerCount(3); setOfficeDeskDrawerSide("left"); setOfficeDeskDrawerStyle("closed");
+                    setOfficeDeskFileCab(false);
+                    setOfficeCabW(4.0); setOfficeCabH(2.8); setOfficeCabD(0.40); setOfficeCabSections(3);
+                    setOfficeCabOpenShelves(3); setOfficeCabLowerDoors(4); setOfficeCabLowerHRatio(0.40);
+                    setOfficeCabColor("beige"); setOfficeCabPanelMat("natural_oak"); setOfficeCabShelfSpacing("even"); setOfficeCabAutoSync(true);
+                    setOfficeLedOn(true); setOfficeLedColor("warm"); setOfficeLedBright(0.70);
+                    setOfficeLedUnder(true); setOfficeLedBack(false); setOfficeLedTop(false);
+                    triggerNotification("Reset scene to defaults");
+                  }}
+                  style={{ width: "100%", padding: "10px", fontSize: "12px", background: "rgba(200,80,80,0.08)", color: "#ee6666", borderColor: "rgba(200,80,80,0.2)" }}
+                >
+                  Reset to Default Settings
+                </button>
               </div>
 
               {/* 11. Estimation & Exports */}
@@ -5407,7 +4691,7 @@ ${activeCategory === "kitchen" ? `
                 </div>
                 
                 <button
-                  className="vsave"
+                  className="vsave cursor-pointer"
                   onClick={() => triggerNotification("Office layout saved to designs list!")}
                   style={{ width: "100%", fontSize: "11px", padding: "6px" }}
                 >
