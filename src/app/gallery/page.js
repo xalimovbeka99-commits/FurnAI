@@ -1,7 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useRef, useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import { Canvas } from "@react-three/fiber";
+import { useGLTF, OrbitControls, Stage } from "@react-three/drei";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -13,39 +16,207 @@ const fadeUp = {
 };
 
 const galleryItems = [
-  { id: 1, name: "Minimalist Wardrobe", type: "wardrobe", style: "minimal", material: "wood", color: "#8B6914", width: 150, height: 220, depth: 60 },
-  { id: 2, name: "Glass Coffee Table", type: "table", style: "modern", material: "glass", color: "#E8E8E8", width: 120, height: 45, depth: 60 },
-  { id: 3, name: "Luxury Sofa", type: "sofa", style: "luxury", material: "wood", color: "#3E2723", width: 200, height: 85, depth: 90 },
-  { id: 4, name: "Modern Cabinet", type: "cabinet", style: "modern", material: "metal", color: "#1a1a1a", width: 100, height: 120, depth: 45 },
-  { id: 5, name: "Classic Bookshelf", type: "wardrobe", style: "classic", material: "wood", color: "#8B6914", width: 80, height: 200, depth: 35 },
-  { id: 6, name: "Industrial Table", type: "table", style: "modern", material: "metal", color: "#C0C0C0", width: 160, height: 75, depth: 80 },
-  { id: 7, name: "Velvet Lounge Sofa", type: "sofa", style: "luxury", material: "wood", color: "#7C3AED", width: 220, height: 80, depth: 95 },
-  { id: 8, name: "Oak Storage Cabinet", type: "cabinet", style: "classic", material: "wood", color: "#8B6914", width: 90, height: 150, depth: 50 },
-  { id: 9, name: "Scandinavian Dresser", type: "cabinet", style: "minimal", material: "wood", color: "#F5F5DC", width: 110, height: 80, depth: 45 },
+  { id: 1,  name: "Oak Wardrobe",       type: "wardrobe",       style: "luxury",   material: "Oak Wood",  color: "oak",     width: 200, height: 240, depth: 60,  glb: "/wardrobe.glb" },
+  { id: 2,  name: "Modern Kitchen",     type: "kitchen",        style: "modern",   material: "Matte",     color: "white",   width: 240, height: 220, depth: 60,  glb: "/kitchen.glb" },
+  { id: 3,  name: "Executive Office",   type: "office",         style: "minimal",  material: "Oak + Metal",color: "oak",     width: 240, height: 220, depth: 100, glb: "/office.glb" },
+  { id: 4,  name: "TV Wall Unit",       type: "office",         style: "modern",   material: "Dark Walnut",color: "walnut",  width: 220, height: 200, depth: 42,  glb: "/tv_wall.glb" },
+  { id: 5,  name: "Sideboard Cabinet",  type: "cabinet",        style: "scandi",   material: "Oak Wood",  color: "oak",     width: 110, height: 88,  depth: 48,  glb: "/cabinet.glb" },
+  { id: 6,  name: "Queen Bed",          type: "bed",            style: "luxury",   material: "Walnut",    color: "walnut",  width: 165, height: 100, depth: 210, glb: "/bed.glb" },
+  { id: 7,  name: "Oak Bookshelf",      type: "shelves",        style: "classic",  material: "Oak Wood",  color: "oak",     width: 120, height: 220, depth: 32,  glb: "/shelves.glb" },
+  { id: 8,  name: "Dressing Table",     type: "dressing_table", style: "luxury",   material: "Oak + Gold",color: "oak",     width: 120, height: 155, depth: 50,  glb: "/dressing_table.glb" },
+  { id: 9,  name: "Dining Table",       type: "table",          style: "minimal",  material: "Oak Wood",  color: "oak",     width: 160, height: 75,  depth: 90,  glb: "/test_table.glb" },
 ];
 
-const filters = ["All", "Wardrobe", "Table", "Sofa", "Cabinet"];
+// Style names for display
+const STYLE_NAMES = {
+  luxury: "Luxury",
+  minimal: "Minimal",
+  scandi: "Scandi",
+  industrial: "Industrial",
+  classic: "Classic",
+  modern: "Modern",
+  navy: "Navy",
+};
 
+// Preload all models so they are ready when cards mount
+galleryItems.forEach((item) => useGLTF.preload(item.glb));
+
+const CATEGORY_FILTERS = ["All", "Wardrobe", "Kitchen", "Office", "Bed", "Cabinet", "Shelves", "Table", "Dressing Table"];
+const STYLE_FILTERS = ["All", "Luxury", "Minimal", "Scandi", "Industrial", "Classic", "Modern", "Navy"];
+
+const TYPE_COLOR = {
+  wardrobe:       "#c8a870",
+  kitchen:        "#b59beb",
+  office:         "#d4a5e8",
+  "tv-wall":      "#9bcbeb",
+  cabinet:        "#c5a5e8",
+  bed:            "#a5b0e8",
+  shelves:        "#a5e8b0",
+  "dressing-table":"#e8d4a5",
+  table:          "#c8b070",
+  decor:          "#e8a5a5",
+};
+
+// ─── GLB scene component (must be inside Suspense) ─────────────────────────
+function GLBScene({ glb }) {
+  const { scene } = useGLTF(glb);
+  return <primitive object={scene} />;
+}
+
+// ─── Small card canvas (auto-rotate, no controls) ─────────────────────────
+function CardCanvas({ glb }) {
+  return (
+    <Canvas
+      shadows
+      dpr={[1, 1.5]}
+      gl={{ alpha: true, antialias: true }}
+      style={{ background: "transparent" }}
+    >
+      <Suspense fallback={null}>
+        <Stage
+          environment="city"
+          intensity={0.55}
+          adjustCamera={1.3}
+          shadows="contact"
+        >
+          <GLBScene glb={glb} />
+        </Stage>
+        <OrbitControls
+          autoRotate
+          autoRotateSpeed={1.4}
+          enableZoom={false}
+          enablePan={false}
+        />
+      </Suspense>
+    </Canvas>
+  );
+}
+
+// ─── Large modal canvas (orbit + zoom enabled) ────────────────────────────
+function ModalCanvas({ glb }) {
+  return (
+    <Canvas
+      shadows
+      dpr={[1, 2]}
+      gl={{ alpha: true, antialias: true }}
+      style={{ background: "transparent" }}
+    >
+      <Suspense fallback={null}>
+        <Stage
+          environment="city"
+          intensity={0.6}
+          adjustCamera={1.4}
+          shadows="contact"
+        >
+          <GLBScene glb={glb} />
+        </Stage>
+        <OrbitControls
+          autoRotate
+          autoRotateSpeed={0.8}
+          enableZoom
+          enablePan={false}
+          minDistance={1}
+          maxDistance={20}
+        />
+      </Suspense>
+    </Canvas>
+  );
+}
+
+// ─── Card preview: mounts Canvas only after entering viewport ─────────────
+function CardPreview({ item }) {
+  const ref = useRef(null);
+  const [active, setActive] = useState(false);
+  const accentColor = TYPE_COLOR[item.type] || "#c8a870";
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) setActive(true); },
+      { threshold: 0.1 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      className="h-60 relative overflow-hidden"
+      style={{ background: `linear-gradient(135deg, ${accentColor}18, ${accentColor}38)` }}
+    >
+      {active ? (
+        <CardCanvas glb={item.glb} />
+      ) : (
+        /* Skeleton while waiting for IntersectionObserver */
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div
+            className="rounded-2xl animate-pulse"
+            style={{ width: 80, height: 80, background: accentColor, opacity: 0.25 }}
+          />
+        </div>
+      )}
+      <div className="absolute top-4 left-4 flex gap-1.5 z-10 pointer-events-none">
+        <span className="px-2.5 py-1 rounded-full bg-black/50 backdrop-blur-md border border-white/10 text-[9px] font-bold uppercase tracking-wider text-white">
+          {item.type}
+        </span>
+        <span className="px-2.5 py-1 rounded-full bg-black/50 backdrop-blur-md border border-white/10 text-[9px] font-bold uppercase tracking-wider text-white">
+          {item.style}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main page ─────────────────────────────────────────────────────────────
 export default function GalleryPage() {
-  const [filter, setFilter] = useState("All");
+  const router = useRouter();
+  const [categoryFilter, setCategoryFilter] = useState("All");
+  const [styleFilter, setStyleFilter] = useState("All");
+  const [searchQuery, setSearchQuery] = useState("");
   const [selected, setSelected] = useState(null);
 
-  const filtered = filter === "All"
-    ? galleryItems
-    : galleryItems.filter((item) => item.type === filter.toLowerCase());
+  const filtered = galleryItems.filter((item) => {
+    // Category filter
+    const categoryMatch =
+      categoryFilter === "All" ||
+      item.type.toLowerCase() === categoryFilter.toLowerCase() ||
+      item.type.replace("-", " ").toLowerCase() === categoryFilter.toLowerCase();
+
+    // Style filter
+    const styleMatch =
+      styleFilter === "All" ||
+      STYLE_NAMES[item.style]?.toLowerCase() === styleFilter.toLowerCase();
+
+    // Search filter
+    const searchMatch = searchQuery === "" ||
+      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.material.toLowerCase().includes(searchQuery.toLowerCase());
+
+    return categoryMatch && styleMatch && searchMatch;
+  });
+
+  const handleCustomizeThis = (item) => {
+    const params = new URLSearchParams();
+    params.append("type", item.type);
+    params.append("style", item.style);
+    params.append("color", item.color);
+    params.append("width", item.width);
+    params.append("height", item.height);
+    params.append("depth", item.depth);
+    params.append("description", `${item.name} - ${item.style} ${item.type}`);
+
+    router.push(`/builder?${params.toString()}`);
+  };
 
   return (
     <div className="min-h-screen pt-28 pb-20 bg-img-materials relative">
-      {/* Visual dark backdrop for high legibility */}
       <div className="absolute inset-0 bg-black/55 backdrop-blur-xs pointer-events-none" />
 
       <div className="relative z-10 max-w-7xl mx-auto px-6">
         {/* Header */}
-        <motion.div
-          initial="hidden"
-          animate="visible"
-          className="text-center mb-16"
-        >
+        <motion.div initial="hidden" animate="visible" className="text-center mb-16">
           <motion.p variants={fadeUp} custom={0} className="text-sm font-semibold tracking-widest uppercase mb-4 gradient-text">
             Gallery
           </motion.p>
@@ -53,34 +224,80 @@ export default function GalleryPage() {
             Design Inspiration
           </motion.h1>
           <motion.p variants={fadeUp} custom={2} className="text-muted max-w-xl mx-auto leading-relaxed text-sm md:text-base">
-            Explore our collection of AI-generated furniture designs. Click any design for details.
+            Explore our collection of AI-generated furniture designs. Drag to rotate any model.
           </motion.p>
         </motion.div>
 
-        {/* Filters - redesigned with floating backdrop glass buttons */}
+        {/* Search Bar */}
         <motion.div
           initial="hidden"
           animate="visible"
           variants={fadeUp}
           custom={3}
-          className="flex flex-wrap items-center justify-center gap-3 mb-16"
+          className="mb-8 flex justify-center"
         >
-          {filters.map((f) => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={`px-6 py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-all duration-300 cursor-pointer ${
-                filter === f
-                  ? "bg-gradient-to-r from-accent to-accent-light text-white shadow-lg shadow-accent/20 scale-105 border border-white/20"
-                  : "bg-black/35 backdrop-blur-md text-muted hover:text-white hover:bg-white/10 border border-white/10"
-              }`}
-            >
-              {f}
-            </button>
-          ))}
+          <input
+            type="text"
+            placeholder="Search by name or material..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="px-4 py-2.5 rounded-full bg-black/35 backdrop-blur-md border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-accent/50 focus:bg-white/[0.15] transition-all w-full max-w-md text-sm"
+          />
         </motion.div>
 
-        {/* Grid of floating cards */}
+        {/* Category Filters */}
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={fadeUp}
+          custom={4}
+          className="mb-6"
+        >
+          <p className="text-xs uppercase tracking-widest text-muted mb-3 text-center">Type</p>
+          <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
+            {CATEGORY_FILTERS.map((f) => (
+              <button
+                key={f}
+                onClick={() => setCategoryFilter(f)}
+                className={`px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-all duration-300 cursor-pointer ${
+                  categoryFilter === f
+                    ? "bg-gradient-to-r from-accent to-accent-light text-white shadow-lg shadow-accent/20 border border-white/20"
+                    : "bg-black/35 backdrop-blur-md text-muted hover:text-white hover:bg-white/10 border border-white/10"
+                }`}
+              >
+                {f}
+              </button>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Style Filters */}
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={fadeUp}
+          custom={5}
+          className="mb-12"
+        >
+          <p className="text-xs uppercase tracking-widest text-muted mb-3 text-center">Style</p>
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            {STYLE_FILTERS.map((f) => (
+              <button
+                key={f}
+                onClick={() => setStyleFilter(f)}
+                className={`px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-all duration-300 cursor-pointer ${
+                  styleFilter === f
+                    ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg shadow-purple-500/20 border border-white/20"
+                    : "bg-black/35 backdrop-blur-md text-muted hover:text-white hover:bg-white/10 border border-white/10"
+                }`}
+              >
+                {f}
+              </button>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filtered.map((item, i) => (
             <motion.div
@@ -92,31 +309,12 @@ export default function GalleryPage() {
               onClick={() => setSelected(item)}
               className="glass rounded-3xl overflow-hidden cursor-pointer group border border-white/5 transition-all floating-layer relative"
             >
-              {/* Preview placeholder */}
-              <div className="h-60 relative overflow-hidden" style={{ background: `linear-gradient(135deg, ${item.color}15, ${item.color}35)` }}>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div
-                    className="rounded-xl shadow-2xl transition-transform duration-500 group-hover:scale-110"
-                    style={{
-                      width: Math.min(item.width * 0.5, 130),
-                      height: Math.min(item.height * 0.5, 110),
-                      backgroundColor: item.color,
-                      opacity: 0.7,
-                      border: '1px solid rgba(255,255,255,0.1)'
-                    }}
-                  />
-                </div>
-                <div className="absolute top-4 left-4 flex gap-1.5 z-10">
-                  <span className="px-2.5 py-1 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-[9px] font-bold uppercase tracking-wider text-muted-foreground text-white">
-                    {item.type}
-                  </span>
-                  <span className="px-2.5 py-1 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-[9px] font-bold uppercase tracking-wider text-muted-foreground text-white">
-                    {item.style}
-                  </span>
-                </div>
-              </div>
+              <CardPreview item={item} />
+
               <div className="p-6 relative z-10 bg-black/20">
-                <h3 className="font-semibold text-base mb-1 group-hover:text-accent-light transition-colors text-white">{item.name}</h3>
+                <h3 className="font-semibold text-base mb-1 group-hover:text-accent-light transition-colors text-white">
+                  {item.name}
+                </h3>
                 <p className="text-xs text-muted">
                   {item.width} × {item.height} × {item.depth} cm · {item.material}
                 </p>
@@ -133,7 +331,7 @@ export default function GalleryPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-6"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
             onClick={() => setSelected(null)}
           >
             <motion.div
@@ -141,9 +339,9 @@ export default function GalleryPage() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.93, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="glass-strong rounded-3xl max-w-lg w-full p-8 border border-white/15 floating-layer-deep"
+              className="glass-strong rounded-3xl w-full max-w-lg p-8 border border-white/15 floating-layer-deep"
             >
-              <div className="flex items-start justify-between mb-6">
+              <div className="flex items-start justify-between mb-5">
                 <div>
                   <h2 className="text-2xl font-bold mb-2 text-white">{selected.name}</h2>
                   <div className="flex flex-wrap gap-2">
@@ -160,41 +358,46 @@ export default function GalleryPage() {
                 </button>
               </div>
 
-              {/* Preview */}
-              <div className="h-56 rounded-2xl mb-6 flex items-center justify-center border border-white/5" style={{ background: `linear-gradient(135deg, ${selected.color}22, ${selected.color}44)` }}>
-                <div
-                  className="rounded-xl shadow-2xl border border-white/15"
-                  style={{
-                    width: Math.min(selected.width * 0.6, 150),
-                    height: Math.min(selected.height * 0.5, 130),
-                    backgroundColor: selected.color,
-                    opacity: 0.75,
-                  }}
-                />
+              {/* 3D viewer */}
+              <div
+                className="h-64 rounded-2xl mb-6 overflow-hidden border border-white/8"
+                style={{ background: `linear-gradient(135deg, ${TYPE_COLOR[selected.type] || "#c8a870"}18, ${TYPE_COLOR[selected.type] || "#c8a870"}30)` }}
+              >
+                <ModalCanvas glb={selected.glb} />
               </div>
+
+              {/* Hint */}
+              <p className="text-center text-[10px] text-muted mb-5 -mt-3 tracking-wide">
+                Drag to rotate · Scroll to zoom
+              </p>
 
               {/* Specs */}
-              <div className="grid grid-cols-3 gap-4 mb-8">
-                <div className="bg-black/35 border border-white/5 rounded-2xl p-4 text-center">
-                  <p className="text-[10px] uppercase tracking-wider text-muted mb-1">Width</p>
-                  <p className="font-bold text-accent-light text-sm md:text-base">{selected.width} cm</p>
-                </div>
-                <div className="bg-black/35 border border-white/5 rounded-2xl p-4 text-center">
-                  <p className="text-[10px] uppercase tracking-wider text-muted mb-1">Height</p>
-                  <p className="font-bold text-accent-light text-sm md:text-base">{selected.height} cm</p>
-                </div>
-                <div className="bg-black/35 border border-white/5 rounded-2xl p-4 text-center">
-                  <p className="text-[10px] uppercase tracking-wider text-muted mb-1">Depth</p>
-                  <p className="font-bold text-accent-light text-sm md:text-base">{selected.depth} cm</p>
-                </div>
+              <div className="grid grid-cols-3 gap-3 mb-7">
+                {[["Width", selected.width], ["Height", selected.height], ["Depth", selected.depth]].map(([label, val]) => (
+                  <div key={label} className="bg-black/35 border border-white/5 rounded-2xl p-3 text-center">
+                    <p className="text-[10px] uppercase tracking-wider text-muted mb-1">{label}</p>
+                    <p className="font-bold text-accent-light text-sm">{val} cm</p>
+                  </div>
+                ))}
               </div>
 
-              <a
-                href="/builder"
-                className="btn-premium-primary w-full text-center"
-              >
-                <span>Open in Builder →</span>
-              </a>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setSelected(null);
+                    handleCustomizeThis(selected);
+                  }}
+                  className="btn-premium-primary flex-1"
+                >
+                  <span>Customize This →</span>
+                </button>
+                <button
+                  onClick={() => setSelected(null)}
+                  className="btn-premium-secondary flex-1"
+                >
+                  <span>Close</span>
+                </button>
+              </div>
             </motion.div>
           </motion.div>
         )}

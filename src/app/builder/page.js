@@ -308,6 +308,57 @@ export default function BuilderPage() {
 
   const [selectedOfficeObject, setSelectedOfficeObject] = useState(null);
 
+  // ─── TV Wall Unit States ───
+  const [tvWallShelves, setTvWallShelves] = useState(2);
+  const [tvWallSize, setTvWallSize] = useState("65");
+  const [tvWallLed, setTvWallLed] = useState(true);
+  const [tvWallStorage, setTvWallStorage] = useState(true);
+
+  // ─── Cabinet States ───
+  const [cabinetDrawerRows, setCabinetDrawerRows] = useState(2);
+  const [cabinetOpenTop, setCabinetOpenTop] = useState(true);
+  const [cabinetLegs, setCabinetLegs] = useState("metal"); // metal, wood, none
+
+  // ─── Bed States ───
+  const [bedSize, setBedSize] = useState("queen"); // single, double, queen, king
+  const [bedHeadboard, setBedHeadboard] = useState("padded"); // padded, wood, tall, low
+  const [bedStorage, setBedStorage] = useState(false);
+  const [bedLedUnder, setBedLedUnder] = useState(false);
+
+  // ─── Shelving Unit States ───
+  const [shelfCount, setShelfCount] = useState(5);
+  const [shelfBackPanel, setShelfBackPanel] = useState(true);
+  const [shelfStyle, setShelfStyle] = useState("open"); // open, ladder, cube
+
+  // ─── Dressing Table States ───
+  const [dressingDrawers, setDressingDrawers] = useState(2);
+  const [dressingMirror, setDressingMirror] = useState("round"); // round, rect, trifold, none
+  const [dressingStool, setDressingStool] = useState(true);
+  const [dressingLights, setDressingLights] = useState("hollywood"); // none, led-strip, hollywood
+  const [dressingTableMat, setDressingTableMat] = useState("oak"); // oak, walnut, white, black
+
+  // ─── TV Wall Extra States ───
+  const [tvPanelStyle, setTvPanelStyle] = useState("slats"); // slats, solid, stone
+  const [tvSoundBar, setTvSoundBar] = useState(true);
+  const [tvConsoleLegs, setTvConsoleLegs] = useState(true);
+  const [tvLedColor, setTvLedColor] = useState("warm"); // warm, cool, rgb
+
+  // ─── Cabinet Extra States ───
+  const [cabinetGlassDoors, setCabinetGlassDoors] = useState(false);
+  const [cabinetDoorCount, setCabinetDoorCount] = useState(2); // 2, 3, 4
+  const [cabinetStyle, setCabinetStyle] = useState("sideboard"); // sideboard, highboy, filing
+
+  // ─── Bed Extra States ───
+  const [bedBench, setBedBench] = useState(false);
+  const [bedPillowCount, setBedPillowCount] = useState(2); // 2, 4
+  const [bedLampStyle, setBedLampStyle] = useState("table"); // table, pendant, none
+  const [bedFrameStyle, setBedFrameStyle] = useState("platform"); // platform, panel, floating
+
+  // ─── Shelves Extra States ───
+  const [shelfLighting, setShelfLighting] = useState(true);
+  const [shelfDecorItems, setShelfDecorItems] = useState(true);
+  const [shelfMaterial, setShelfMaterial] = useState("oak"); // oak, walnut, white, black, metal
+
   // References for ThreeJS instances to communicate with React handlers
   const appRef = useRef({
     scene: null,
@@ -341,6 +392,84 @@ export default function BuilderPage() {
       led:         new THREE.MeshStandardMaterial({ color: 0xFFDD88, emissive: new THREE.Color(0xFFDD88), emissiveIntensity: 0 }),
     }
   });
+
+  // Initialize from URL parameters (Phase One - NLP pre-population)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const params = new URLSearchParams(window.location.search);
+
+    // Map extracted parameters to builder state
+    if (params.has("type")) {
+      const type = params.get("type");
+      if (["wardrobe", "kitchen", "office", "bed", "cabinet", "shelves", "table", "dressing_table"].includes(type)) {
+        setActiveCategory(type);
+      }
+    }
+
+    if (params.has("style")) {
+      const style = params.get("style");
+      if (["luxury", "minimal", "scandi", "industrial", "classic", "modern", "navy"].includes(style)) {
+        setActivePreset(style);
+      }
+    }
+
+    if (params.has("color")) {
+      const color = params.get("color");
+      if (["oak", "walnut", "white", "black", "beige", "mahogany", "linen", "graphite", "sage", "navy", "concrete", "darkwood"].includes(color)) {
+        setActiveColor(color);
+        setActiveFaceColor(color);
+      }
+    }
+
+    if (params.has("doorType")) {
+      const doorType = params.get("doorType");
+      if (["solid", "glass", "mirror", "frosted"].includes(doorType)) {
+        setDoorStyle(doorType);
+      }
+    }
+
+    if (params.has("handleStyle")) {
+      const handleStyle = params.get("handleStyle");
+      if (["gold", "silver", "black", "hidden", "chrome"].includes(handleStyle)) {
+        setHandleStyle(handleStyle);
+      }
+    }
+
+    if (params.has("drawerRows")) {
+      const drawerRows = parseInt(params.get("drawerRows"));
+      if ([0, 1, 2, 3].includes(drawerRows)) {
+        setExtDrawerRows(drawerRows);
+      }
+    }
+
+    if (params.has("hangerRods")) {
+      setHangerRods(params.get("hangerRods") === "true");
+    }
+
+    if (params.has("ledLighting")) {
+      const ledLighting = params.get("ledLighting");
+      if (["off", "warm", "cool", "rgb"].includes(ledLighting)) {
+        setLedLighting(ledLighting);
+      }
+    }
+
+    // Dimensions (in cm, convert to m for the builder which uses meters)
+    if (params.has("width")) {
+      const width = parseFloat(params.get("width"));
+      if (!isNaN(width)) setWidth(width / 100);
+    }
+
+    if (params.has("height")) {
+      const height = parseFloat(params.get("height"));
+      if (!isNaN(height)) setHeight(height / 100);
+    }
+
+    if (params.has("depth")) {
+      const depth = parseFloat(params.get("depth"));
+      if (!isNaN(depth)) setDepth(depth / 100);
+    }
+  }, []);
 
   // Display toast alerts
   const triggerNotification = useCallback((msg) => {
@@ -1500,6 +1629,820 @@ tallCabinetType, tallCabinetsCount, countertopMaterial, countertopThickness, cou
     officeLedOn, officeLedColor, officeLedBright, officeLedUnder, officeLedBack, officeLedTop
   ]);
 
+  const buildTVWall = useCallback(() => {
+    const app = appRef.current;
+    if (!app.root) return;
+
+    while (app.root.children.length) app.root.remove(app.root.children[0]);
+    app.selectables = [];
+    app.doorPivots = [];
+    app.drawerPivots = [];
+    app.shelvesMeshes = [];
+
+    const box = (w, h, d) => new THREE.BoxGeometry(w, h, d);
+    const mesh = (geo, mat, x, y, z, n) => {
+      const m = new THREE.Mesh(geo, mat);
+      m.position.set(x, y, z);
+      m.castShadow = true;
+      m.receiveShadow = true;
+      m.name = n || "";
+      return m;
+    };
+    const add = (m, group) => {
+      m.userData.group = group || "body";
+      app.root.add(m);
+      app.selectables.push(m);
+      return m;
+    };
+
+    const W = Math.max(width, 2.0);
+    const D = Math.max(depth * 0.55, 0.30);
+    const T = 0.022;
+    const wallZ = -D / 2;
+    const mountY = 1.30;
+
+    // ── Wall panel behind TV ─────────────────────────────────────────
+    const panelW = W * 1.35;
+    const panelH = 2.80;
+    if (tvPanelStyle === "slats") {
+      // Vertical wood slats
+      const slatMat = new THREE.MeshStandardMaterial({ color: 0x3A2A1A, roughness: 0.72, metalness: 0.02 });
+      const slatW = 0.06; const slatGap = 0.025;
+      const nSlats = Math.floor(panelW / (slatW + slatGap));
+      for (let s = 0; s < nSlats; s++) {
+        const sx = -panelW / 2 + s * (slatW + slatGap) + slatW / 2;
+        app.root.add(mesh(box(slatW, panelH, 0.022), slatMat, sx, panelH / 2, wallZ - 0.011, `slt${s}`));
+      }
+      // Backing wall
+      const backMat = new THREE.MeshStandardMaterial({ color: 0x1A1614, roughness: 0.95 });
+      app.root.add(mesh(box(panelW + 0.10, panelH, 0.010), backMat, 0, panelH / 2, wallZ - 0.024, "wallBack"));
+    } else if (tvPanelStyle === "stone") {
+      const stoneMat = new THREE.MeshStandardMaterial({ color: 0x3C3830, roughness: 0.78, metalness: 0.08 });
+      app.root.add(mesh(box(panelW, panelH, 0.032), stoneMat, 0, panelH / 2, wallZ - 0.016, "stoneWall"));
+    } else {
+      const solidMat = new THREE.MeshStandardMaterial({ color: 0x1E1C1A, roughness: 0.88 });
+      app.root.add(mesh(box(panelW, panelH, 0.015), solidMat, 0, panelH / 2, wallZ - 0.008, "solidWall"));
+    }
+
+    // ── TV Screen ────────────────────────────────────────────────────
+    const diag = parseFloat(tvWallSize) || 65;
+    const tvW = diag * 0.0254 * 0.872;
+    const tvH = (tvW * 9) / 16;
+    const tvZ = wallZ + 0.05;
+
+    const screenMat = new THREE.MeshStandardMaterial({ color: 0x080808, roughness: 0.10, metalness: 0.65 });
+    const displayMat = new THREE.MeshStandardMaterial({ color: 0x0a0e18, roughness: 0.04, metalness: 0.15, emissive: new THREE.Color(0x0a1020), emissiveIntensity: 0.55 });
+    // Thin bezel frame
+    add(mesh(box(tvW + 0.028, tvH + 0.028, 0.026), screenMat, 0, mountY + tvH / 2, tvZ, "tvBezel"), "tv");
+    add(mesh(box(tvW, tvH, 0.014), displayMat, 0, mountY + tvH / 2, tvZ + 0.020, "tvDisplay"), "tv");
+    // Wall bracket
+    add(mesh(box(0.12, 0.08, 0.06), screenMat, 0, mountY + tvH / 2, tvZ - 0.025, "tvBracket"), "tv");
+
+    // ── LED Backlight ────────────────────────────────────────────────
+    if (tvWallLed) {
+      const ledColors = { warm: 0xFFCC44, cool: 0x88CCFF, rgb: 0xFF44AA };
+      const ledHex = ledColors[tvLedColor] || 0xFFCC44;
+      const ledMat = new THREE.MeshStandardMaterial({ color: ledHex, emissive: new THREE.Color(ledHex), emissiveIntensity: 2.2, roughness: 0.5 });
+      add(mesh(box(tvW + 0.08, tvH + 0.08, 0.008), ledMat, 0, mountY + tvH / 2, tvZ - 0.018, "tvLedGlow"), "led");
+      const pl = new THREE.PointLight(ledHex, 1.1, 7);
+      pl.position.set(0, mountY + tvH / 2, 0.5);
+      app.root.add(pl);
+      app.ledLight = pl;
+    } else { app.ledLight = null; }
+
+    // ── Sound Bar ────────────────────────────────────────────────────
+    if (tvSoundBar) {
+      const sbMat = new THREE.MeshStandardMaterial({ color: 0x1A1A1C, roughness: 0.45, metalness: 0.55 });
+      const sbY = mountY - 0.055;
+      add(mesh(box(tvW * 0.88, 0.068, 0.078), sbMat, 0, sbY, tvZ + 0.005, "soundBar"), "body");
+      // Speaker grille texture (dots)
+      const grilleMat = new THREE.MeshStandardMaterial({ color: 0x2A2A2C, roughness: 0.8 });
+      for (let gi = -3; gi <= 3; gi++) {
+        add(mesh(new THREE.CylinderGeometry(0.006, 0.006, 0.072, 8), grilleMat, gi * 0.06, sbY, tvZ + 0.040, `sbDot${gi}`), "body");
+      }
+    }
+
+    // ── Floating Media Console ───────────────────────────────────────
+    const cabH = 0.44;
+    const cabY = tvConsoleLegs ? 0.20 + cabH / 2 : cabH / 2;
+
+    if (tvConsoleLegs) {
+      // Hairpin legs
+      const legMat = new THREE.MeshStandardMaterial({ color: 0xC0A030, roughness: 0.12, metalness: 0.90 });
+      for (const [sx, sz] of [[-1,-1],[1,-1],[-1,1],[1,1]]) {
+        add(mesh(new THREE.CylinderGeometry(0.010, 0.010, 0.20, 8), legMat, sx*(W/2-0.12), 0.10, sz*(D/2-0.08), `conLeg${sx}${sz}`), "leg");
+      }
+    }
+
+    add(mesh(box(W, cabH, D), app.M.body, 0, cabY, 0, "tvConsole"), "body");
+    // Shadow gap / reveal
+    add(mesh(box(W - 0.03, 0.014, D - 0.03), app.M.plinth, 0, cabY - cabH/2 - 0.008, 0, "conReveal"), "body");
+
+    if (tvWallStorage) {
+      const dc = 3; const dW = (W - T*(dc+1)) / dc;
+      for (let i = 0; i < dc; i++) {
+        const dx = -W/2 + T + dW/2 + i*(dW+T);
+        add(mesh(box(dW, cabH - 0.05, T*0.8), app.M.drawerFront, dx, cabY, D/2 + T/2, `conDoor${i}`), "door");
+        // Recessed handle slot
+        add(mesh(box(dW*0.55, 0.012, 0.012), app.M.handle, dx, cabY - 0.04, D/2 + T, `conHandle${i}`), "handle");
+      }
+    } else {
+      // Open shelf with inner light
+      add(mesh(box(W - 0.03, 0.012, D - 0.04), app.M.drawerFront, 0, cabY + cabH/2 - 0.05, 0, "conOpenShelf"), "shelf");
+      // Center strip LED
+      const innerLed = new THREE.MeshStandardMaterial({ color: 0xFFEEAA, emissive: new THREE.Color(0xFFEEAA), emissiveIntensity: 1.2, roughness: 0.8 });
+      add(mesh(box(W - 0.06, 0.008, 0.012), innerLed, 0, cabY - cabH/2 + 0.025, D/2 - 0.035, "conInnerLed"), "led");
+    }
+
+    // ── Floating side shelves ────────────────────────────────────────
+    const numShelves = Math.max(0, tvWallShelves);
+    const shelfMat = app.M.body;
+    const decorMats = [
+      new THREE.MeshStandardMaterial({ color: 0x8B2020, roughness: 0.85 }),
+      new THREE.MeshStandardMaterial({ color: 0x205080, roughness: 0.85 }),
+      new THREE.MeshStandardMaterial({ color: 0x3A6030, roughness: 0.85 }),
+    ];
+    const plantMat = new THREE.MeshStandardMaterial({ color: 0x2A5A20, roughness: 0.9 });
+    const potMat = new THREE.MeshStandardMaterial({ color: 0xC07040, roughness: 0.75 });
+
+    for (let i = 0; i < numShelves; i++) {
+      const side = i % 2 === 0 ? 1 : -1;
+      const sw = W * 0.30;
+      const sd = D * 0.85;
+      const shX = side * (W/2 - sw/2 - 0.06);
+      const shY = mountY + tvH * 0.3 + i * 0.50;
+      // Shelf board
+      add(mesh(box(sw, 0.025, sd), shelfMat, shX, shY, 0, `tvShelf${i}`), "shelf");
+      // Wall bracket
+      add(mesh(box(0.015, 0.10, sd * 0.5), app.M.plinth, shX, shY - 0.05, -sd/4, `tvBkt${i}`), "body");
+      // Decor objects
+      let bx2 = shX - sw * 0.35;
+      for (let b = 0; b < 4; b++) {
+        const bw = 0.035 + (b % 2) * 0.015;
+        const bh = 0.14 + (b % 3) * 0.04;
+        app.root.add(mesh(box(bw, bh, sd*0.55), decorMats[b % 3], bx2 + bw/2, shY + 0.025 + bh/2, 0, `tvBook${i}_${b}`));
+        bx2 += bw + 0.008;
+      }
+      // Small plant on one shelf
+      if (i === 0) {
+        app.root.add(mesh(new THREE.CylinderGeometry(0.03, 0.025, 0.07, 8), potMat, shX + sw*0.32, shY + 0.025 + 0.035, 0, "tvPot"));
+        app.root.add(mesh(new THREE.SphereGeometry(0.06, 8, 6), plantMat, shX + sw*0.32, shY + 0.025 + 0.07 + 0.05, 0, "tvPlant"));
+      }
+    }
+
+    app.root.position.set(0, 0, 0);
+  }, [width, depth, tvWallShelves, tvWallSize, tvWallLed, tvWallStorage, tvPanelStyle, tvSoundBar, tvConsoleLegs, tvLedColor]);
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Cabinet builder — compact carcass with configurable drawer rows, an
+  // optional open-top display compartment, and a choice of leg styles.
+  // ─────────────────────────────────────────────────────────────────────────
+  const buildCabinet = useCallback(() => {
+    const app = appRef.current;
+    if (!app.root) return;
+
+    while (app.root.children.length) app.root.remove(app.root.children[0]);
+    app.selectables = [];
+    app.doorPivots = [];
+    app.drawerPivots = [];
+    app.shelvesMeshes = [];
+
+    const box = (w, h, d) => new THREE.BoxGeometry(w, h, d);
+    const mesh = (geo, mat, x, y, z, n) => {
+      const m = new THREE.Mesh(geo, mat);
+      m.position.set(x, y, z);
+      m.castShadow = true;
+      m.receiveShadow = true;
+      m.name = n || "";
+      return m;
+    };
+    const add = (m, group) => {
+      m.userData.group = group || "body";
+      app.root.add(m);
+      app.selectables.push(m);
+      return m;
+    };
+
+    // Style-based dimensions
+    const styleDims = {
+      sideboard: { W: Math.min(Math.max(width, 1.0), 1.8), H: 0.80, D: Math.max(depth * 0.75, 0.42) },
+      highboy:   { W: Math.min(Math.max(width, 0.7), 1.0), H: 1.35, D: Math.max(depth * 0.65, 0.38) },
+      filing:    { W: Math.min(Math.max(width, 0.5), 0.55), H: 1.20, D: Math.max(depth * 0.75, 0.55) },
+    };
+    const dims = styleDims[cabinetStyle] || styleDims.sideboard;
+    const { W, H, D } = dims;
+    const T = 0.020;
+    const legH = cabinetLegs === "none" ? 0.015 : (cabinetLegs === "metal" ? 0.14 : 0.08);
+
+    // ── Legs ─────────────────────────────────────────────────────────
+    if (cabinetLegs !== "none") {
+      const legMat = cabinetLegs === "metal"
+        ? new THREE.MeshStandardMaterial({ color: 0xC8A030, roughness: 0.10, metalness: 0.92 })
+        : app.M.plinth;
+      for (const [sx, sz] of [[-1,-1],[1,-1],[-1,1],[1,1]]) {
+        const legGeo = cabinetLegs === "metal"
+          ? new THREE.CylinderGeometry(0.013, 0.010, legH, 12)
+          : box(0.06, legH, 0.06);
+        add(mesh(legGeo, legMat, sx*(W/2-0.09), legH/2, sz*(D/2-0.09), `cabLeg${sx}${sz}`), "leg");
+      }
+    }
+
+    // ── Carcass panels ──────────────────────────────────────────────
+    const base = legH;
+    add(mesh(box(T, H, D), app.M.body, -(W/2-T/2), base + H/2, 0, "cabL"), "body");
+    add(mesh(box(T, H, D), app.M.body,  (W/2-T/2), base + H/2, 0, "cabR"), "body");
+    add(mesh(box(W, T, D), app.M.body, 0, base + H - T/2, 0, "cabTop"), "body");
+    add(mesh(box(W, T, D), app.M.body, 0, base + T/2, 0, "cabBot"), "body");
+    add(mesh(box(W-T*2, H-T*2, 0.010), app.M.plinth, 0, base + T + (H-T*2)/2, -(D/2-0.005), "cabBack"), "body");
+
+    // ── Top display zone (open or closed) ──────────────────────────
+    if (cabinetOpenTop) {
+      const dispH = cabinetStyle === "sideboard" ? 0.28 : 0.22;
+      const dispBase = base + H;
+      add(mesh(box(T, dispH, D), app.M.body, -(W/2-T/2), dispBase + dispH/2, 0, "dispL"), "body");
+      add(mesh(box(T, dispH, D), app.M.body,  (W/2-T/2), dispBase + dispH/2, 0, "dispR"), "body");
+      add(mesh(box(W, T, D), app.M.body, 0, dispBase + dispH, 0, "dispTop"), "body");
+      const dispShelf = mesh(box(W-T*2, 0.015, D-0.01), app.M.plinth, 0, dispBase + 0.008, 0, "dispShelf");
+      dispShelf.userData.group = "shelf";
+      app.root.add(dispShelf);
+      app.selectables.push(dispShelf);
+      app.shelvesMeshes.push(dispShelf);
+      // Decorative items on display shelf
+      const vMat = new THREE.MeshStandardMaterial({ color: 0x4A8060, roughness: 0.7 });
+      const pMat = new THREE.MeshStandardMaterial({ color: 0xC07844, roughness: 0.65 });
+      app.root.add(mesh(new THREE.CylinderGeometry(0.04, 0.03, 0.18, 8), vMat, -W*0.25, dispBase + 0.015 + 0.09, D*0.15, "vase1"));
+      app.root.add(mesh(new THREE.SphereGeometry(0.06, 8, 6), new THREE.MeshStandardMaterial({ color: 0x2A5020, roughness: 0.9 }), -W*0.25, dispBase + 0.015 + 0.18 + 0.05, D*0.15, "plant1"));
+      app.root.add(mesh(new THREE.CylinderGeometry(0.03, 0.025, 0.12, 8), pMat,  W*0.25, dispBase + 0.015 + 0.06, 0, "vase2"));
+    }
+
+    // ── Mid shelf (highboy / filing) ─────────────────────────────────
+    if (cabinetStyle !== "sideboard") {
+      const midZ = base + H * 0.50;
+      const midShelf = mesh(box(W-T*2, T*0.9, D-0.01), app.M.plinth, 0, midZ, 0, "cabMidShelf");
+      midShelf.userData.group = "shelf";
+      app.root.add(midShelf);
+      app.selectables.push(midShelf);
+      app.shelvesMeshes.push(midShelf);
+    }
+
+    // ── Lower door section ───────────────────────────────────────────
+    const lowerH = cabinetStyle === "sideboard" ? H : H * 0.48;
+    const lowerBase = base + T;
+    const dc = Math.max(2, cabinetDoorCount);
+    const dW = (W - T*(dc+1)) / dc;
+    const glassMat = new THREE.MeshStandardMaterial({ color: 0xCCDDEE, transparent: true, opacity: 0.30, roughness: 0.04, metalness: 0.15 });
+
+    for (let i = 0; i < dc; i++) {
+      const dx = -W/2 + T + dW/2 + i*(dW + T);
+      const doorFace = cabinetGlassDoors
+        ? mesh(box(dW - 0.008, lowerH - 0.010 - T, 0.004), glassMat, dx, lowerBase + (lowerH-0.010-T)/2, D/2 + 0.014, `cabGlass${i}`)
+        : mesh(box(dW - 0.008, lowerH - 0.010 - T, T*0.8), app.M.drawerFront, dx, lowerBase + (lowerH-0.010-T)/2, D/2 + T/2, `cabDoor${i}`);
+      if (cabinetGlassDoors) {
+        // Door frame
+        add(mesh(box(dW - 0.008, lowerH - 0.010 - T, T*0.6), app.M.body, dx, lowerBase + (lowerH-0.010-T)/2, D/2 + T/2, `cabFrame${i}`), "door");
+      }
+      add(doorFace, "door");
+      // Vertical bar handle
+      const hx = dx + (i < dc/2 ? dW*0.38 : -dW*0.38);
+      add(mesh(new THREE.CylinderGeometry(0.007, 0.007, 0.12, 10), app.M.handle, hx, lowerBase + lowerH*0.5, D/2 + T + 0.01, `cabH${i}`), "handle");
+    }
+
+    // ── Upper drawer section (highboy / filing only) ─────────────────
+    if (cabinetStyle !== "sideboard") {
+      const rows = Math.max(1, cabinetDrawerRows);
+      const upperBase = base + H * 0.50 + T;
+      const upperH = H * 0.50 - T;
+      const rowH = upperH / rows;
+      for (let r = 0; r < rows; r++) {
+        const cy = upperBase + r*rowH + rowH/2;
+        add(mesh(box(W-T*2, rowH-0.010, T*0.8), app.M.drawerFront, 0, cy, D/2 + T/2, `cabDrw${r}`), "drawer");
+        add(mesh(box(W*0.45, 0.012, 0.012), app.M.handle, 0, cy, D/2 + T + 0.004, `cabDrwH${r}`), "handle");
+      }
+    } else {
+      // Sideboard: top drawer strip
+      const rows = Math.max(1, cabinetDrawerRows);
+      const drwH = (H * 0.28 - T) / rows;
+      for (let r = 0; r < rows; r++) {
+        const cy = base + H*(1 - 0.28) + T + r*drwH + drwH/2;
+        add(mesh(box(W-T*2, drwH-0.010, T*0.8), app.M.drawerFront, 0, cy, D/2 + T/2, `cabSBDrw${r}`), "drawer");
+        add(mesh(box(W*0.40, 0.011, 0.011), app.M.handle, 0, cy, D/2 + T + 0.004, `cabSBH${r}`), "handle");
+      }
+    }
+
+    // ── Tabletop reveal edge ─────────────────────────────────────────
+    add(mesh(box(W + 0.02, T*0.8, D + 0.02), app.M.body, 0, base + H + T*0.4, 0, "cabLip"), "body");
+
+    app.root.position.set(0, 0, 0);
+  }, [width, depth, height, cabinetDrawerRows, cabinetOpenTop, cabinetLegs, cabinetGlassDoors, cabinetDoorCount, cabinetStyle]);
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Bed builder — frame, mattress, pillows, headboard styles, optional
+  // under-bed storage drawers, and an optional under-bed LED glow strip.
+  // ─────────────────────────────────────────────────────────────────────────
+  const buildBed = useCallback(() => {
+    const app = appRef.current;
+    if (!app.root) return;
+
+    while (app.root.children.length) app.root.remove(app.root.children[0]);
+    app.selectables = [];
+    app.doorPivots = [];
+    app.drawerPivots = [];
+    app.shelvesMeshes = [];
+
+    const box = (w, h, d) => new THREE.BoxGeometry(w, h, d);
+    const cyl = (r, h, seg=12) => new THREE.CylinderGeometry(r, r, h, seg);
+    const sph = (r, seg=10) => new THREE.SphereGeometry(r, seg, 8);
+    const mesh = (geo, mat, x, y, z, n) => {
+      const m = new THREE.Mesh(geo, mat);
+      m.position.set(x, y, z);
+      m.castShadow = true;
+      m.receiveShadow = true;
+      m.name = n || "";
+      return m;
+    };
+    const add = (m, group) => {
+      m.userData.group = group || "body";
+      app.root.add(m);
+      app.selectables.push(m);
+      return m;
+    };
+
+    const sizes = { single:{w:0.95,l:1.95}, double:{w:1.40,l:1.95}, queen:{w:1.65,l:2.05}, king:{w:1.95,l:2.10} };
+    const { w: W, l: L } = sizes[bedSize] || sizes.queen;
+
+    const frameH = bedFrameStyle === "floating" ? 0.18 : 0.26;
+    const legH   = bedFrameStyle === "floating" ? 0.12 : (bedFrameStyle === "platform" ? 0.06 : 0.14);
+    const mattH  = 0.26;
+
+    const mattMat    = new THREE.MeshStandardMaterial({ color: 0xF2EFE9, roughness: 0.88 });
+    const pillowMat  = new THREE.MeshStandardMaterial({ color: 0xFAF8F4, roughness: 0.92 });
+    const sheetMat   = new THREE.MeshStandardMaterial({ color: 0xE8E4DC, roughness: 0.86 });
+    const goldMat    = new THREE.MeshStandardMaterial({ color: 0xC8A030, roughness: 0.12, metalness: 0.90 });
+    const lampMat    = new THREE.MeshStandardMaterial({ color: 0xF0D880, roughness: 0.30 });
+    const nsStandMat = new THREE.MeshStandardMaterial({ color: 0x9A7858, roughness: 0.70 });
+
+    // ── Platform / frame ─────────────────────────────────────────────
+    if (bedFrameStyle === "floating") {
+      // Slim floating slab (no visible legs)
+      add(mesh(box(W + 0.04, frameH, L + 0.06), app.M.body, 0, legH + frameH/2, 0, "bedBase"), "body");
+      // Hairpin legs hidden inside
+      for (const [sx,sz] of [[-1,-1],[1,-1],[-1,1],[1,1]]) {
+        add(mesh(cyl(0.010, legH), goldMat, sx*(W/2-0.14), legH/2, sz*(L/2-0.18), `bLeg${sx}${sz}`), "leg");
+      }
+    } else {
+      // Solid platform base
+      add(mesh(box(W + 0.04, frameH, L + 0.04), app.M.body, 0, legH + frameH/2, 0, "bedBase"), "body");
+      const legMat = bedFrameStyle === "panel" ? app.M.plinth : goldMat;
+      const legSz  = bedFrameStyle === "panel" ? 0.08 : 0.014;
+      for (const [sx,sz] of [[-1,-1],[1,-1],[-1,1],[1,1]]) {
+        const lGeo = bedFrameStyle === "panel" ? box(legSz, legH, legSz) : cyl(legSz, legH);
+        add(mesh(lGeo, legMat, sx*(W/2-0.10), legH/2, sz*(L/2-0.14), `bLeg${sx}${sz}`), "leg");
+      }
+      // Side rails
+      add(mesh(box(T=0.022, frameH*0.6, L-0.04), app.M.plinth, -(W/2), legH + frameH*0.5, 0, "railL"), "body");
+      add(mesh(box(0.022, frameH*0.6, L-0.04), app.M.plinth,  (W/2), legH + frameH*0.5, 0, "railR"), "body");
+    }
+
+    // ── Mattress ──────────────────────────────────────────────────────
+    const mattZ = legH + frameH + mattH/2;
+    add(mesh(box(W - 0.04, mattH, L - 0.06), mattMat, 0, legH + frameH + mattH/2, 0, "mattress"), "mattress");
+    // Mattress piping edge
+    const pipeMat = new THREE.MeshStandardMaterial({ color: 0xDDD8D0, roughness: 0.85 });
+    add(mesh(box(W - 0.04, 0.016, L - 0.06), pipeMat, 0, legH + frameH + mattH - 0.008, 0, "mattPipe"), "mattress");
+
+    // ── Duvet / Sheet ─────────────────────────────────────────────────
+    const sheetTopZ = legH + frameH + mattH;
+    add(mesh(box(W - 0.04, 0.08, L * 0.62), sheetMat, 0, sheetTopZ + 0.04, L * 0.19, "duvet"), "mattress");
+    // Turned-back fold
+    add(mesh(box(W - 0.04, 0.025, L * 0.12), sheetMat, 0, sheetTopZ + 0.08 + 0.012, -L * 0.01, "duvetFold"), "mattress");
+
+    // ── Pillows ───────────────────────────────────────────────────────
+    const pillowPositions = bedPillowCount >= 4
+      ? [[-1,0],[-0.33,0],[0.33,0],[1,0]]
+      : [[-1,0],[1,0]];
+    pillowPositions.forEach(([t, _], i) => {
+      const px = t * (W * 0.22);
+      add(mesh(box(W * (bedPillowCount >= 4 ? 0.22 : 0.38), 0.12, 0.46), pillowMat,
+        px, sheetTopZ + 0.06, -L/2 + 0.36, `pillow${i}`), "pillow");
+      // Pillow puff
+      add(mesh(sph(0.08), pillowMat, px, sheetTopZ + 0.10, -L/2 + 0.36, `pillowPuff${i}`), "pillow");
+    });
+
+    // ── Headboard ─────────────────────────────────────────────────────
+    const hbConfigs = {
+      padded: { h: 0.95, t: 0.11, mat: app.M.drawerFront },
+      wood:   { h: 0.72, t: 0.05, mat: app.M.body },
+      tall:   { h: 1.25, t: 0.10, mat: app.M.drawerFront },
+      low:    { h: 0.42, t: 0.04, mat: app.M.body },
+    };
+    const hb = hbConfigs[bedHeadboard] || hbConfigs.padded;
+    add(mesh(box(W + 0.06, hb.h, hb.t), hb.mat, 0, legH + hb.h/2, -L/2 - hb.t/2, "headboard"), "headboard");
+    // Decorative tufting channels (vertical)
+    if (bedHeadboard === "padded" || bedHeadboard === "tall") {
+      for (let si = -2; si <= 2; si++) {
+        add(mesh(box(0.008, hb.h - 0.08, 0.005), app.M.body, si*(W/4.5), legH + hb.h/2, -L/2 - hb.t + 0.003, `stitch${si}`), "headboard");
+      }
+      // Horizontal channel
+      add(mesh(box(W - 0.04, 0.008, 0.005), app.M.body, 0, legH + hb.h * 0.48, -L/2 - hb.t + 0.003, "stitchH"), "headboard");
+    }
+
+    // ── Footboard ─────────────────────────────────────────────────────
+    const fbH = bedHeadboard === "tall" ? 0.32 : 0.22;
+    add(mesh(box(W + 0.06, fbH, 0.045), app.M.body, 0, legH + fbH/2, L/2 + 0.022, "footboard"), "body");
+
+    // ── Under-bed storage drawers ──────────────────────────────────────
+    if (bedStorage) {
+      for (const [sx, i] of [[-1,0],[1,1]]) {
+        add(mesh(box(W*0.44, frameH*0.55, L*0.45), app.M.drawerFront, sx*W*0.25, legH + frameH*0.28, L*0.18, `bedDrw${i}`), "drawer");
+        add(mesh(box(0.12, 0.013, 0.013), app.M.handle, sx*W*0.25, legH + frameH*0.28, L*0.18 + L*0.225, `bedDrwH${i}`), "handle");
+      }
+    }
+
+    // ── Under-bed LED ─────────────────────────────────────────────────
+    if (bedLedUnder) {
+      const ledMat = new THREE.MeshStandardMaterial({ color: 0x88AAFF, emissive: new THREE.Color(0x88AAFF), emissiveIntensity: 1.8, roughness: 0.5 });
+      add(mesh(box(W-0.04, 0.010, L-0.04), ledMat, 0, legH - 0.005, 0, "bedLed"), "led");
+      const pl = new THREE.PointLight(0x88AAFF, 0.9, 5);
+      pl.position.set(0, 0.06, 0);
+      app.root.add(pl);
+      app.ledLight = pl;
+    } else { app.ledLight = null; }
+
+    // ── Nightstands ───────────────────────────────────────────────────
+    const nsW = 0.50, nsH = legH + frameH + 0.06, nsD = 0.40;
+    for (const sx of [-1, 1]) {
+      const nx = sx * (W/2 + nsW/2 + 0.08);
+      // Body
+      add(mesh(box(nsW, nsH, nsD), nsStandMat, nx, nsH/2, -L/4, `ns${sx}`), "body");
+      // Drawer
+      add(mesh(box(nsW-0.025, nsH*0.35, 0.014), app.M.drawerFront, nx, nsH*0.28, -L/4 + nsD/2 + 0.007, `nsDrw${sx}`), "drawer");
+      add(mesh(box(0.08, 0.011, 0.011), app.M.handle, nx, nsH*0.28, -L/4 + nsD/2 + 0.014, `nsDrwH${sx}`), "handle");
+
+      if (bedLampStyle === "table") {
+        // Table lamp
+        add(mesh(cyl(0.055, 0.028, 8), goldMat, nx, nsH + 0.014, -L/4, `lampBase${sx}`), "body");
+        add(mesh(cyl(0.010, 0.32, 8), app.M.plinth, nx, nsH + 0.014 + 0.16, -L/4, `lampPole${sx}`), "body");
+        add(mesh(new THREE.ConeGeometry(0.12, 0.18, 12, 1, true), lampMat, nx, nsH + 0.014 + 0.32 + 0.09, -L/4, `lampShade${sx}`), "body");
+      } else if (bedLampStyle === "pendant") {
+        // Pendant cord from ceiling
+        add(mesh(cyl(0.004, 1.10, 6), app.M.plinth, nx, nsH + 0.55 + 0.55, -L/4, `pendCord${sx}`), "body");
+        add(mesh(new THREE.SphereGeometry(0.09, 12, 8), lampMat, nx, nsH + 0.55 - 0.09, -L/4, `pendBulb${sx}`), "body");
+      }
+    }
+
+    // ── Bench at foot of bed ──────────────────────────────────────────
+    if (bedBench) {
+      const benchMat = new THREE.MeshStandardMaterial({ color: 0xC0A888, roughness: 0.80 });
+      const cushMat  = new THREE.MeshStandardMaterial({ color: 0xE8D4C4, roughness: 0.88 });
+      const bY = legH + 0.28; const bZ = L/2 + 0.30;
+      add(mesh(box(W * 0.80, 0.05, 0.40), benchMat, 0, bY, bZ, "benchBody"), "body");
+      add(mesh(box(W * 0.78, 0.07, 0.38), cushMat, 0, bY + 0.06, bZ, "benchCush"), "body");
+      for (const [sx,sz] of [[-1,-1],[1,-1],[-1,1],[1,1]]) {
+        add(mesh(box(0.04, bY, 0.04), goldMat, sx*(W*0.37), bY/2, bZ + sz*0.16, `bLeg${sx}${sz}`), "leg");
+      }
+    }
+
+    app.root.position.set(0, 0, 0);
+  }, [bedSize, bedHeadboard, bedStorage, bedLedUnder, bedBench, bedPillowCount, bedLampStyle, bedFrameStyle]);
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Shelving unit builder — open frame with a choice of layout styles
+  // (open shelves, ladder, or cube grid) and an optional back panel.
+  // ─────────────────────────────────────────────────────────────────────────
+  const buildShelves = useCallback(() => {
+    const app = appRef.current;
+    if (!app.root) return;
+
+    while (app.root.children.length) app.root.remove(app.root.children[0]);
+    app.selectables = [];
+    app.doorPivots = [];
+    app.drawerPivots = [];
+    app.shelvesMeshes = [];
+
+    const box = (w, h, d) => new THREE.BoxGeometry(w, h, d);
+    const mesh = (geo, mat, x, y, z, n) => {
+      const m = new THREE.Mesh(geo, mat);
+      m.position.set(x, y, z);
+      m.castShadow = true;
+      m.receiveShadow = true;
+      m.name = n || "";
+      return m;
+    };
+    const add = (m, group) => {
+      m.userData.group = group || "body";
+      app.root.add(m);
+      app.selectables.push(m);
+      if (group === "shelf") app.shelvesMeshes.push(m);
+      return m;
+    };
+
+    const W = Math.min(Math.max(width, 0.6), 2.0);
+    const H = Math.min(Math.max(height, 1.2), 2.4);
+    const D = Math.max(depth * 0.65, 0.28);
+    const T = 0.022;
+
+    // ── Material based on shelfMaterial state ────────────────────────
+    const matColors = { oak:0xC09060, walnut:0x5A3018, white:0xF0EDE5, black:0x1C1C1E, metal:0x7A7A7E };
+    const frameCol = matColors[shelfMaterial] || matColors.oak;
+    const isMetalFrame = shelfMaterial === "metal";
+    const frameMat = isMetalFrame
+      ? new THREE.MeshStandardMaterial({ color: frameCol, roughness: 0.25, metalness: 0.80 })
+      : new THREE.MeshStandardMaterial({ color: frameCol, roughness: 0.70, metalness: 0.02 });
+    const shelfBoardMat = new THREE.MeshStandardMaterial({ color: frameCol + 0x0A0808, roughness: 0.68, metalness: isMetalFrame ? 0.75 : 0.01 });
+
+    // ── Frame ────────────────────────────────────────────────────────
+    if (isMetalFrame) {
+      // Thin tube uprights for metal frame
+      for (const sx of [-1,1]) {
+        add(mesh(new THREE.CylinderGeometry(T/2, T/2, H, 8), frameMat, sx*(W/2-T/2), H/2, -(D/2-T/2), `side${sx}B`));
+        add(mesh(new THREE.CylinderGeometry(T/2, T/2, H, 8), frameMat, sx*(W/2-T/2), H/2,  (D/2-T/2), `side${sx}F`));
+        add(mesh(box(T*0.8, T*0.8, D-T), frameMat, sx*(W/2-T/2), T/2, 0, `baseBar${sx}`));
+        add(mesh(box(T*0.8, T*0.8, D-T), frameMat, sx*(W/2-T/2), H-T/2, 0, `topBar${sx}`));
+      }
+    } else {
+      add(mesh(box(T, H, D), frameMat, -(W/2-T/2), H/2, 0, "sideL"));
+      add(mesh(box(T, H, D), frameMat,  (W/2-T/2), H/2, 0, "sideR"));
+    }
+    add(mesh(box(W, T, D), frameMat, 0, H-T/2, 0, "shTop"));
+    add(mesh(box(W, T, D), frameMat, 0, T/2, 0, "shBot"));
+
+    // ── Back panel ───────────────────────────────────────────────────
+    if (shelfBackPanel) {
+      const backMat = new THREE.MeshStandardMaterial({ color: frameCol - 0x101010, roughness: 0.80 });
+      add(mesh(box(W-T*2, H-T*2, 0.010), backMat, 0, H/2, -(D/2-0.005), "shBack"), "back");
+    }
+
+    // ── Shelf boards ─────────────────────────────────────────────────
+    const count = Math.max(1, shelfCount);
+
+    if (shelfStyle === "cube") {
+      const cols = Math.max(2, Math.ceil(Math.sqrt(count)));
+      const rows = Math.max(2, Math.ceil(count / cols));
+      for (let c = 1; c < cols; c++) {
+        const x = -W/2 + T + (c*(W-T*2))/cols;
+        add(mesh(box(T*0.85, H-T*2, D), frameMat, x, H/2, 0, `divV${c}`), "shelf");
+      }
+      for (let r = 1; r < rows; r++) {
+        const y = T + (r*(H-T*2))/rows;
+        const s = mesh(box(W-T*2, T*0.85, D), shelfBoardMat, 0, y, 0, `divH${r}`);
+        s.userData.group = "shelf";
+        app.root.add(s);
+        app.selectables.push(s);
+        app.shelvesMeshes.push(s);
+      }
+    } else if (shelfStyle === "ladder") {
+      for (let i = 0; i < count; i++) {
+        const t2 = i / Math.max(1, count-1);
+        const y = T + t2*(H-T*2);
+        const w = (W-T*2)*(1-t2*0.32);
+        const d = D*(1-t2*0.38);
+        const s = mesh(box(w, T*0.90, d), shelfBoardMat, 0, y, -D*0.16*t2, `ladShelf${i}`);
+        s.userData.group = "shelf";
+        app.root.add(s);
+        app.selectables.push(s);
+        app.shelvesMeshes.push(s);
+      }
+    } else {
+      for (let i = 0; i < count; i++) {
+        const y = T + ((i+1)*(H-T*2))/(count+1);
+        const s = mesh(box(W-T*2, T*0.90, D-0.01), shelfBoardMat, 0, y, 0, `openShelf${i}`);
+        s.userData.group = "shelf";
+        app.root.add(s);
+        app.selectables.push(s);
+        app.shelvesMeshes.push(s);
+      }
+    }
+
+    // ── LED strips under each shelf ──────────────────────────────────
+    if (shelfLighting && shelfStyle === "open") {
+      const ledMat = new THREE.MeshStandardMaterial({ color: 0xFFEECC, emissive: new THREE.Color(0xFFEECC), emissiveIntensity: 1.4, roughness: 0.8 });
+      for (let i = 0; i < count; i++) {
+        const y = T + ((i+1)*(H-T*2))/(count+1);
+        app.root.add(mesh(box(W-T*2-0.04, 0.008, 0.010), ledMat, 0, y - T*0.5 - 0.004, D/2 - 0.025, `led${i}`));
+      }
+      const pl = new THREE.PointLight(0xFFEECC, 0.5, 4);
+      pl.position.set(0, H/2, D/2);
+      app.root.add(pl);
+      app.ledLight = pl;
+    } else { app.ledLight = null; }
+
+    // ── Decorative items ─────────────────────────────────────────────
+    if (shelfDecorItems && shelfStyle === "open") {
+      const bookColors = [0x8B2020, 0x205080, 0x3A6030, 0x806020, 0x502060, 0xA04020, 0x204060];
+      const rng = (seed, lo, hi) => lo + ((seed * 9301 + 49297) % 233280 / 233280) * (hi - lo);
+
+      for (let i = 0; i < count; i++) {
+        const sy = T + ((i+1)*(H-T*2))/(count+1) + T*0.9 + 0.002;
+        let bx2 = -(W-T*2)*0.48;
+        let seed = i * 17;
+
+        // Books
+        for (let b = 0; b < 6; b++) {
+          seed += 31;
+          const bw = rng(seed, 0.036, 0.065);
+          const bh = rng(seed+1, 0.15, 0.26);
+          const bc = bookColors[(seed * 7) % bookColors.length];
+          const bMat = new THREE.MeshStandardMaterial({ color: bc, roughness: 0.85 });
+          app.root.add(mesh(box(bw, bh, D*0.72), bMat, bx2 + bw/2, sy + bh/2, 0, `book${i}_${b}`));
+          bx2 += bw + rng(seed+2, 0.004, 0.010);
+          if (bx2 > (W-T*2)*0.32) break;
+        }
+
+        // Small decor object
+        if (i % 2 === 0) {
+          const vMat = new THREE.MeshStandardMaterial({ color: 0x4A7860, roughness: 0.7 });
+          app.root.add(mesh(new THREE.CylinderGeometry(0.025, 0.020, 0.12, 8), vMat, (W-T*2)*0.38, sy + 0.06, 0, `vase${i}`));
+          app.root.add(mesh(new THREE.SphereGeometry(0.04, 8, 6), new THREE.MeshStandardMaterial({ color: 0x2A5A20, roughness: 0.9 }), (W-T*2)*0.38, sy + 0.12 + 0.035, 0, `plant${i}`));
+        } else {
+          const oMat = new THREE.MeshStandardMaterial({ color: 0xC07040, roughness: 0.6 });
+          app.root.add(mesh(new THREE.SphereGeometry(0.045, 8, 6), oMat, (W-T*2)*0.38, sy + 0.045, 0, `sphere${i}`));
+        }
+      }
+    }
+
+    app.root.position.set(0, 0, 0);
+  }, [width, height, depth, shelfCount, shelfBackPanel, shelfStyle, shelfLighting, shelfDecorItems, shelfMaterial]);
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Dressing table builder — vanity desk with drawer block, configurable
+  // mirror style, support legs, and an optional matching stool.
+  // ─────────────────────────────────────────────────────────────────────────
+  const buildDressingTable = useCallback(() => {
+    const app = appRef.current;
+    if (!app.root) return;
+
+    while (app.root.children.length) app.root.remove(app.root.children[0]);
+    app.selectables = [];
+    app.doorPivots = [];
+    app.drawerPivots = [];
+    app.shelvesMeshes = [];
+
+    const box = (w, h, d) => new THREE.BoxGeometry(w, h, d);
+    const cyl = (r1, r2, h, seg=16) => new THREE.CylinderGeometry(r1, r2, h, seg);
+    const mesh = (geo, mat, x, y, z, n) => {
+      const m = new THREE.Mesh(geo, mat);
+      m.position.set(x, y, z);
+      m.castShadow = true;
+      m.receiveShadow = true;
+      m.name = n || "";
+      return m;
+    };
+    const add = (m, group) => {
+      m.userData.group = group || "body";
+      app.root.add(m);
+      app.selectables.push(m);
+      return m;
+    };
+
+    const W = Math.min(Math.max(width, 1.0), 1.60);
+    const D = Math.max(depth * 0.70, 0.44);
+    const T = 0.022;
+    const tableH = 0.76;
+
+    // Material
+    const matCols = { oak:0xC09060, walnut:0x5A3018, white:0xF0EDE5, black:0x1C1C1E };
+    const bodyCol = matCols[dressingTableMat] || matCols.oak;
+    const bodyMat  = new THREE.MeshStandardMaterial({ color: bodyCol, roughness: 0.70, metalness: 0.02 });
+    const faceMat  = new THREE.MeshStandardMaterial({ color: bodyCol + 0x0A0806, roughness: 0.62, metalness: 0.02 });
+    const goldMat  = new THREE.MeshStandardMaterial({ color: 0xC8A030, roughness: 0.10, metalness: 0.90 });
+    const glassMat = new THREE.MeshStandardMaterial({ color: 0xC8DCEE, roughness: 0.02, metalness: 0.95 });
+    const lampMat  = new THREE.MeshStandardMaterial({ color: 0xFFF0CC, emissive: new THREE.Color(0xFFF0CC), emissiveIntensity: 1.0, roughness: 0.4 });
+
+    // ── Drawer tower (left side) ────────────────────────────────────
+    const towerW = W * 0.30;
+    const towerX = -(W/2 - towerW/2);
+    add(mesh(box(towerW, tableH - T, D), bodyMat, towerX, (tableH-T)/2, 0, "dtTowerL"), "body");
+    const drawers = Math.max(1, dressingDrawers);
+    const rowH = (tableH - T - 0.06) / drawers;
+    for (let i = 0; i < drawers; i++) {
+      const cy = 0.04 + i*rowH + rowH/2;
+      add(mesh(box(towerW-0.016, rowH-0.010, T*0.7), faceMat, towerX, cy, D/2 + T/2, `dtDrw${i}`), "drawer");
+      add(mesh(cyl(0.006, 0.006, 0.09), goldMat, towerX, cy, D/2 + T + 0.005, `dtH${i}`), "handle");
+    }
+
+    // ── Mirror tower (right side) ───────────────────────────────────
+    const towerR = W * 0.22;
+    const towerRX = (W/2 - towerR/2);
+    add(mesh(box(towerR, tableH - T, D), bodyMat, towerRX, (tableH-T)/2, 0, "dtTowerR"), "body");
+    // Small shelf in right tower
+    add(mesh(box(towerR-T*2, T*0.8, D-0.01), faceMat, towerRX, (tableH-T)*0.55, 0, "dtShelf"), "shelf");
+
+    // ── Tabletop ────────────────────────────────────────────────────
+    add(mesh(box(W + 0.025, T*1.5, D + 0.025), bodyMat, 0, tableH + T*0.75, 0, "dtTop"), "body");
+
+    // ── Knee-hole legs (slender) ────────────────────────────────────
+    const clearW = W - towerW - towerR - T*2;
+    const clearX = (towerRX - towerR/2 + towerX + towerW/2) / 2;
+    for (const sz of [-1,1]) {
+      add(mesh(cyl(0.014, 0.011, tableH - T), goldMat, clearX - clearW*0.35, (tableH-T)/2, sz*(D/2-0.07), `dtLegF${sz}`), "leg");
+      add(mesh(cyl(0.014, 0.011, tableH - T), goldMat, clearX + clearW*0.35, (tableH-T)/2, sz*(D/2-0.07), `dtLegB${sz}`), "leg");
+    }
+    // Stretcher bar
+    add(mesh(box(clearW*0.70, 0.014, 0.014), goldMat, clearX, 0.18, 0, "dtStretcher"), "leg");
+
+    // ── Mirror ─────────────────────────────────────────────────────
+    if (dressingMirror !== "none") {
+      const mirZ = -(D/2 - 0.040);
+      const postH = 0.55;
+      const mirBaseY = tableH + T*1.5;
+
+      if (dressingMirror === "trifold") {
+        // Central large panel + two angled wings
+        const cW = 0.34, cH = 0.68;
+        const wW = 0.20, wH = 0.58;
+        add(mesh(box(cW+0.020, cH+0.020, 0.016), goldMat, 0, mirBaseY + postH + cH/2, mirZ, "dtMFC"), "mirror");
+        add(mesh(box(cW, cH, 0.008), glassMat, 0, mirBaseY + postH + cH/2, mirZ + 0.012, "dtMG"), "mirror");
+        [-1,1].forEach(sx => {
+          const wMesh = mesh(box(wW+0.014, wH+0.014, 0.014), goldMat, sx*(cW/2+wW/2+0.01), mirBaseY + postH + wH/2 + 0.05, mirZ - 0.01, `dtMFW${sx}`);
+          wMesh.rotation.y = sx * 0.28;
+          add(wMesh, "mirror");
+          const wGlass = mesh(box(wW, wH, 0.008), glassMat, sx*(cW/2+wW/2+0.01), mirBaseY + postH + wH/2 + 0.05, mirZ + 0.008, `dtMGW${sx}`);
+          wGlass.rotation.y = sx * 0.28;
+          add(wGlass, "mirror");
+        });
+        add(mesh(box(0.035, postH, 0.035), goldMat, 0, mirBaseY + postH/2, mirZ + 0.04, "dtMPost"), "mirror");
+
+      } else if (dressingMirror === "round") {
+        const mr = 0.28;
+        // Post
+        add(mesh(box(0.030, postH, 0.030), goldMat, 0, mirBaseY + postH/2, mirZ + 0.04, "dtPost"), "mirror");
+        // Frame ring
+        const frame = mesh(cyl(mr + 0.020, mr + 0.020, 0.022), goldMat, 0, mirBaseY + postH + mr, mirZ, "dtMFrame");
+        frame.rotation.x = Math.PI/2;
+        add(frame, "mirror");
+        const glass2 = mesh(cyl(mr, mr, 0.008), glassMat, 0, mirBaseY + postH + mr, mirZ + 0.014, "dtMGlass");
+        glass2.rotation.x = Math.PI/2;
+        add(glass2, "mirror");
+
+        // Hollywood lights around mirror
+        if (dressingLights === "hollywood") {
+          const nBulbs = 12;
+          const bulbMat = new THREE.MeshStandardMaterial({ color: 0xFFFAEE, emissive: new THREE.Color(0xFFFAEE), emissiveIntensity: 2.5, roughness: 0.3 });
+          for (let b = 0; b < nBulbs; b++) {
+            const angle = (b / nBulbs) * Math.PI * 2;
+            const bx2 = Math.sin(angle) * (mr + 0.034);
+            const by2 = Math.cos(angle) * (mr + 0.034);
+            const bulb = mesh(new THREE.SphereGeometry(0.018, 8, 6), bulbMat, bx2, mirBaseY + postH + mr + by2, mirZ - 0.005, `bulb${b}`);
+            add(bulb, "mirror");
+          }
+          const pl = new THREE.PointLight(0xFFFAEE, 0.9, 3.5);
+          pl.position.set(0, mirBaseY + postH + mr, 0.4);
+          app.root.add(pl);
+        } else if (dressingLights === "led-strip") {
+          const ledRingMat = new THREE.MeshStandardMaterial({ color: 0xFFEECC, emissive: new THREE.Color(0xFFEECC), emissiveIntensity: 1.6, roughness: 0.6 });
+          const ledRing = mesh(cyl(mr + 0.025, mr + 0.025, 0.010), ledRingMat, 0, mirBaseY + postH + mr, mirZ - 0.005, "dtLedRing");
+          ledRing.rotation.x = Math.PI/2;
+          add(ledRing, "led");
+          const pl = new THREE.PointLight(0xFFEECC, 0.7, 3.0);
+          pl.position.set(0, mirBaseY + postH + mr, 0.4);
+          app.root.add(pl);
+          app.ledLight = pl;
+        }
+
+      } else { // rect
+        const rW = 0.50, rH = 0.70;
+        add(mesh(box(0.030, postH, 0.030), goldMat, 0, mirBaseY + postH/2, mirZ + 0.04, "dtPost"), "mirror");
+        add(mesh(box(rW+0.024, rH+0.024, 0.018), goldMat, 0, mirBaseY + postH + rH/2, mirZ, "dtMFrame"), "mirror");
+        add(mesh(box(rW, rH, 0.008), glassMat, 0, mirBaseY + postH + rH/2, mirZ + 0.012, "dtMGlass"), "mirror");
+      }
+    }
+
+    // ── Cosmetics on tabletop ───────────────────────────────────────
+    const topY2 = tableH + T*1.5 + T*0.75;
+    const perfMat = new THREE.MeshStandardMaterial({ color: 0xCCDDEE, roughness: 0.04, metalness: 0.90 });
+    const lipMat  = new THREE.MeshStandardMaterial({ color: 0xC83060, roughness: 0.20 });
+    app.root.add(mesh(cyl(0.024, 0.020, 0.10), perfMat, W*0.20, topY2 + 0.05, D*0.15, "perf1"));
+    app.root.add(mesh(cyl(0.018, 0.014, 0.07), perfMat, W*0.28, topY2 + 0.035, D*0.18, "perf2"));
+    app.root.add(mesh(cyl(0.008, 0.008, 0.12), lipMat,  W*0.34, topY2 + 0.06, D*0.14, "lipstick"));
+    app.root.add(mesh(box(0.18, 0.014, 0.12), goldMat,  W*0.22, topY2 + 0.007, D*0.22, "tray"));
+
+    // ── Matching stool ───────────────────────────────────────────────
+    if (dressingStool) {
+      const cushMat  = new THREE.MeshStandardMaterial({ color: 0xE8D4C4, roughness: 0.88 });
+      const stoolLeg = new THREE.MeshStandardMaterial({ color: bodyCol, roughness: 0.65 });
+      const seatY = 0.44;
+      const stoolX = W/2 + 0.46;
+
+      // Padded seat (oval)
+      const seat = mesh(cyl(0.20, 0.19, 0.075, 24), cushMat, stoolX, seatY + 0.075/2, 0, "dtStoolSeat");
+      add(seat, "stool");
+      // Cushion top puff
+      const puff = mesh(new THREE.SphereGeometry(0.13, 12, 6), cushMat, stoolX, seatY + 0.075 + 0.04, 0, "dtPuff");
+      puff.scale.set(1.4, 0.5, 1.2);
+      add(puff, "stool");
+
+      // 4 tapered legs
+      for (const [sx,sz] of [[-1,-1],[1,-1],[-1,1],[1,1]]) {
+        add(mesh(cyl(0.014, 0.010, seatY, 8), stoolLeg, stoolX + sx*0.13, seatY/2, sz*0.11, `dtSL${sx}${sz}`), "stool");
+      }
+      // Stretcher ring
+      add(mesh(cyl(0.008, 0.008, 0.22), goldMat, stoolX - 0.13, 0.14, 0, "dtStrL"), "stool");
+      add(mesh(cyl(0.008, 0.008, 0.22), goldMat, stoolX + 0.13, 0.14, 0, "dtStrR"), "stool");
+    }
+
+    app.root.position.set(0, 0, 0);
+  }, [width, depth, dressingDrawers, dressingMirror, dressingStool, dressingLights, dressingTableMat]);
+
   const calculateEstimatedCost = () => {
     if (activeCategory === "wardrobe") {
       let cost = width * height * 190;
@@ -1700,6 +2643,11 @@ tallCabinetType, tallCabinetsCount, countertopMaterial, countertopThickness, cou
     // Initial build call
     if (activeCategory === "kitchen") buildKitchen();
     else if (activeCategory === "office") buildOffice();
+    else if (activeCategory === "tv-wall") buildTVWall();
+    else if (activeCategory === "cabinet") buildCabinet();
+    else if (activeCategory === "bed") buildBed();
+    else if (activeCategory === "shelves") buildShelves();
+    else if (activeCategory === "dressing-table") buildDressingTable();
     else buildWardrobe();
 
     // Resize handlers
@@ -1921,6 +2869,16 @@ tallCabinetType, tallCabinetsCount, countertopMaterial, countertopThickness, cou
       buildKitchen();
     } else if (activeCategory === "office") {
       buildOffice();
+    } else if (activeCategory === "tv-wall") {
+      buildTVWall();
+    } else if (activeCategory === "cabinet") {
+      buildCabinet();
+    } else if (activeCategory === "bed") {
+      buildBed();
+    } else if (activeCategory === "shelves") {
+      buildShelves();
+    } else if (activeCategory === "dressing-table") {
+      buildDressingTable();
     } else {
       buildWardrobe();
     }
@@ -1938,7 +2896,17 @@ tallCabinetType, tallCabinetsCount, countertopMaterial, countertopThickness, cou
     buildKitchen, showWalls,
     officeDeskW, officeDeskD, officeDeskH, officeDeskT, officeDeskTopMat, officeDeskBaseMat, officeDeskDrawer, officeDeskDrawerCount, officeDeskDrawerSide, officeDeskDrawerStyle, officeDeskFileCab,
     officeCabW, officeCabH, officeCabD, officeCabSections, officeCabOpenShelves, officeCabLowerDoors, officeCabLowerHRatio, officeCabColor, officeCabPanelMat, officeCabShelfSpacing, officeCabAutoSync,
-    officeLedOn, officeLedColor, officeLedBright, officeLedUnder, officeLedBack, officeLedTop, buildOffice
+    officeLedOn, officeLedColor, officeLedBright, officeLedUnder, officeLedBack, officeLedTop, buildOffice,
+    buildTVWall, tvWallShelves, tvWallSize, tvWallLed, tvWallStorage,
+    tvPanelStyle, tvSoundBar, tvConsoleLegs, tvLedColor,
+    buildCabinet, cabinetDrawerRows, cabinetOpenTop, cabinetLegs,
+    cabinetGlassDoors, cabinetDoorCount, cabinetStyle,
+    buildBed, bedSize, bedHeadboard, bedStorage, bedLedUnder,
+    bedBench, bedPillowCount, bedLampStyle, bedFrameStyle,
+    buildShelves, shelfCount, shelfBackPanel, shelfStyle,
+    shelfLighting, shelfDecorItems, shelfMaterial,
+    buildDressingTable, dressingDrawers, dressingMirror, dressingStool,
+    dressingLights, dressingTableMat
   ]);
 
   // Hinge swing state trigger
@@ -2400,6 +3368,92 @@ ${activeCategory === "kitchen" ? `
           background: linear-gradient(135deg, var(--accent), var(--accent2));
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
+          text-decoration: none;
+        }
+
+        .home-btn {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 5px 10px;
+          border-radius: 8px;
+          background: var(--bg3);
+          border: 1px solid var(--border);
+          color: var(--muted);
+          font-size: 0.75rem;
+          font-weight: 600;
+          cursor: pointer;
+          text-decoration: none;
+          transition: all .15s;
+          margin-right: 10px;
+          white-space: nowrap;
+        }
+
+        .home-btn:hover {
+          background: rgba(200,169,110,0.1);
+          color: var(--accent);
+          border-color: var(--accent);
+        }
+
+        .logo-area {
+          display: flex;
+          align-items: center;
+          gap: 0;
+        }
+
+        .ftype-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 6px;
+          padding: 4px 0 8px;
+        }
+
+        .ftype-card {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 5px;
+          padding: 10px 6px 8px;
+          border-radius: 10px;
+          cursor: pointer;
+          border: 1.5px solid var(--border);
+          background: var(--bg3);
+          transition: all .18s;
+          text-align: center;
+        }
+
+        .ftype-card:hover {
+          border-color: var(--accent);
+          background: rgba(200,169,110,0.08);
+          transform: translateY(-1px);
+        }
+
+        .ftype-card.on {
+          border-color: var(--accent);
+          background: rgba(200,169,110,0.14);
+          box-shadow: 0 0 0 2px rgba(200,169,110,0.18);
+        }
+
+        .ftype-card .ftype-icon {
+          width: 36px;
+          height: 36px;
+          border-radius: 9px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1.1rem;
+          flex-shrink: 0;
+        }
+
+        .ftype-card .ftype-name {
+          font-size: 0.66rem;
+          font-weight: 600;
+          color: var(--muted);
+          line-height: 1.2;
+        }
+
+        .ftype-card.on .ftype-name {
+          color: var(--accent);
         }
 
         .file-name {
@@ -3151,7 +4205,10 @@ ${activeCategory === "kitchen" ? `
 
       {/* TOPBAR */}
       <div className="topbar">
-        <div className="logo">Furni AI</div>
+        <div className="logo-area">
+          <a href="/" className="home-btn">← Home</a>
+          <a href="/" className="logo">Furni AI</a>
+        </div>
         <div className="file-name">
           <span style={{ color: "#c8a96e" }}>📁</span>
           <input defaultValue="Custom Wardrobe — 3D" readOnly />
@@ -3184,40 +4241,33 @@ ${activeCategory === "kitchen" ? `
         {/* LEFT PANEL */}
         <div className={`lsb ${mobileLeftOpen ? 'mob-open' : ''}`}>
           <div className="lsb-sec" style={{ paddingTop: "14px" }}>
-            <div className="sec-label">Furniture Type</div>
+            <div className="sec-label">Choose Furniture</div>
+            <div className="ftype-grid">
             {[
-              { id: "wardrobe", label: "Wardrobe", emoji: "🚪", bg: "#c8a96e" },
-              { id: "kitchen", label: "Kitchen", emoji: "🍳", bg: "#b59beb" },
-              { id: "office", label: "Office", emoji: "💼", bg: "#d4a5e8" },
-              { id: "tv-wall", label: "TV Wall", emoji: "📺", bg: "#9bcbeb" },
-              { id: "cabinet", label: "Cabinet", emoji: "🗄️", bg: "#c5a5e8" },
-              { id: "bed", label: "Bed", emoji: "🛏️", bg: "#a5b0e8" },
-              { id: "shelves", label: "Shelves", emoji: "📚", bg: "#a5e8b0" },
-              { id: "dressing-table", label: "Dressing Table", emoji: "🪞", bg: "#e8d4a5" },
+              { id: "wardrobe",       label: "Wardrobe",       emoji: "🚪", bg: "linear-gradient(135deg,#c8a96e,#9a7040)" },
+              { id: "kitchen",        label: "Kitchen",         emoji: "🍳", bg: "linear-gradient(135deg,#b59beb,#7a5ab0)" },
+              { id: "office",         label: "Office",          emoji: "💼", bg: "linear-gradient(135deg,#d4a5e8,#9a60c0)" },
+              { id: "tv-wall",        label: "TV Wall",         emoji: "📺", bg: "linear-gradient(135deg,#9bcbeb,#5090b8)" },
+              { id: "cabinet",        label: "Cabinet",         emoji: "🗄️", bg: "linear-gradient(135deg,#c5a5e8,#8058b8)" },
+              { id: "bed",            label: "Bed",             emoji: "🛏️", bg: "linear-gradient(135deg,#a5b0e8,#5060b8)" },
+              { id: "shelves",        label: "Shelves",         emoji: "📚", bg: "linear-gradient(135deg,#a5e8b0,#40a858)" },
+              { id: "dressing-table", label: "Dressing Table",  emoji: "🪞", bg: "linear-gradient(135deg,#e8d4a5,#b89050)" },
             ].map((f) => (
               <div
                 key={f.id}
-                className={`ftype ${activeCategory === f.id ? "on" : ""}`}
+                className={`ftype-card ${activeCategory === f.id ? "on" : ""}`}
                 onClick={() => {
                   setActiveCategory(f.id);
                   triggerNotification("Switched to " + f.label);
                 }}
               >
-                <span style={{
-                  background: f.bg,
-                  color: "#0c0c0e",
-                  width: "20px",
-                  height: "20px",
-                  borderRadius: "5px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: "0.75rem",
-                  flexShrink: 0
-                }}>{f.emoji}</span>
-                <span>{f.label}</span>
+                <div className="ftype-icon" style={{ background: f.bg }}>
+                  {f.emoji}
+                </div>
+                <div className="ftype-name">{f.label}</div>
               </div>
             ))}
+            </div>
           </div>
           
           <div className="divider"></div>
@@ -4711,6 +5761,556 @@ ${activeCategory === "kitchen" ? `
                 </div>
               </div>
             </>
+          ) : ["tv-wall", "cabinet", "bed", "shelves", "dressing-table"].includes(activeCategory) ? (
+            <>
+              {/* AI Prompt */}
+              <div className="rps">
+                <div className="rpt">✦ AI Prompt</div>
+                <div className="aibox">
+                  <textarea
+                    value={prompt}
+                    onChange={(e) => setPrompt(e.target.value)}
+                    placeholder="Describe your style…&#10;e.g. Dark walnut with gold handles and warm LED"
+                  />
+                  <div className="aifoot">
+                    <div className="aiex-list">
+                      <span className="aiex cursor-pointer" onClick={() => setPrompt("Luxury gold")}>Luxury</span>
+                      <span className="aiex cursor-pointer" onClick={() => setPrompt("Minimal white")}>Minimal</span>
+                      <span className="aiex cursor-pointer" onClick={() => setPrompt("Dark walnut")}>Walnut</span>
+                      <span className="aiex cursor-pointer" onClick={() => setPrompt("Add warm LED")}>LED</span>
+                      <span className="aiex cursor-pointer" onClick={() => setPrompt("Mirror doors")}>Mirror</span>
+                      <span className="aiex cursor-pointer" onClick={() => setPrompt("Navy modern")}>Navy</span>
+                    </div>
+                    <button className="aiapply cursor-pointer" onClick={() => { handleRunAI(prompt); setPrompt(""); }}>Apply</button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Selected Part */}
+              <div className="rps">
+                <div className="rpt">Selected Part</div>
+                <div className="pbadge">
+                  <div className="pdot"></div>
+                  <span>{selectedPart}</span>
+                </div>
+              </div>
+
+              {/* Size */}
+              <div className="rps">
+                <div className="rpt">Size</div>
+                <div className="size-grid">
+                  <div className="size-row">
+                    <label>Width <span>{width.toFixed(1)} m</span></label>
+                    <input
+                      type="range"
+                      className="slider"
+                      min="0.8"
+                      max="3.2"
+                      step="0.1"
+                      value={width}
+                      onChange={(e) => setWidth(parseFloat(e.target.value))}
+                    />
+                  </div>
+                  {activeCategory !== "bed" && (
+                    <div className="size-row">
+                      <label>Height <span>{height.toFixed(1)} m</span></label>
+                      <input
+                        type="range"
+                        className="slider"
+                        min="0.4"
+                        max="2.6"
+                        step="0.1"
+                        value={height}
+                        onChange={(e) => setHeight(parseFloat(e.target.value))}
+                      />
+                    </div>
+                  )}
+                  <div className="size-row">
+                    <label>Depth <span>{depth.toFixed(2)} m</span></label>
+                    <input
+                      type="range"
+                      className="slider"
+                      min="0.3"
+                      max="0.8"
+                      step="0.05"
+                      value={depth}
+                      onChange={(e) => setDepth(parseFloat(e.target.value))}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* TV Wall Unit controls */}
+              {activeCategory === "tv-wall" && (
+                <div className="rps">
+                  <div className="rpt">TV Wall Unit</div>
+                  <div className="size-grid">
+                    <div className="size-row">
+                      <label>Screen Size</label>
+                      <div className="section-btns">
+                        {["43", "55", "65", "75", "85"].map((s) => (
+                          <div
+                            key={s}
+                            className={`sec-n ${tvWallSize === s ? "on" : ""}`}
+                            onClick={() => { setTvWallSize(s); triggerNotification(`${s}" screen selected`); }}
+                          >
+                            {s}&quot;
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="size-row">
+                      <label>Floating Shelves <span>{tvWallShelves}</span></label>
+                      <input
+                        type="range"
+                        className="slider"
+                        min="0"
+                        max="4"
+                        step="1"
+                        value={tvWallShelves}
+                        onChange={(e) => setTvWallShelves(parseInt(e.target.value))}
+                      />
+                    </div>
+                  </div>
+                  <button
+                    className={`scene-btn ${tvWallLed ? "on" : ""}`}
+                    style={{ margin: "8px 0 7px 0", width: "100%", justifyContent: "flex-start", paddingLeft: "10px" }}
+                    onClick={() => { setTvWallLed(!tvWallLed); triggerNotification(tvWallLed ? "LED backlight off" : "LED backlight on"); }}
+                  >
+                    {tvWallLed ? "✓" : "○"} LED Backlight Glow
+                  </button>
+                  <button
+                    className={`scene-btn ${tvWallStorage ? "on" : ""}`}
+                    style={{ margin: "0 0 8px 0", width: "100%", justifyContent: "flex-start", paddingLeft: "10px" }}
+                    onClick={() => { setTvWallStorage(!tvWallStorage); triggerNotification(tvWallStorage ? "Closed storage cabinet" : "Open shelf cabinet"); }}
+                  >
+                    {tvWallStorage ? "✓" : "○"} Enclosed Storage Cabinet
+                  </button>
+                  <div className="size-row" style={{ marginBottom: "8px" }}>
+                    <label style={{ marginBottom: "5px" }}>Wall Panel</label>
+                    <div className="section-btns">
+                      {[{ id: "slats", label: "Slats" }, { id: "solid", label: "Solid" }, { id: "stone", label: "Stone" }].map((p) => (
+                        <div key={p.id} className={`sec-n ${tvPanelStyle === p.id ? "on" : ""}`}
+                          onClick={() => { setTvPanelStyle(p.id); triggerNotification(`Panel: ${p.label}`); }}>
+                          {p.label}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="size-row" style={{ marginBottom: "8px" }}>
+                    <label style={{ marginBottom: "5px" }}>LED Color</label>
+                    <div className="section-btns">
+                      {[{ id: "warm", label: "Warm" }, { id: "cool", label: "Cool" }, { id: "rgb", label: "RGB" }].map((c) => (
+                        <div key={c.id} className={`sec-n ${tvLedColor === c.id ? "on" : ""}`}
+                          onClick={() => { setTvLedColor(c.id); triggerNotification(`LED: ${c.label}`); }}>
+                          {c.label}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <button
+                    className={`scene-btn ${tvSoundBar ? "on" : ""}`}
+                    style={{ margin: "0 0 7px 0", width: "100%", justifyContent: "flex-start", paddingLeft: "10px" }}
+                    onClick={() => { setTvSoundBar(!tvSoundBar); triggerNotification(tvSoundBar ? "Sound bar removed" : "Sound bar added"); }}
+                  >
+                    {tvSoundBar ? "✓" : "○"} Sound Bar
+                  </button>
+                  <button
+                    className={`scene-btn ${tvConsoleLegs ? "on" : ""}`}
+                    style={{ margin: "0", width: "100%", justifyContent: "flex-start", paddingLeft: "10px" }}
+                    onClick={() => { setTvConsoleLegs(!tvConsoleLegs); triggerNotification(tvConsoleLegs ? "Console legs hidden" : "Hairpin legs added"); }}
+                  >
+                    {tvConsoleLegs ? "✓" : "○"} Hairpin Console Legs
+                  </button>
+                </div>
+              )}
+
+              {/* Cabinet controls */}
+              {activeCategory === "cabinet" && (
+                <div className="rps">
+                  <div className="rpt">Cabinet</div>
+                  <div className="size-grid">
+                    <div className="size-row">
+                      <label>Drawer Rows <span>{cabinetDrawerRows}</span></label>
+                      <input
+                        type="range"
+                        className="slider"
+                        min="0"
+                        max="4"
+                        step="1"
+                        value={cabinetDrawerRows}
+                        onChange={(e) => setCabinetDrawerRows(parseInt(e.target.value))}
+                      />
+                    </div>
+                    <div className="size-row">
+                      <label>Leg Style</label>
+                      <div className="section-btns">
+                        {[
+                          { id: "metal", label: "Metal" },
+                          { id: "wood", label: "Wood" },
+                          { id: "none", label: "None" },
+                        ].map((leg) => (
+                          <div
+                            key={leg.id}
+                            className={`sec-n ${cabinetLegs === leg.id ? "on" : ""}`}
+                            onClick={() => { setCabinetLegs(leg.id); triggerNotification(`Legs: ${leg.label}`); }}
+                          >
+                            {leg.label}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    className={`scene-btn ${cabinetOpenTop ? "on" : ""}`}
+                    style={{ margin: "8px 0 8px 0", width: "100%", justifyContent: "flex-start", paddingLeft: "10px" }}
+                    onClick={() => { setCabinetOpenTop(!cabinetOpenTop); triggerNotification(cabinetOpenTop ? "Top compartment closed" : "Open-top display compartment"); }}
+                  >
+                    {cabinetOpenTop ? "✓" : "○"} Open-Top Display Compartment
+                  </button>
+                  <div className="size-row" style={{ marginBottom: "8px" }}>
+                    <label style={{ marginBottom: "5px" }}>Cabinet Style</label>
+                    <div className="section-btns">
+                      {[{ id: "sideboard", label: "Sideboard" }, { id: "highboy", label: "Highboy" }, { id: "filing", label: "Filing" }].map((s) => (
+                        <div key={s.id} className={`sec-n ${cabinetStyle === s.id ? "on" : ""}`}
+                          onClick={() => { setCabinetStyle(s.id); triggerNotification(`Style: ${s.label}`); }}>
+                          {s.label}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="size-row" style={{ marginBottom: "8px" }}>
+                    <label>Doors <span>{cabinetDoorCount}</span></label>
+                    <input type="range" className="slider" min="2" max="4" step="1"
+                      value={cabinetDoorCount} onChange={(e) => setCabinetDoorCount(parseInt(e.target.value))} />
+                  </div>
+                  <button
+                    className={`scene-btn ${cabinetGlassDoors ? "on" : ""}`}
+                    style={{ margin: "0", width: "100%", justifyContent: "flex-start", paddingLeft: "10px" }}
+                    onClick={() => { setCabinetGlassDoors(!cabinetGlassDoors); triggerNotification(cabinetGlassDoors ? "Solid doors" : "Glass doors added"); }}
+                  >
+                    {cabinetGlassDoors ? "✓" : "○"} Glass Doors
+                  </button>
+                </div>
+              )}
+
+              {/* Bed controls */}
+              {activeCategory === "bed" && (
+                <div className="rps">
+                  <div className="rpt">Bed</div>
+                  <div className="size-row" style={{ marginBottom: "8px" }}>
+                    <label style={{ marginBottom: "5px" }}>Bed Size</label>
+                    <div className="section-btns">
+                      {[
+                        { id: "single", label: "Single" },
+                        { id: "double", label: "Double" },
+                        { id: "queen", label: "Queen" },
+                        { id: "king", label: "King" },
+                      ].map((sz) => (
+                        <div
+                          key={sz.id}
+                          className={`sec-n ${bedSize === sz.id ? "on" : ""}`}
+                          onClick={() => { setBedSize(sz.id); triggerNotification(`${sz.label} bed selected`); }}
+                        >
+                          {sz.label}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="size-row" style={{ marginBottom: "8px" }}>
+                    <label style={{ marginBottom: "5px" }}>Headboard Style</label>
+                    <div className="section-btns">
+                      {[
+                        { id: "padded", label: "Padded" },
+                        { id: "wood", label: "Wood" },
+                        { id: "tall", label: "Tall" },
+                        { id: "low", label: "Low" },
+                      ].map((hb) => (
+                        <div
+                          key={hb.id}
+                          className={`sec-n ${bedHeadboard === hb.id ? "on" : ""}`}
+                          onClick={() => { setBedHeadboard(hb.id); triggerNotification(`Headboard: ${hb.label}`); }}
+                        >
+                          {hb.label}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <button
+                    className={`scene-btn ${bedStorage ? "on" : ""}`}
+                    style={{ margin: "0 0 7px 0", width: "100%", justifyContent: "flex-start", paddingLeft: "10px" }}
+                    onClick={() => { setBedStorage(!bedStorage); triggerNotification(bedStorage ? "Storage drawers removed" : "Under-bed storage drawers added"); }}
+                  >
+                    {bedStorage ? "✓" : "○"} Under-Bed Storage Drawers
+                  </button>
+                  <button
+                    className={`scene-btn ${bedLedUnder ? "on" : ""}`}
+                    style={{ margin: "0 0 8px 0", width: "100%", justifyContent: "flex-start", paddingLeft: "10px" }}
+                    onClick={() => { setBedLedUnder(!bedLedUnder); triggerNotification(bedLedUnder ? "Under-bed LED off" : "Under-bed LED glow on"); }}
+                  >
+                    {bedLedUnder ? "✓" : "○"} Under-Bed LED Glow
+                  </button>
+                  <div className="size-row" style={{ marginBottom: "8px" }}>
+                    <label style={{ marginBottom: "5px" }}>Frame Style</label>
+                    <div className="section-btns">
+                      {[{ id: "platform", label: "Platform" }, { id: "panel", label: "Panel" }, { id: "floating", label: "Float" }].map((f) => (
+                        <div key={f.id} className={`sec-n ${bedFrameStyle === f.id ? "on" : ""}`}
+                          onClick={() => { setBedFrameStyle(f.id); triggerNotification(`Frame: ${f.label}`); }}>
+                          {f.label}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="size-row" style={{ marginBottom: "8px" }}>
+                    <label style={{ marginBottom: "5px" }}>Pillows</label>
+                    <div className="section-btns">
+                      {[{ id: 2, label: "2" }, { id: 4, label: "4" }].map((p) => (
+                        <div key={p.id} className={`sec-n ${bedPillowCount === p.id ? "on" : ""}`}
+                          onClick={() => { setBedPillowCount(p.id); triggerNotification(`${p.label} pillows`); }}>
+                          {p.label}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="size-row" style={{ marginBottom: "8px" }}>
+                    <label style={{ marginBottom: "5px" }}>Bedside Lamp</label>
+                    <div className="section-btns">
+                      {[{ id: "table", label: "Table" }, { id: "pendant", label: "Pendant" }, { id: "none", label: "None" }].map((l) => (
+                        <div key={l.id} className={`sec-n ${bedLampStyle === l.id ? "on" : ""}`}
+                          onClick={() => { setBedLampStyle(l.id); triggerNotification(`Lamp: ${l.label}`); }}>
+                          {l.label}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <button
+                    className={`scene-btn ${bedBench ? "on" : ""}`}
+                    style={{ margin: "0", width: "100%", justifyContent: "flex-start", paddingLeft: "10px" }}
+                    onClick={() => { setBedBench(!bedBench); triggerNotification(bedBench ? "Bench removed" : "Foot bench added"); }}
+                  >
+                    {bedBench ? "✓" : "○"} Foot-of-Bed Bench
+                  </button>
+                </div>
+              )}
+
+              {/* Shelving Unit controls */}
+              {activeCategory === "shelves" && (
+                <div className="rps">
+                  <div className="rpt">Shelving Unit</div>
+                  <div className="size-grid">
+                    <div className="size-row">
+                      <label>Shelf Count <span>{shelfCount}</span></label>
+                      <input
+                        type="range"
+                        className="slider"
+                        min="2"
+                        max="8"
+                        step="1"
+                        value={shelfCount}
+                        onChange={(e) => setShelfCount(parseInt(e.target.value))}
+                      />
+                    </div>
+                    <div className="size-row">
+                      <label>Layout Style</label>
+                      <div className="section-btns">
+                        {[
+                          { id: "open", label: "Open" },
+                          { id: "ladder", label: "Ladder" },
+                          { id: "cube", label: "Cube" },
+                        ].map((st) => (
+                          <div
+                            key={st.id}
+                            className={`sec-n ${shelfStyle === st.id ? "on" : ""}`}
+                            onClick={() => { setShelfStyle(st.id); triggerNotification(`Layout: ${st.label}`); }}
+                          >
+                            {st.label}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    className={`scene-btn ${shelfBackPanel ? "on" : ""}`}
+                    style={{ margin: "8px 0 8px 0", width: "100%", justifyContent: "flex-start", paddingLeft: "10px" }}
+                    onClick={() => { setShelfBackPanel(!shelfBackPanel); triggerNotification(shelfBackPanel ? "Back panel removed" : "Back panel added"); }}
+                  >
+                    {shelfBackPanel ? "✓" : "○"} Back Panel
+                  </button>
+                  <div className="size-row" style={{ marginBottom: "8px" }}>
+                    <label style={{ marginBottom: "5px" }}>Material</label>
+                    <div className="section-btns">
+                      {[{ id: "oak", label: "Oak" }, { id: "walnut", label: "Walnut" }, { id: "white", label: "White" }, { id: "metal", label: "Metal" }].map((m) => (
+                        <div key={m.id} className={`sec-n ${shelfMaterial === m.id ? "on" : ""}`}
+                          onClick={() => { setShelfMaterial(m.id); triggerNotification(`Material: ${m.label}`); }}>
+                          {m.label}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <button
+                    className={`scene-btn ${shelfLighting ? "on" : ""}`}
+                    style={{ margin: "0 0 7px 0", width: "100%", justifyContent: "flex-start", paddingLeft: "10px" }}
+                    onClick={() => { setShelfLighting(!shelfLighting); triggerNotification(shelfLighting ? "Shelf lighting off" : "LED shelf lighting on"); }}
+                  >
+                    {shelfLighting ? "✓" : "○"} LED Shelf Lighting
+                  </button>
+                  <button
+                    className={`scene-btn ${shelfDecorItems ? "on" : ""}`}
+                    style={{ margin: "0", width: "100%", justifyContent: "flex-start", paddingLeft: "10px" }}
+                    onClick={() => { setShelfDecorItems(!shelfDecorItems); triggerNotification(shelfDecorItems ? "Decor removed" : "Books & decor added"); }}
+                  >
+                    {shelfDecorItems ? "✓" : "○"} Books & Decor Items
+                  </button>
+                </div>
+              )}
+
+              {/* Dressing Table controls */}
+              {activeCategory === "dressing-table" && (
+                <div className="rps">
+                  <div className="rpt">Dressing Table</div>
+                  <div className="size-grid">
+                    <div className="size-row">
+                      <label>Drawers <span>{dressingDrawers}</span></label>
+                      <input
+                        type="range"
+                        className="slider"
+                        min="0"
+                        max="4"
+                        step="1"
+                        value={dressingDrawers}
+                        onChange={(e) => setDressingDrawers(parseInt(e.target.value))}
+                      />
+                    </div>
+                    <div className="size-row">
+                      <label>Mirror Style</label>
+                      <div className="section-btns">
+                        {[
+                          { id: "round", label: "Round" },
+                          { id: "rect", label: "Rect." },
+                          { id: "trifold", label: "Trifold" },
+                          { id: "none", label: "None" },
+                        ].map((mr) => (
+                          <div
+                            key={mr.id}
+                            className={`sec-n ${dressingMirror === mr.id ? "on" : ""}`}
+                            onClick={() => { setDressingMirror(mr.id); triggerNotification(`Mirror: ${mr.label}`); }}
+                          >
+                            {mr.label}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="size-row">
+                      <label>Mirror Lights</label>
+                      <div className="section-btns">
+                        {[
+                          { id: "hollywood", label: "Hollywood" },
+                          { id: "led-strip", label: "LED Ring" },
+                          { id: "none", label: "None" },
+                        ].map((l) => (
+                          <div
+                            key={l.id}
+                            className={`sec-n ${dressingLights === l.id ? "on" : ""}`}
+                            onClick={() => { setDressingLights(l.id); triggerNotification(`Lights: ${l.label}`); }}
+                          >
+                            {l.label}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="size-row">
+                      <label>Table Material</label>
+                      <div className="section-btns">
+                        {[
+                          { id: "oak", label: "Oak" },
+                          { id: "walnut", label: "Walnut" },
+                          { id: "white", label: "White" },
+                          { id: "black", label: "Black" },
+                        ].map((m) => (
+                          <div
+                            key={m.id}
+                            className={`sec-n ${dressingTableMat === m.id ? "on" : ""}`}
+                            onClick={() => { setDressingTableMat(m.id); triggerNotification(`Material: ${m.label}`); }}
+                          >
+                            {m.label}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    className={`scene-btn ${dressingStool ? "on" : ""}`}
+                    style={{ margin: "8px 0 0 0", width: "100%", justifyContent: "flex-start", paddingLeft: "10px" }}
+                    onClick={() => { setDressingStool(!dressingStool); triggerNotification(dressingStool ? "Stool removed" : "Matching stool added"); }}
+                  >
+                    {dressingStool ? "✓" : "○"} Matching Stool
+                  </button>
+                </div>
+              )}
+
+              {/* Body Colour - shared swatches */}
+              <div className="rps">
+                <div className="rpt">Body Colour</div>
+                <div className="txgrid">
+                  {[
+                    { id: "oak", name: "Oak", cls: "s1" },
+                    { id: "walnut", name: "Walnut", cls: "s2" },
+                    { id: "white", name: "White", cls: "s3" },
+                    { id: "black", name: "Black", cls: "s4" },
+                    { id: "beige", name: "Beige", cls: "s5" },
+                    { id: "mahog", name: "Mahog.", cls: "s6" },
+                    { id: "linen", name: "Linen", cls: "s7" },
+                    { id: "graph", name: "Graphite", cls: "s8" },
+                    { id: "sage", name: "Sage", cls: "s9" },
+                    { id: "navy", name: "Navy", cls: "s10" },
+                    { id: "concrete", name: "Concrete", style: { background: "linear-gradient(135deg,#c4c0b8,#a8a49c)" } },
+                    { id: "darkwood", name: "Dark Wood", style: { background: "linear-gradient(135deg,#2a2422,#1a1614)" } },
+                  ].map((sw) => (
+                    <div
+                      key={sw.id}
+                      className={`sw ${sw.cls || ""} ${activeColor === sw.id ? "on" : ""}`}
+                      style={sw.style}
+                      onClick={() => {
+                        setActiveColor(sw.id);
+                        setActiveFaceColor(sw.id);
+                        triggerNotification("Colour: " + sw.name);
+                      }}
+                    >
+                      <span className="sw-tip">{sw.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Save & Export */}
+              <div className="rps">
+                <div className="rpt">Save &amp; Export</div>
+                <div style={{ marginBottom: "10px" }}>
+                  <span style={{ fontSize: "11px", color: "var(--muted)" }}>Estimated Cost: </span>
+                  <span style={{ fontSize: "13px", fontWeight: "700", color: "var(--accent)" }}>
+                    ${parseFloat(calculateEstimatedCost()).toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
+                <button
+                  className="vsave cursor-pointer"
+                  onClick={() => triggerNotification("Design saved to designs list!")}
+                  style={{ width: "100%", fontSize: "11px", padding: "6px" }}
+                >
+                  Save Current Design
+                </button>
+                <div style={{ marginTop: "12px" }}>
+                  <div style={{ fontSize: "11px", fontWeight: "600", color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "6px" }}>Export Options</div>
+                  <div className="section-btns" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "6px" }}>
+                    <div className="sec-n hover-bright cursor-pointer" onClick={handleExportPNG} style={{ fontSize: "10px", padding: "6px", textAlign: "center" }}>PNG</div>
+                    <div className="sec-n hover-bright cursor-pointer" onClick={handleExportJPG} style={{ fontSize: "10px", padding: "6px", textAlign: "center" }}>JPG</div>
+                    <div className="sec-n hover-bright cursor-pointer" onClick={handleExportPDF} style={{ fontSize: "10px", padding: "6px", textAlign: "center" }}>PDF</div>
+                    <div className="sec-n hover-bright cursor-pointer" onClick={handleExportGLB} style={{ fontSize: "10px", padding: "6px", textAlign: "center" }}>GLB</div>
+                    <div className="sec-n hover-bright cursor-pointer" onClick={() => handleExportFormat("obj")} style={{ fontSize: "10px", padding: "6px", textAlign: "center" }}>OBJ</div>
+                    <div className="sec-n hover-bright cursor-pointer" onClick={() => handleExportFormat("fbx")} style={{ fontSize: "10px", padding: "6px", textAlign: "center" }}>FBX</div>
+                  </div>
+                </div>
+              </div>
+            </>
           ) : (
             <>
               {/* AI Prompt */}
@@ -5054,3 +6654,4 @@ ${activeCategory === "kitchen" ? `
     </div>
   );
 }
+

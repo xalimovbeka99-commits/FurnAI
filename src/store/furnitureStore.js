@@ -6,10 +6,17 @@ const useFurnitureStore = create((set, get) => ({
   type: "wardrobe",
   style: "modern",
   material: "wood",
-  color: "#8B6914",
+  color: "oak",
   width: 120,
   height: 200,
   depth: 60,
+
+  // Hardware options
+  doorType: "solid",
+  handleStyle: "hidden",
+  drawerRows: 1,
+  hangerRods: true,
+  ledLighting: "off",
 
   // Generated design state
   isGenerating: false,
@@ -44,6 +51,11 @@ const useFurnitureStore = create((set, get) => ({
   setWidth: (width) => set({ width: Number(width) }),
   setHeight: (height) => set({ height: Number(height) }),
   setDepth: (depth) => set({ depth: Number(depth) }),
+  setDoorType: (doorType) => set({ doorType }),
+  setHandleStyle: (handleStyle) => set({ handleStyle }),
+  setDrawerRows: (drawerRows) => set({ drawerRows: Number(drawerRows) }),
+  setHangerRods: (hangerRods) => set({ hangerRods: Boolean(hangerRods) }),
+  setLedLighting: (ledLighting) => set({ ledLighting }),
 
   // Generate design action
   generateDesign: async () => {

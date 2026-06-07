@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import { useState } from "react";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -52,6 +54,72 @@ const testimonials = [
 ];
 
 export default function HomePage() {
+  const router = useRouter();
+  const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleDescribe = async () => {
+    if (!input.trim()) {
+      setError("Please describe your furniture");
+      return;
+    }
+
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch("/api/nlp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ description: input }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to process description");
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
+        const params = new URLSearchParams();
+
+        // Only add params that exist in the response
+        if (data.parameters.furnitureType) params.append("type", data.parameters.furnitureType);
+        if (data.parameters.style) params.append("style", data.parameters.style);
+        if (data.parameters.primaryColor) params.append("color", data.parameters.primaryColor);
+        if (data.parameters.doorType) params.append("doorType", data.parameters.doorType);
+        if (data.parameters.handleStyle) params.append("handleStyle", data.parameters.handleStyle);
+        if (data.parameters.drawerRows !== undefined) params.append("drawerRows", data.parameters.drawerRows);
+        if (data.parameters.hangerRods !== undefined) params.append("hangerRods", data.parameters.hangerRods);
+        if (data.parameters.ledLighting) params.append("ledLighting", data.parameters.ledLighting);
+        if (data.parameters.width) params.append("width", data.parameters.width);
+        if (data.parameters.height) params.append("height", data.parameters.height);
+        if (data.parameters.depth) params.append("depth", data.parameters.depth);
+
+        params.append("description", input);
+
+        // Check if confidence is below 70% for furniture type
+        if (data.parameters.confidence?.furnitureType < 0.7) {
+          router.push(`/disambiguate?${params.toString()}`);
+        } else {
+          router.push(`/builder?${params.toString()}`);
+        }
+      }
+    } catch (err) {
+      console.error("Error:", err);
+      setError("Failed to process your description. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const examplePrompts = [
+    "Luxury walnut wardrobe with mirror doors and LED lighting",
+    "Modern kitchen with oak cabinets and open shelving",
+    "Industrial office desk with black metal frame",
+  ];
+
   return (
     <div className="overflow-hidden">
       {/* Hero Section with background picture and floating console */}
@@ -96,16 +164,65 @@ export default function HomePage() {
                 custom={2}
                 className="text-base sm:text-lg md:text-xl text-muted max-w-2xl mx-auto mb-10 leading-relaxed"
               >
-                Create custom furniture in seconds with intelligent design tools.
-                Real-time 3D preview, infinite customization, zero hassle.
+                Describe your furniture in plain language. AI generates a 3D design in seconds.
+                Real-time preview, infinite customization, zero hassle.
               </motion.p>
 
-              <motion.div variants={fadeUp} custom={3} className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Link href="/builder" className="btn-premium-primary w-full sm:w-auto">
-                  <span>Start Designing →</span>
-                </Link>
+              <motion.div variants={fadeUp} custom={3} className="max-w-2xl mx-auto mb-8">
+                <div className="flex flex-col gap-3">
+                  <div className="flex gap-2 w-full">
+                    <input
+                      type="text"
+                      value={input}
+                      onChange={(e) => {
+                        setInput(e.target.value);
+                        setError("");
+                      }}
+                      onKeyDown={(e) => e.key === "Enter" && handleDescribe()}
+                      placeholder="e.g., Luxury walnut wardrobe with mirror doors and LED lighting"
+                      className="flex-1 px-4 py-3 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-accent/50 focus:bg-white/[0.15] transition-all"
+                      disabled={isLoading}
+                    />
+                    <button
+                      onClick={handleDescribe}
+                      disabled={isLoading}
+                      className="px-6 py-3 rounded-xl bg-accent hover:bg-accent/90 disabled:opacity-50 disabled:cursor-not-allowed text-black font-semibold transition-all"
+                    >
+                      {isLoading ? "Processing..." : "Describe"}
+                    </button>
+                  </div>
+
+                  {error && (
+                    <div className="text-red-400 text-sm">{error}</div>
+                  )}
+
+                  {!input && (
+                    <details className="text-xs text-white/60 group">
+                      <summary className="cursor-pointer hover:text-white/80 transition-colors">
+                        Example prompts →
+                      </summary>
+                      <div className="mt-2 space-y-1 pl-2 border-l border-white/10">
+                        {examplePrompts.map((prompt, idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => {
+                              setInput(prompt);
+                              setError("");
+                            }}
+                            className="block text-left text-white/50 hover:text-accent transition-colors text-xs"
+                          >
+                            "{prompt}"
+                          </button>
+                        ))}
+                      </div>
+                    </details>
+                  )}
+                </div>
+              </motion.div>
+
+              <motion.div variants={fadeUp} custom={4} className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Link href="/gallery" className="btn-premium-secondary w-full sm:w-auto">
-                  <span>View Gallery</span>
+                  <span>Browse Gallery</span>
                 </Link>
               </motion.div>
             </div>

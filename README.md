@@ -65,6 +65,14 @@ OPENAI_API_KEY=sk-your-api-key-here
 
 ## 🏗️ Project Structure
 
+> **Note on architecture:** the `/builder` page implements its own Three.js scene
+> management directly (raw `WebGLRenderer`/`Scene`/render loop in `page.js`) rather
+> than going through `FurnitureCanvas`/`FurnitureModel`/`generateFurniture.js`. Those
+> components remain in use elsewhere (e.g. lighter-weight previews), but the builder's
+> parametric models (wardrobe, kitchen, office, TV wall, cabinet, bed, shelving unit,
+> dressing table, etc.) are built and rebuilt straight from React state inside
+> `app/builder/page.js`.
+
 ```
 src/
 ├── app/
@@ -98,8 +106,13 @@ src/
 - **Wardrobe** — Frame, shelves, doors with handles
 - **Sofa** — Rounded cushions, armrests, fabric materials
 - **Table** — Rounded top, cylinder legs, cross supports
-- **Cabinet** — Drawers with handles, tapered legs
 - **Kitchen** — Upper/lower cabinets, marble countertop, fridge slot, drawers
+- **Office** — Desk, cabinet, LED lighting, fully interactive configurator
+- **TV Wall Unit** — Floating media console, frameless screen, optional LED backlight glow and floating display shelves
+- **Cabinet** — Carcass with metal/wood/no legs, optional open-top display compartment, configurable drawer rows
+- **Bed** — Single/double/queen/king sizes, four headboard styles, optional under-bed storage and LED glow strip
+- **Shelving Unit** — Open, ladder, or cube layouts with adjustable shelf count and optional back panel
+- **Dressing Table** — Configurable drawers, round/rectangular/no mirror, optional matching stool
 
 ## 🏭 Factory Export
 
