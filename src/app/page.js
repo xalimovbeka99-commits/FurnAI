@@ -41,6 +41,17 @@ const features = [
   },
 ];
 
+const categories = [
+  { id: "wardrobe", name: "Wardrobes", emoji: "🚪", desc: "Procedural sliding or solid doors, interior shelves, and led lighting.", link: "/builder?type=wardrobe" },
+  { id: "kitchen", name: "Kitchen Cabinets", emoji: "🍳", desc: "Custom cabinet modules, countertops, and integrated appliance bays.", link: "/builder?type=kitchen" },
+  { id: "office", name: "Office Desks", emoji: "💼", desc: "Parametric office setups with custom keyboard trays and filing drawers.", link: "/builder?type=office" },
+  { id: "tv-wall", name: "TV Wall Units", emoji: "📺", desc: "Floating consoles, media storage boards, and ambient LED backing glow.", link: "/builder?type=tv-wall" },
+  { id: "cabinet", name: "Cabinets & Sideboards", emoji: "🗄️", desc: "Tall chests or low sideboards with customizable shelving doors.", link: "/builder?type=cabinet" },
+  { id: "bed", name: "Beds & Nightstands", emoji: "🛏️", desc: "Padded or wooden frames, under-bed storage, and bedside setups.", link: "/builder?type=bed", highlight: true },
+  { id: "shelves", name: "Bookshelves", emoji: "📚", desc: "Ladder or cube layouts with backing panels and shelf count controls.", link: "/builder?type=shelves" },
+  { id: "dressing-table", name: "Dressing Tables", emoji: "🪞", desc: "Hollywood mirror vanity setups with drawer storage and stools.", link: "/builder?type=dressing-table" },
+];
+
 const steps = [
   { num: "01", title: "Describe", desc: "Tell us what you want — a modern wardrobe, a glass coffee table, anything." },
   { num: "02", title: "Customize", desc: "Adjust dimensions, materials, colors, and style to perfection." },
@@ -116,6 +127,7 @@ export default function HomePage() {
 
   const examplePrompts = [
     "Luxury walnut wardrobe with mirror doors and LED lighting",
+    "Queen size bed with padded headboard and under-bed storage drawers",
     "Modern kitchen with oak cabinets and open shelving",
     "Industrial office desk with black metal frame",
   ];
@@ -170,7 +182,7 @@ export default function HomePage() {
 
               <motion.div variants={fadeUp} custom={3} className="max-w-2xl mx-auto mb-8">
                 <div className="flex flex-col gap-3">
-                  <div className="flex gap-2 w-full">
+                  <div className="flex flex-col sm:flex-row gap-3 w-full">
                     <input
                       type="text"
                       value={input}
@@ -186,7 +198,7 @@ export default function HomePage() {
                     <button
                       onClick={handleDescribe}
                       disabled={isLoading}
-                      className="px-6 py-3 rounded-xl bg-accent hover:bg-accent/90 disabled:opacity-50 disabled:cursor-not-allowed text-black font-semibold transition-all"
+                      className="px-6 py-3 rounded-xl bg-accent hover:bg-accent/90 disabled:opacity-50 disabled:cursor-not-allowed text-black font-semibold transition-all w-full sm:w-auto cursor-pointer"
                     >
                       {isLoading ? "Processing..." : "Describe"}
                     </button>
@@ -279,6 +291,60 @@ export default function HomePage() {
                   <p className="text-sm text-muted leading-relaxed">{feat.desc}</p>
                 </div>
               </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Categories Section */}
+      <section className="py-24 relative bg-background/40">
+        <div className="max-w-7xl mx-auto px-6 relative z-10">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            className="text-center mb-16"
+          >
+            <motion.p variants={fadeUp} custom={0} className="text-sm font-semibold tracking-widest uppercase mb-4 gradient-text">
+              Catalog
+            </motion.p>
+            <motion.h2 variants={fadeUp} custom={1} className="text-3xl md:text-5xl font-bold tracking-tight text-white">
+              Explore Design Categories
+            </motion.h2>
+            <motion.p variants={fadeUp} custom={2} className="text-muted max-w-xl mx-auto mt-4 text-sm md:text-base leading-relaxed">
+              Select any category template to jump directly into the parametric builder and start configuring.
+            </motion.p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {categories.map((cat, i) => (
+              <Link
+                key={cat.id}
+                href={cat.link}
+                className={`glass rounded-3xl p-8 border transition-all duration-300 floating-layer hover:bg-white/[0.08] group flex flex-col justify-between ${
+                  cat.highlight
+                    ? "border-accent/30 shadow-lg shadow-accent/5"
+                    : "border-white/5"
+                }`}
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-6">
+                    <span className="text-4xl">{cat.emoji}</span>
+                    {cat.highlight && (
+                      <span className="px-2.5 py-0.5 rounded-full bg-accent/15 border border-accent/30 text-[9px] font-bold uppercase tracking-wider text-accent-light animate-pulse">
+                        Featured Bed
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="text-lg font-semibold mb-3 text-white group-hover:text-accent-light transition-colors">
+                    {cat.name}
+                  </h3>
+                  <p className="text-xs text-muted leading-relaxed mb-6">{cat.desc}</p>
+                </div>
+                <div className="text-xs font-bold text-accent-light group-hover:translate-x-1.5 transition-transform flex items-center gap-1">
+                  Configure Template →
+                </div>
+              </Link>
             ))}
           </div>
         </div>

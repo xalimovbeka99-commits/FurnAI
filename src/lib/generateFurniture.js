@@ -19,6 +19,8 @@ export function generateFurniture(params) {
       return generateCabinet(w, h, d, mat, style);
     case "kitchen":
       return generateKitchen(w, h, d, mat, style, kitchen);
+    case "bed":
+      return generateBed(w, h, d, mat, style);
     default:
       return generateWardrobe(w, h, d, mat, style);
   }
@@ -763,4 +765,87 @@ function lighten(hex, amount) {
   const g = Math.min(255, Math.max(0, ((num >> 8) & 0xff) + amount));
   const b = Math.min(255, Math.max(0, (num & 0xff) + amount));
   return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, "0")}`;
+}
+
+// ─────────────────────────────────────────────
+// BED — Parametric headboard, frame, and mattress
+// ─────────────────────────────────────────────
+function generateBed(w, h, d, mat, style) {
+  const frameH = 0.22;
+  const legH = 0.12;
+  const mattH = 0.24;
+  const hbH = 0.95;
+
+  const woodMat = mat;
+  const sheetMat = { roughness: 0.85, metalness: 0.05, color: "#e8e4dc" };
+  const pillowMat = { roughness: 0.9, metalness: 0.0, color: "#faf8f4" };
+  const legMat = { roughness: 0.2, metalness: 0.85, color: "#c8a030" }; // gold leg accent
+
+  const parts = [
+    // Headboard
+    {
+      geo: "roundedBox",
+      args: [w + 0.06, hbH, 0.08],
+      radius: 0.01,
+      segments: 2,
+      position: [0, legH + hbH / 2, -d / 2 - 0.04],
+      material: woodMat,
+    },
+    // Footboard
+    {
+      geo: "roundedBox",
+      args: [w + 0.06, 0.22, 0.04],
+      radius: 0.01,
+      segments: 2,
+      position: [0, legH + 0.11, d / 2 + 0.02],
+      material: woodMat,
+    },
+    // Bed base/frame
+    {
+      geo: "box",
+      args: [w + 0.04, frameH, d + 0.04],
+      position: [0, legH + frameH / 2, 0],
+      material: woodMat,
+    },
+    // 4 legs
+    ...[
+      [-w / 2 + 0.06, -d / 2 + 0.08],
+      [w / 2 - 0.06, -d / 2 + 0.08],
+      [-w / 2 + 0.06, d / 2 - 0.08],
+      [w / 2 - 0.06, d / 2 - 0.08],
+    ].map((pos, idx) => ({
+      geo: "cylinder",
+      args: [0.02, 0.015, legH, 12],
+      position: [pos[0], legH / 2, pos[1]],
+      material: legMat,
+    })),
+    // Mattress
+    {
+      geo: "roundedBox",
+      args: [w - 0.02, mattH, d - 0.04],
+      radius: 0.02,
+      segments: 3,
+      position: [0, legH + frameH + mattH / 2, -0.01],
+      material: sheetMat,
+    },
+    // Pillows (2)
+    {
+      geo: "roundedBox",
+      args: [w * 0.38, 0.1, 0.4],
+      radius: 0.02,
+      segments: 2,
+      position: [-w * 0.22, legH + frameH + mattH + 0.05, -d / 2 + 0.3],
+      material: pillowMat,
+    },
+    {
+      geo: "roundedBox",
+      args: [w * 0.38, 0.1, 0.4],
+      radius: 0.02,
+      segments: 2,
+      position: [w * 0.22, legH + frameH + mattH + 0.05, -d / 2 + 0.3],
+      material: pillowMat,
+    },
+  ];
+
+  return { type: "bed", parts };
 }

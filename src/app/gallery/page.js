@@ -86,6 +86,7 @@ function CardCanvas({ glb }) {
           autoRotateSpeed={1.4}
           enableZoom={false}
           enablePan={false}
+          enableRotate={false}
         />
       </Suspense>
     </Canvas>
@@ -331,7 +332,7 @@ export default function GalleryPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
+            className="fixed inset-0 z-50 flex items-start sm:items-center justify-center bg-black/80 backdrop-blur-md p-4 overflow-y-auto"
             onClick={() => setSelected(null)}
           >
             <motion.div
@@ -339,7 +340,7 @@ export default function GalleryPage() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.93, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="glass-strong rounded-3xl w-full max-w-lg p-8 border border-white/15 floating-layer-deep"
+              className="glass-strong rounded-3xl w-full max-w-lg p-8 border border-white/15 floating-layer-deep my-8"
             >
               <div className="flex items-start justify-between mb-5">
                 <div>

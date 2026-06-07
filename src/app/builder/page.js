@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import * as THREE from "three";
 import { useTheme } from "../../components/ThemeProvider";
+import ProductionModal from "../../components/ProductionModal";
+import { generateProductionSpec } from "../../lib/productionSpec";
 
 // ─── COLOUR PALETTE DEFINITIONS ───
 const PALETTE = {
@@ -140,6 +142,10 @@ export default function BuilderPage() {
   const [showNotif, setShowNotif] = useState(false);
   const [hudText, setHudText] = useState("✦ Click a part to customise");
   const [showHud, setShowHud] = useState(false);
+
+  // ─── Production & Export States ───
+  const [productionModalOpen, setProductionModalOpen] = useState(false);
+  const [currentProductionSpec, setCurrentProductionSpec] = useState(null);
 
   // ─── Mobile Responsive Toggle States ───
   const [mobileLeftOpen, setMobileLeftOpen] = useState(false);
@@ -2692,10 +2698,136 @@ tallCabinetType, tallCabinetsCount, countertopMaterial, countertopThickness, cou
       moveCam();
     };
 
+    // Touch Controls
+    let touchStartDist = 0;
+
+    const onTouchStart = (e) => {
+      if (e.touches.length === 1) {
+        dragging = true;
+        const touch = e.touches[0];
+        prevMouse = { x: touch.clientX, y: touch.clientY };
+        mouseDownPos = { x: touch.clientX, y: touch.clientY };
+      } else if (e.touches.length === 2) {
+        dragging = false;
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        touchStartDist = Math.hypot(dx, dy);
+      }
+    };
+
+    const onTouchMove = (e) => {
+      if (e.touches.length === 1 && dragging) {
+        e.preventDefault(); // Prevent page bouncing/scrolling during orbit
+        const touch = e.touches[0];
+        app.sph.t -= (touch.clientX - prevMouse.x) * 0.008;
+        app.sph.p = Math.max(0.25, Math.min(1.52, app.sph.p - (touch.clientY - prevMouse.y) * 0.008));
+        prevMouse = { x: touch.clientX, y: touch.clientY };
+        moveCam();
+      } else if (e.touches.length === 2) {
+        e.preventDefault(); // Prevent page zooming
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        const dist = Math.hypot(dx, dy);
+        if (touchStartDist > 0) {
+          const factor = (touchStartDist - dist) * 0.01;
+          app.sph.r = Math.max(2.2, Math.min(11, app.sph.r + factor));
+          moveCam();
+        }
+        touchStartDist = dist;
+      }
+    };
+
+    const onTouchEnd = (e) => {
+      dragging = false;
+      // Handle tap selection if touch didn't drag much
+      if (e.changedTouches.length === 1) {
+        const touch = e.changedTouches[0];
+        const dist = Math.hypot(touch.clientX - mouseDownPos.x, touch.clientY - mouseDownPos.y);
+        if (dist < 6) {
+          const rect = canvas.getBoundingClientRect();
+          mouse2D.x = ((touch.clientX - rect.left) / canvas.clientWidth) * 2 - 1;
+          mouse2D.y = -((touch.clientY - rect.top) / canvas.clientHeight) * 2 + 1;
+          
+          raycaster.setFromCamera(mouse2D, app.camera);
+          const hits = raycaster.intersectObjects(app.selectables, false);
+          if (hits.length) {
+            const m = hits[0].object;
+            const grp = m.userData.group;
+
+            if (activeCategory === "office") {
+              if (grp === "ext-drawer") {
+                const dg = m.userData.drawerGroup;
+                const dp = app.drawerPivots.find(d => d.group === dg);
+                if (dp) {
+                  dp.open = !dp.open;
+                  dp.targetZ = dp.open ? dp.openZ : 0;
+                  triggerHud(dp.open ? "📦 Drawer opened" : "📦 Drawer closed");
+                }
+              }
+
+              let topObj = m;
+              while (topObj.parent && topObj.parent !== app.root) {
+                topObj = topObj.parent;
+              }
+
+              setSelectedOfficeObject({
+                id: topObj.userData.id || topObj.uuid,
+                name: topObj.name || grp || "Office Object",
+                group: topObj.userData.group || grp || "custom",
+                type: topObj.userData.type || topObj.name || "custom",
+                posX: topObj.position.x,
+                posY: topObj.position.y,
+                posZ: topObj.position.z,
+                rotY: topObj.rotation.y * (180 / Math.PI),
+                scaleW: topObj.scale.x,
+                scaleH: topObj.scale.y,
+                scaleD: topObj.scale.z,
+                color: topObj.userData.color || "default",
+                material: topObj.userData.material || "default"
+              });
+              setSelectedPart(topObj.name || grp || "Office Object");
+              triggerHud(`✦ Selected: ${topObj.name || grp}`);
+              setTimeout(() => buildOffice(), 10);
+              return;
+            }
+
+            if (grp === "doors" || (grp === "handles" && m.parent && m.parent !== app.root)) {
+              const dp = app.doorPivots.find(d => d.pivot === m.parent);
+              if (dp) {
+                const isOpen = Math.abs(dp.pivot.rotation.y) > 0.05;
+                dp.target = isOpen ? 0 : dp.openDir;
+                triggerHud(isOpen ? "🚪 Door closed" : "🚪 Door opened");
+              }
+              return;
+            }
+
+            if (grp === "ext-drawer" || grp === "int-drawer") {
+              const dg = m.userData.drawerGroup;
+              const dp = app.drawerPivots.find(d => d.group === dg);
+              if (dp) {
+                dp.open = !dp.open;
+                dp.targetZ = dp.open ? dp.openZ : 0;
+                triggerHud(dp.open ? "📦 Drawer opened" : "📦 Drawer closed");
+              }
+              return;
+            }
+
+            const labels = { body: "Body / Panel", plinth: "Plinth", shelf: "Interior Shelf" };
+            setSelectedPart(labels[grp] || grp || m.name);
+          } else {
+            setSelectedPart("Click any part to edit");
+          }
+        }
+      }
+    };
+
     canvas.addEventListener("mousedown", onMouseDown);
     window.addEventListener("mouseup", onMouseUp);
     window.addEventListener("mousemove", onMouseMove);
     canvas.addEventListener("wheel", onWheel);
+    canvas.addEventListener("touchstart", onTouchStart, { passive: false });
+    canvas.addEventListener("touchmove", onTouchMove, { passive: false });
+    canvas.addEventListener("touchend", onTouchEnd, { passive: true });
 
     // Click selection Raycaster
     const raycaster = new THREE.Raycaster();
@@ -2812,6 +2944,9 @@ tallCabinetType, tallCabinetsCount, countertopMaterial, countertopThickness, cou
       window.removeEventListener("mousemove", onMouseMove);
       canvas.removeEventListener("wheel", onWheel);
       canvas.removeEventListener("click", onClick);
+      canvas.removeEventListener("touchstart", onTouchStart);
+      canvas.removeEventListener("touchmove", onTouchMove);
+      canvas.removeEventListener("touchend", onTouchEnd);
       app.renderer.dispose();
     };
   }, [buildWardrobe, buildOffice, triggerNotification, triggerHud]);
@@ -3153,6 +3288,34 @@ ${activeCategory === "kitchen" ? `
     link.href = URL.createObjectURL(blob);
     link.click();
     triggerNotification(`${fmt.toUpperCase()} format exported successfully!`);
+  };
+
+  // Generate production specification
+  const handleSendToProduction = () => {
+    const spec = generateProductionSpec({
+      type: activeCategory,
+      style: activePreset,
+      color: activeColor,
+      width,
+      height,
+      depth,
+      doorType,
+      handleStyle,
+      drawerRows: extDrawerRows,
+      ledLighting,
+      hangerRods,
+      bedSize,
+      bedHeadboard,
+      bedStorage,
+      bedFrameStyle,
+      bedPillowCount,
+      bedBench,
+      bedLampStyle,
+    });
+
+    setCurrentProductionSpec(spec);
+    setProductionModalOpen(true);
+    triggerNotification("Production spec generated!");
   };
 
   // AI execution simulation
@@ -5166,6 +5329,17 @@ ${activeCategory === "kitchen" ? `
                     <div className="sec-n hover-bright cursor-pointer" onClick={() => handleExportFormat("obj")} style={{ fontSize: "10.5px", padding: "6px", textAlign: "center" }}>OBJ</div>
                     <div className="sec-n hover-bright cursor-pointer" onClick={() => handleExportFormat("fbx")} style={{ fontSize: "10.5px", padding: "6px", textAlign: "center" }}>FBX</div>
                   </div>
+
+                  {/* Send to Production */}
+                  <div style={{ marginTop: "10px", paddingTop: "10px", borderTop: "1px solid var(--border)" }}>
+                    <button
+                      className="sec-n hover-bright cursor-pointer"
+                      onClick={handleSendToProduction}
+                      style={{ fontSize: "10.5px", padding: "8px", textAlign: "center", background: "linear-gradient(135deg, #c8a050 0%, #e8d4a5 100%)", color: "#000", fontWeight: "bold", width: "100%" }}
+                    >
+                      🏭 Send to Production
+                    </button>
+                  </div>
                 </div>
               </div>
             </>
@@ -6640,6 +6814,17 @@ ${activeCategory === "kitchen" ? `
                     <div className="sec-n hover-bright cursor-pointer" onClick={() => handleExportFormat("obj")} style={{ fontSize: "10.5px", padding: "6px", textAlign: "center" }}>OBJ</div>
                     <div className="sec-n hover-bright cursor-pointer" onClick={() => handleExportFormat("fbx")} style={{ fontSize: "10.5px", padding: "6px", textAlign: "center" }}>FBX</div>
                   </div>
+
+                  {/* Send to Production */}
+                  <div style={{ marginTop: "10px", paddingTop: "10px", borderTop: "1px solid var(--border)" }}>
+                    <button
+                      className="sec-n hover-bright cursor-pointer"
+                      onClick={handleSendToProduction}
+                      style={{ fontSize: "10.5px", padding: "8px", textAlign: "center", background: "linear-gradient(135deg, #c8a050 0%, #e8d4a5 100%)", color: "#000", fontWeight: "bold", width: "100%" }}
+                    >
+                      🏭 Send to Production
+                    </button>
+                  </div>
                 </div>
               </div>
             </>
@@ -6651,6 +6836,13 @@ ${activeCategory === "kitchen" ? `
       <div className={`notif ${showNotif ? "show" : ""}`}>
         {notifText}
       </div>
+
+      {/* Production Modal */}
+      <ProductionModal
+        spec={currentProductionSpec}
+        isOpen={productionModalOpen}
+        onClose={() => setProductionModalOpen(false)}
+      />
     </div>
   );
 }
