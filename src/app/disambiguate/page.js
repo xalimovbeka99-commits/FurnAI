@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { Suspense } from "react";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -64,7 +65,7 @@ const FURNITURE_OPTIONS = [
   },
 ];
 
-export default function DisambiguatePage() {
+function DisambiguateContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -77,6 +78,16 @@ export default function DisambiguatePage() {
     router.push(`/builder?${params.toString()}`);
   };
 
+  return (
+    <DisambiguatePageContent
+      originalDescription={originalDescription}
+      handleSelect={handleSelect}
+      router={router}
+    />
+  );
+}
+
+function DisambiguatePageContent({ originalDescription, handleSelect, router }) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-background/90 pt-32 pb-16 px-6">
       <div className="max-w-4xl mx-auto">
@@ -155,5 +166,13 @@ export default function DisambiguatePage() {
         </motion.div>
       </div>
     </div>
+  );
+}
+
+export default function DisambiguatePage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+      <DisambiguateContent />
+    </Suspense>
   );
 }
