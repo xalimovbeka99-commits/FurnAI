@@ -2,9 +2,10 @@ import Anthropic from "@anthropic-ai/sdk";
 
 let client;
 try {
-  if (process.env.ANTHROPIC_API_KEY) {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (apiKey && apiKey !== "your_anthropic_api_key_here" && apiKey.trim() !== "") {
     client = new Anthropic({
-      apiKey: process.env.ANTHROPIC_API_KEY,
+      apiKey: apiKey,
     });
   }
 } catch (e) {
