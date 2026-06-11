@@ -45,16 +45,16 @@ const CATEGORY_FILTERS = ["All", "Wardrobe", "Kitchen", "Office", "Bed", "Cabine
 const STYLE_FILTERS = ["All", "Luxury", "Minimal", "Scandi", "Industrial", "Classic", "Modern", "Navy"];
 
 const TYPE_COLOR = {
-  wardrobe:       "#c8a870",
-  kitchen:        "#b59beb",
-  office:         "#d4a5e8",
-  "tv-wall":      "#9bcbeb",
-  cabinet:        "#c5a5e8",
-  bed:            "#a5b0e8",
-  shelves:        "#a5e8b0",
-  "dressing-table":"#e8d4a5",
-  table:          "#c8b070",
-  decor:          "#e8a5a5",
+  wardrobe:       "#00e5ff",
+  kitchen:        "#3b82f6",
+  office:         "#00a3cc",
+  "tv-wall":      "#60a5fa",
+  cabinet:        "#0077b6",
+  bed:            "#00b4d8",
+  shelves:        "#93c5fd",
+  "dressing-table":"#0284c7",
+  table:          "#005f73",
+  decor:          "#0891b2",
 };
 
 // ─── GLB scene component (must be inside Suspense) ─────────────────────────
@@ -169,6 +169,104 @@ function CardPreview({ item }) {
     </div>
   );
 }
+
+// AI-Generated Variations Generator based on selected item
+const generateVariations = (item) => {
+  const variations = [];
+  
+  if (item.type === "wardrobe") {
+    variations.push({
+      name: `Walnut ${item.name}`,
+      color: "walnut",
+      style: "luxury",
+      material: "Walnut Wood",
+      doorType: "mirror",
+      handleStyle: "gold",
+      desc: "Warm walnut finish with mirrored door panels and premium gold bar handles.",
+      width: item.width,
+      height: item.height,
+      depth: item.depth
+    });
+    variations.push({
+      name: `Glossy White ${item.name}`,
+      color: "white",
+      style: "minimal",
+      material: "Glossy White Melamine",
+      doorType: "solid",
+      handleStyle: "hidden",
+      desc: "Sleek all-white minimalist design with touch-latches and handle-free doors.",
+      width: item.width,
+      height: item.height,
+      depth: item.depth
+    });
+  } else if (item.type === "kitchen") {
+    variations.push({
+      name: "Sage Green Kitchen",
+      color: "sage",
+      style: "scandi",
+      material: "Sage Matte Finish",
+      desc: "Nordic-inspired sage green cabinets with oak accents and open shelves.",
+      width: item.width,
+      height: item.height,
+      depth: item.depth
+    });
+    variations.push({
+      name: "Midnight Navy Kitchen",
+      color: "navy",
+      style: "modern",
+      material: "Midnight Navy Satin",
+      desc: "Navy cabinets with white quartz countertops and gold hardware.",
+      width: item.width,
+      height: item.height,
+      depth: item.depth
+    });
+  } else if (item.type === "bed") {
+    variations.push({
+      name: "Light Oak Platform Bed",
+      color: "oak",
+      style: "scandi",
+      material: "Natural Oak",
+      desc: "Platform frame in light oak with minimal wooden headboard and matching nightstands.",
+      width: item.width,
+      height: item.height,
+      depth: item.depth
+    });
+    variations.push({
+      name: "Dark Charcoal Storage Bed",
+      color: "black",
+      style: "modern",
+      material: "Upholstered Linen",
+      desc: "Fully upholstered dark linen frame with spacious lift-up hydraulic storage.",
+      width: item.width,
+      height: item.height,
+      depth: item.depth
+    });
+  } else {
+    // Generic fallback variations
+    variations.push({
+      name: `Walnut ${item.name}`,
+      color: "walnut",
+      style: "classic",
+      material: "American Walnut",
+      desc: `Classic premium walnut version of the ${item.name}.`,
+      width: item.width,
+      height: item.height,
+      depth: item.depth
+    });
+    variations.push({
+      name: `Minimal White ${item.name}`,
+      color: "white",
+      style: "minimal",
+      material: "Matte Lacquer",
+      desc: `Pure white minimalist style of the ${item.name}.`,
+      width: item.width,
+      height: item.height,
+      depth: item.depth
+    });
+  }
+  
+  return variations;
+};
 
 // ─── Main page ─────────────────────────────────────────────────────────────
 export default function GalleryPage() {
@@ -288,7 +386,7 @@ export default function GalleryPage() {
                 onClick={() => setStyleFilter(f)}
                 className={`px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-all duration-300 cursor-pointer ${
                   styleFilter === f
-                    ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg shadow-purple-500/20 border border-white/20"
+                    ? "bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-lg shadow-cyan-500/20 border border-white/20"
                     : "bg-black/35 backdrop-blur-md text-muted hover:text-white hover:bg-white/10 border border-white/10"
                 }`}
               >
@@ -340,7 +438,7 @@ export default function GalleryPage() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.93, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="glass-strong rounded-3xl w-full max-w-lg p-8 border border-white/15 floating-layer-deep my-8"
+              className="glass-strong rounded-3xl w-full max-w-xl p-8 border border-white/15 floating-layer-deep my-8"
             >
               <div className="flex items-start justify-between mb-5">
                 <div>
@@ -373,7 +471,7 @@ export default function GalleryPage() {
               </p>
 
               {/* Specs */}
-              <div className="grid grid-cols-3 gap-3 mb-7">
+              <div className="grid grid-cols-3 gap-3 mb-6">
                 {[["Width", selected.width], ["Height", selected.height], ["Depth", selected.depth]].map(([label, val]) => (
                   <div key={label} className="bg-black/35 border border-white/5 rounded-2xl p-3 text-center">
                     <p className="text-[10px] uppercase tracking-wider text-muted mb-1">{label}</p>
@@ -382,19 +480,59 @@ export default function GalleryPage() {
                 ))}
               </div>
 
+              {/* AI-Generated Variations */}
+              <div className="mb-6 bg-white/5 rounded-2xl p-4 border border-white/10">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-white/70 mb-3 flex items-center gap-1.5">
+                  ✨ AI-Generated Variations
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {generateVariations(selected).map((v, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => {
+                        setSelected({
+                          ...selected,
+                          name: v.name,
+                          color: v.color,
+                          style: v.style,
+                          material: v.material,
+                        });
+                      }}
+                      className={`p-3.5 rounded-xl border text-left cursor-pointer transition-all duration-300 hover:scale-[1.02] flex flex-col justify-between h-full ${
+                        selected.name === v.name
+                          ? "bg-accent/15 border-accent/60 shadow-lg shadow-accent/5"
+                          : "bg-black/20 border-white/5 hover:border-white/15 hover:bg-white/[0.04]"
+                      }`}
+                    >
+                      <div>
+                        <p className={`font-semibold text-xs transition-colors ${selected.name === v.name ? "text-accent-light" : "text-white"}`}>
+                          {v.name}
+                        </p>
+                        <p className="text-[10px] text-muted mt-1 leading-normal">
+                          {v.desc}
+                        </p>
+                      </div>
+                      <span className={`inline-block mt-3 text-[9px] font-bold uppercase tracking-wider ${selected.name === v.name ? "text-accent-light" : "text-white/40"}`}>
+                        {selected.name === v.name ? "✓ Applied Spec" : "Apply Spec"}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <div className="flex gap-3">
                 <button
                   onClick={() => {
                     setSelected(null);
                     handleCustomizeThis(selected);
                   }}
-                  className="btn-premium-primary flex-1"
+                  className="btn-premium-primary flex-1 cursor-pointer"
                 >
                   <span>Customize This →</span>
                 </button>
                 <button
                   onClick={() => setSelected(null)}
-                  className="btn-premium-secondary flex-1"
+                  className="btn-premium-secondary flex-1 cursor-pointer"
                 >
                   <span>Close</span>
                 </button>

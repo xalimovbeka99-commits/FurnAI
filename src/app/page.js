@@ -19,25 +19,25 @@ const features = [
     icon: "✨",
     title: "AI-Powered Design",
     desc: "Describe your vision in plain text and let our AI generate stunning furniture designs instantly.",
-    glow: "from-blue-500/20 to-indigo-500/20",
+    glow: "from-cyan-500/20 to-blue-600/20",
   },
   {
     icon: "🎨",
     title: "Full Customization",
     desc: "Fine-tune every dimension, material, color, and style to match your exact requirements.",
-    glow: "from-purple-500/20 to-pink-500/20",
+    glow: "from-blue-500/20 to-cyan-500/20",
   },
   {
     icon: "📐",
     title: "3D Real-Time Preview",
     desc: "See your furniture come to life in an interactive 3D viewer. Rotate, zoom, and inspect every detail.",
-    glow: "from-indigo-500/20 to-cyan-500/20",
+    glow: "from-cyan-500/20 to-teal-500/20",
   },
   {
     icon: "💾",
     title: "Save & Export",
     desc: "Save your designs, export specifications, and share your creations with the world.",
-    glow: "from-emerald-500/20 to-blue-500/20",
+    glow: "from-teal-500/20 to-blue-500/20",
   },
 ];
 
@@ -151,11 +151,11 @@ export default function HomePage() {
           >
             {/* Background highlights inside floating card */}
             <div className="absolute -right-20 -top-20 w-80 h-80 bg-accent/10 rounded-full blur-[80px] pointer-events-none" />
-            <div className="absolute -left-20 -bottom-20 w-80 h-80 bg-purple-500/10 rounded-full blur-[80px] pointer-events-none" />
+            <div className="absolute -left-20 -bottom-20 w-80 h-80 bg-cyan-500/10 rounded-full blur-[80px] pointer-events-none" />
 
             <div className="relative z-10">
               <motion.div variants={fadeUp} custom={0} className="mb-8 flex justify-center">
-                <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-black/35 backdrop-blur-md border border-white/10 text-xs text-muted pulse-glow-purple">
+                <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-black/35 backdrop-blur-md border border-white/10 text-xs text-muted pulse-glow">
                   <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
                   AI-Powered Furniture Design
                 </span>
@@ -182,6 +182,9 @@ export default function HomePage() {
 
               <motion.div variants={fadeUp} custom={3} className="max-w-2xl mx-auto mb-8">
                 <div className="flex flex-col gap-3">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-white/60 block text-left pl-1">
+                    Describe your furniture
+                  </label>
                   <div className="flex flex-col sm:flex-row gap-3 w-full">
                     <input
                       type="text"
@@ -192,43 +195,53 @@ export default function HomePage() {
                       }}
                       onKeyDown={(e) => e.key === "Enter" && handleDescribe()}
                       placeholder="e.g., Luxury walnut wardrobe with mirror doors and LED lighting"
-                      className="flex-1 px-4 py-3 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-accent/50 focus:bg-white/[0.15] transition-all"
+                      className="flex-1 px-4 py-3.5 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-accent/50 focus:bg-white/[0.15] transition-all text-sm shadow-inner"
                       disabled={isLoading}
                     />
                     <button
                       onClick={handleDescribe}
                       disabled={isLoading}
-                      className="px-6 py-3 rounded-xl bg-accent hover:bg-accent/90 disabled:opacity-50 disabled:cursor-not-allowed text-black font-semibold transition-all w-full sm:w-auto cursor-pointer"
+                      className="px-6 py-3.5 rounded-xl bg-accent hover:bg-accent/90 disabled:opacity-50 disabled:cursor-not-allowed text-black font-semibold transition-all w-full sm:w-auto cursor-pointer flex items-center justify-center gap-2 shadow-lg shadow-accent/25 hover:scale-[1.02] active:scale-[0.98]"
                     >
-                      {isLoading ? "Processing..." : "Describe"}
+                      {isLoading ? (
+                        <>
+                          <span className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                          Processing...
+                        </>
+                      ) : (
+                        "Describe"
+                      )}
                     </button>
                   </div>
 
                   {error && (
-                    <div className="text-red-400 text-sm">{error}</div>
+                    <div className="text-red-400 text-sm text-left pl-1">{error}</div>
                   )}
 
-                  {!input && (
-                    <details className="text-xs text-white/60 group">
-                      <summary className="cursor-pointer hover:text-white/80 transition-colors">
-                        Example prompts →
-                      </summary>
-                      <div className="mt-2 space-y-1 pl-2 border-l border-white/10">
-                        {examplePrompts.map((prompt, idx) => (
-                          <button
-                            key={idx}
-                            onClick={() => {
-                              setInput(prompt);
-                              setError("");
-                            }}
-                            className="block text-left text-white/50 hover:text-accent transition-colors text-xs"
-                          >
-                            "{prompt}"
-                          </button>
-                        ))}
-                      </div>
-                    </details>
-                  )}
+                  <div className="flex flex-wrap items-center gap-2 justify-start mt-2">
+                    <span className="text-xs text-white/50">Inspiration:</span>
+                    {examplePrompts.map((prompt, idx) => {
+                      // Extract a neat label from the prompt
+                      let label = prompt;
+                      if (prompt.includes(" wardrobe ")) label = "Luxury Wardrobe";
+                      else if (prompt.includes(" bed ")) label = "Queen Bed";
+                      else if (prompt.includes(" kitchen ")) label = "Modern Kitchen";
+                      else if (prompt.includes(" desk ")) label = "Office Desk";
+
+                      return (
+                        <button
+                          key={idx}
+                          onClick={() => {
+                            setInput(prompt);
+                            setError("");
+                          }}
+                          className="px-3 py-1 rounded-full bg-white/5 hover:bg-accent hover:text-black border border-white/10 hover:border-accent/40 text-white/70 transition-all text-xs cursor-pointer hover:scale-[1.05]"
+                        >
+                          {label}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               </motion.div>
 
@@ -447,7 +460,7 @@ export default function HomePage() {
             className="glass-pro rounded-3xl p-12 md:p-20 text-center floating-layer-deep border border-white/10 relative overflow-hidden"
           >
             {/* Colorful overlay inside floating layer */}
-            <div className="absolute inset-0 bg-gradient-to-tr from-accent/5 via-transparent to-purple-500/5" />
+            <div className="absolute inset-0 bg-gradient-to-tr from-accent/5 via-transparent to-cyan-500/5" />
             <div className="absolute inset-0 gradient-bg-cta opacity-40" />
             
             <div className="relative z-10">

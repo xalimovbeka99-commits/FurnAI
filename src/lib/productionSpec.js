@@ -95,7 +95,7 @@ export function generateProductionSpec(design) {
 
   // Calculate costs
   const materialArea = calculateMaterialArea(components);
-  const materialCost = (materialArea * (MATERIAL_COSTS[color] || 40)) / 10000; // Convert mm² to m²
+  const materialCost = materialArea * (MATERIAL_COSTS[color] || 40); // Area in m² * price per m²
 
   const hardwareCost = calculateHardwareCost(
     type,
@@ -273,8 +273,8 @@ function generateGenericComponents(type, w, h, d) {
  */
 function calculateMaterialArea(components) {
   return components.reduce((total, comp) => {
-    if (comp.unit === "pcs") return total;
-    const area = (comp.width * comp.height * comp.quantity * comp.thickness) / 1000000; // mm² to m²
+    if (comp.unit === "pcs" || !comp.width || !comp.height) return total;
+    const area = (comp.width * comp.height * comp.quantity) / 1000000; // mm² to m²
     return total + area;
   }, 0);
 }
@@ -493,4 +493,43 @@ DXF Files Required: Yes`;
  */
 export function formatSpecAsJSON(spec) {
   return JSON.stringify(spec, null, 2);
+}
+
+/**
+ * Format spec as BAZIS-Mebelshik compatible XML for factory ERP
+ */
+export function formatSpecAsXML(spec) {
+  let xml = `<?xml version="1.0" encoding="UTF-8"?>
+<FurnitureProject id="${spec.id}" generatedAt="${spec.createdAt}">
+  <Product name="${spec.design.type}" style="${spec.design.style}" color="${spec.design.color}">
+    <Dimensions width="${spec.design.dimensions.width * 10}" height="${spec.design.dimensions.height * 10}" depth="${spec.design.dimensions.depth * 10}" unit="mm" />
+    <Materials>
+      <Material name="${spec.materials.primary}" thickness="18" edgeBanding="${spec.materials.edgeBanding}" />
+    </Materials>
+    <Panels>`;
+
+  spec.components.forEach((comp) => {
+    if (comp.unit !== "pcs" && comp.width && comp.height) {
+      xml += `
+      <Panel name="${comp.name}" width="${comp.width}" height="${comp.height}" thickness="${comp.thickness || 18}" quantity="${comp.quantity}">
+        <Edging top="${comp.name.includes("Panel") ? "yes" : "no"}" bottom="no" left="no" right="no" />
+      </Panel>`;
+    }
+  });
+
+  xml += `
+    </Panels>
+    <HardwareList>`;
+  
+  spec.hardware.items.forEach((item) => {
+    xml += `
+      <Hardware name="${item.description}" code="${item.partNumber}" quantity="${item.quantity}" />`;
+  });
+
+  xml += `
+    </HardwareList>
+  </Product>
+</FurnitureProject>`;
+
+  return xml;
 }

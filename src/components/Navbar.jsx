@@ -9,6 +9,7 @@ const links = [
   { href: "/", label: "Home" },
   { href: "/builder", label: "Builder" },
   { href: "/gallery", label: "Gallery" },
+  { href: "/studio", label: "Campaign Studio" },
   { href: "/dashboard", label: "Dashboard" },
   { href: "/pricing", label: "Pricing" },
   { href: "/about", label: "About" },
@@ -24,7 +25,7 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-600 via-yellow-500 to-amber-500 flex items-center justify-center text-[#0c0c0e] font-extrabold text-sm group-hover:scale-110 transition-transform shadow-lg shadow-amber-500/20 pulse-glow">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-400 via-cyan-500 to-blue-600 flex items-center justify-center text-[#070d19] font-extrabold text-sm group-hover:scale-110 transition-transform shadow-lg shadow-cyan-500/20 pulse-glow">
             F
           </div>
           <span className="text-lg font-bold tracking-tight text-white">

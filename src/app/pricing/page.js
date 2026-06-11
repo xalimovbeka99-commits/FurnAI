@@ -90,13 +90,13 @@ export default function PricingPage() {
               transition={{ delay: index * 0.1, duration: 0.5 }}
               className={`rounded-3xl p-8 relative border transition-all duration-500 ${
                 plan.highlight
-                  ? "bg-gradient-to-b from-indigo-500/20 via-purple-500/10 to-black/50 border-2 border-indigo-500/50 floating-layer-deep scale-105 z-10"
+                  ? "bg-gradient-to-b from-cyan-500/20 via-blue-500/10 to-black/50 border-2 border-cyan-500/50 floating-layer-deep scale-105 z-10"
                   : "glass border-white/5 floating-layer hover:bg-white/[0.08]"
               }`}
             >
               {plan.badge && (
                 <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
-                  <span className="px-4 py-1.5 bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-[10px] font-bold rounded-full border border-white/10 shadow-lg tracking-wider uppercase">
+                  <span className="px-4 py-1.5 bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-[10px] font-bold rounded-full border border-white/10 shadow-lg tracking-wider uppercase">
                     {plan.badge}
                   </span>
                 </div>

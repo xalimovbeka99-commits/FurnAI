@@ -1602,17 +1602,40 @@ tallCabinetType, tallCabinetsCount, countertopMaterial, countertopThickness, cou
     cabGrp.add(bx(sideW, lH, officeCabD, _cabMat, -officeCabW / 2 + sideW / 2, lH / 2, 0));
     cabGrp.add(bx(sideW, lH, officeCabD, _cabMat, officeCabW / 2 - sideW / 2, lH / 2, 0));
 
-    // — Lower door panels
+    // — Lower door panels — pivot-based (children of cabGrp so they inherit its z=-2.9 offset)
     const nd = Math.max(1, officeCabLowerDoors);
     const dW = (cenW - .01 * (nd - 1)) / nd;
     const dH = lH - .065;
+
     for (let d = 0; d < nd; d++) {
-      const dx = -cenW / 2 + d * (dW + .01) + dW / 2;
-      cabGrp.add(bx(dW - .01, dH, .02, _cabMat, dx, lH / 2 + .01, officeCabD / 2 - .004));
-      // gap lines
-      cabGrp.add(bx(dW - .01, .002, .022, metalM, dx, lH + .01, officeCabD / 2 - .001));
-      // minimal handle
-      cabGrp.add(bx(.058, .007, .016, metalM, dx, lH * .4, officeCabD / 2 + .009));
+      const isLeft = d < nd / 2;
+      // Hinge x within cabGrp local space
+      const hingeX = -cenW / 2 + d * (dW + .01) + (isLeft ? 0 : dW);
+      const pivot = new THREE.Group();
+      // Position in cabGrp local space — front face of cabinet
+      pivot.position.set(hingeX, lH / 2 + .01, officeCabD / 2);
+      cabGrp.add(pivot);  // child of cabGrp — inherits the -2.9 z offset
+
+      const faceOffX = isLeft ? dW / 2 : -dW / 2;
+      const doorM = new THREE.Mesh(new THREE.BoxGeometry(dW - .01, dH, .020), _cabMat);
+      doorM.position.set(faceOffX, 0, .010);
+      doorM.castShadow = true;
+      doorM.name = `offDoor${d}`;
+      doorM.userData.group = "door";
+      pivot.add(doorM);
+
+      // Gap line at top
+      cabGrp.add(bx(dW - .01, .002, .022, metalM, -cenW/2 + d*(dW+.01) + dW/2, lH + .01, officeCabD / 2 - .001));
+
+      // Handle on inner edge
+      const hm = new THREE.Mesh(new THREE.BoxGeometry(.050, .007, .014), metalM);
+      hm.position.set(isLeft ? dW * .76 : -dW * .76, -dH * .1, .020);
+      hm.userData.group = "handle";
+      pivot.add(hm);
+
+      const openDir = isLeft ? -Math.PI * 0.72 : Math.PI * 0.72;
+      app.doorPivots.push({ pivot, target: app.doorsOpen ? openDir : 0, openDir, i: d });
+      if (app.doorsOpen) pivot.rotation.y = openDir;
     }
 
     cabGrp.position.set(0, 0, -2.9);
@@ -1891,26 +1914,55 @@ tallCabinetType, tallCabinetsCount, countertopMaterial, countertopThickness, cou
       app.shelvesMeshes.push(midShelf);
     }
 
-    // ── Lower door section ───────────────────────────────────────────
+    // ── Lower door section — pivot-based so Open Doors animates them ──
     const lowerH = cabinetStyle === "sideboard" ? H : H * 0.48;
     const lowerBase = base + T;
     const dc = Math.max(2, cabinetDoorCount);
     const dW = (W - T*(dc+1)) / dc;
     const glassMat = new THREE.MeshStandardMaterial({ color: 0xCCDDEE, transparent: true, opacity: 0.30, roughness: 0.04, metalness: 0.15 });
+    const dH = lowerH - 0.010 - T;
 
     for (let i = 0; i < dc; i++) {
-      const dx = -W/2 + T + dW/2 + i*(dW + T);
+      const isLeft = i < dc / 2;
+      // Hinge edge x position
+      const hingeX = -W/2 + T + i*(dW + T) + (isLeft ? 0 : dW);
+
+      const pivot = new THREE.Group();
+      pivot.position.set(hingeX, lowerBase, D/2);
+      app.root.add(pivot);
+
+      // Door face offset from hinge edge
+      const faceOffsetX = isLeft ? dW/2 : -dW/2;
+
       const doorFace = cabinetGlassDoors
-        ? mesh(box(dW - 0.008, lowerH - 0.010 - T, 0.004), glassMat, dx, lowerBase + (lowerH-0.010-T)/2, D/2 + 0.014, `cabGlass${i}`)
-        : mesh(box(dW - 0.008, lowerH - 0.010 - T, T*0.8), app.M.drawerFront, dx, lowerBase + (lowerH-0.010-T)/2, D/2 + T/2, `cabDoor${i}`);
+        ? new THREE.Mesh(box(dW - 0.008, dH, 0.005), glassMat)
+        : new THREE.Mesh(box(dW - 0.008, dH, T*0.8), app.M.drawerFront);
+      doorFace.position.set(faceOffsetX, dH/2, T/2);
+      doorFace.castShadow = true;
+      doorFace.name = `cabDoor${i}`;
+      doorFace.userData.group = "door";
+      pivot.add(doorFace);
+      app.selectables.push(doorFace);
+
       if (cabinetGlassDoors) {
-        // Door frame
-        add(mesh(box(dW - 0.008, lowerH - 0.010 - T, T*0.6), app.M.body, dx, lowerBase + (lowerH-0.010-T)/2, D/2 + T/2, `cabFrame${i}`), "door");
+        const frame = new THREE.Mesh(box(dW - 0.008, dH, T*0.5), app.M.body);
+        frame.position.set(faceOffsetX, dH/2, T*0.25);
+        frame.name = `cabFrame${i}`;
+        frame.userData.group = "door";
+        pivot.add(frame);
       }
-      add(doorFace, "door");
-      // Vertical bar handle
-      const hx = dx + (i < dc/2 ? dW*0.38 : -dW*0.38);
-      add(mesh(new THREE.CylinderGeometry(0.007, 0.007, 0.12, 10), app.M.handle, hx, lowerBase + lowerH*0.5, D/2 + T + 0.01, `cabH${i}`), "handle");
+
+      // Handle on inner edge
+      const handleOffset = isLeft ? dW*0.76 : -dW*0.76;
+      const handleMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.007, 0.007, 0.12, 10), app.M.handle);
+      handleMesh.position.set(handleOffset, dH/2, T + 0.012);
+      handleMesh.name = `cabH${i}`;
+      handleMesh.userData.group = "handle";
+      pivot.add(handleMesh);
+
+      const openDir = isLeft ? -Math.PI * 0.72 : Math.PI * 0.72;
+      app.doorPivots.push({ pivot, target: app.doorsOpen ? openDir : 0, openDir, i });
+      if (app.doorsOpen) pivot.rotation.y = openDir;
     }
 
     // ── Upper drawer section (highboy / filing only) ─────────────────
@@ -1973,6 +2025,7 @@ tallCabinetType, tallCabinetsCount, countertopMaterial, countertopThickness, cou
       return m;
     };
 
+    const T = 0.022;  // panel thickness
     const sizes = { single:{w:0.95,l:1.95}, double:{w:1.40,l:1.95}, queen:{w:1.65,l:2.05}, king:{w:1.95,l:2.10} };
     const { w: W, l: L } = sizes[bedSize] || sizes.queen;
 
@@ -2005,8 +2058,8 @@ tallCabinetType, tallCabinetsCount, countertopMaterial, countertopThickness, cou
         add(mesh(lGeo, legMat, sx*(W/2-0.10), legH/2, sz*(L/2-0.14), `bLeg${sx}${sz}`), "leg");
       }
       // Side rails
-      add(mesh(box(T=0.022, frameH*0.6, L-0.04), app.M.plinth, -(W/2), legH + frameH*0.5, 0, "railL"), "body");
-      add(mesh(box(0.022, frameH*0.6, L-0.04), app.M.plinth,  (W/2), legH + frameH*0.5, 0, "railR"), "body");
+      add(mesh(box(T, frameH*0.6, L-0.04), app.M.plinth, -(W/2), legH + frameH*0.5, 0, "railL"), "body");
+      add(mesh(box(T, frameH*0.6, L-0.04), app.M.plinth,  (W/2), legH + frameH*0.5, 0, "railR"), "body");
     }
 
     // ── Mattress ──────────────────────────────────────────────────────
@@ -2056,19 +2109,39 @@ tallCabinetType, tallCabinetsCount, countertopMaterial, countertopThickness, cou
     const fbH = bedHeadboard === "tall" ? 0.32 : 0.22;
     add(mesh(box(W + 0.06, fbH, 0.045), app.M.body, 0, legH + fbH/2, L/2 + 0.022, "footboard"), "body");
 
-    // ── Under-bed storage drawers ──────────────────────────────────────
+    // ── Under-bed storage drawers — slide animation via drawerPivots ─────
     if (bedStorage) {
       for (const [sx, i] of [[-1,0],[1,1]]) {
-        add(mesh(box(W*0.44, frameH*0.55, L*0.45), app.M.drawerFront, sx*W*0.25, legH + frameH*0.28, L*0.18, `bedDrw${i}`), "drawer");
-        add(mesh(box(0.12, 0.013, 0.013), app.M.handle, sx*W*0.25, legH + frameH*0.28, L*0.18 + L*0.225, `bedDrwH${i}`), "handle");
+        const drwGrp = new THREE.Group();
+        drwGrp.position.set(sx*W*0.25, legH + frameH*0.28, L*0.18);
+        app.root.add(drwGrp);
+
+        const drwFace = new THREE.Mesh(box(W*0.44, frameH*0.55, L*0.45), app.M.drawerFront);
+        drwFace.name = `bedDrw${i}`;
+        drwFace.userData.group = "drawer";
+        drwFace.castShadow = true;
+        drwGrp.add(drwFace);
+        app.selectables.push(drwFace);
+
+        const drwHandle = new THREE.Mesh(box(0.12, 0.013, 0.013), app.M.handle);
+        drwHandle.position.set(0, 0, L*0.225);
+        drwHandle.userData.group = "handle";
+        drwGrp.add(drwHandle);
+        app.selectables.push(drwHandle);
+
+        const openZ = L * 0.46;
+        app.drawerPivots.push({ group: drwGrp, targetZ: app.drawersAllOpen ? openZ : 0, openZ, open: app.drawersAllOpen });
+        if (app.drawersAllOpen) drwGrp.position.z = L*0.18 + openZ;
       }
     }
 
     // ── Under-bed LED ─────────────────────────────────────────────────
     if (bedLedUnder) {
-      const ledMat = new THREE.MeshStandardMaterial({ color: 0x88AAFF, emissive: new THREE.Color(0x88AAFF), emissiveIntensity: 1.8, roughness: 0.5 });
+      const ledCols = { warm: 0xFFDD88, cool: 0xC0D8FF, rgb: 0xFF88CC, off: 0x88AAFF };
+      const ledHex = ledCols[ledLighting] || 0x88AAFF;
+      const ledMat = new THREE.MeshStandardMaterial({ color: ledHex, emissive: new THREE.Color(ledHex), emissiveIntensity: 1.8, roughness: 0.5 });
       add(mesh(box(W-0.04, 0.010, L-0.04), ledMat, 0, legH - 0.005, 0, "bedLed"), "led");
-      const pl = new THREE.PointLight(0x88AAFF, 0.9, 5);
+      const pl = new THREE.PointLight(ledHex, 0.9, 5);
       pl.position.set(0, 0.06, 0);
       app.root.add(pl);
       app.ledLight = pl;
@@ -2109,7 +2182,7 @@ tallCabinetType, tallCabinetsCount, countertopMaterial, countertopThickness, cou
     }
 
     app.root.position.set(0, 0, 0);
-  }, [bedSize, bedHeadboard, bedStorage, bedLedUnder, bedBench, bedPillowCount, bedLampStyle, bedFrameStyle]);
+  }, [bedSize, bedHeadboard, bedStorage, bedLedUnder, bedBench, bedPillowCount, bedLampStyle, bedFrameStyle, ledLighting]);
 
   // ─────────────────────────────────────────────────────────────────────────
   // Shelving unit builder — open frame with a choice of layout styles
@@ -2563,12 +2636,11 @@ tallCabinetType, tallCabinetsCount, countertopMaterial, countertopThickness, cou
 
   }, [activeColor, activeFaceColor, doorStyle, handleStyle]);
 
-  // LED lighting live update (without rebuild)
+  // LED lighting live update (without rebuild) — applies to ALL categories
   useEffect(() => {
     const app = appRef.current;
-    if (activeCategory === 'wardrobe') {
-      _applyLEDstate(app, ledLighting);
-    }
+    // Apply global LED state to any category that has a ledLight reference
+    _applyLEDstate(app, ledLighting);
   }, [ledLighting, activeCategory]);
 
   // Initial WebGL Context Mount
@@ -2589,7 +2661,7 @@ tallCabinetType, tallCabinetsCount, countertopMaterial, countertopThickness, cou
 
     // Scene setup
     app.scene = new THREE.Scene();
-    const initBg = theme === "light" ? 0xfbfaf8 : 0x1e1e24;
+    const initBg = theme === "light" ? 0xf4f7fa : 0x070d19;
     app.scene.background = new THREE.Color(initBg);
     app.scene.fog = new THREE.Fog(initBg, 12, 28);
 
@@ -2957,9 +3029,9 @@ tallCabinetType, tallCabinetsCount, countertopMaterial, countertopThickness, cou
     if (!app.scene || !app.renderer) return;
 
     const isLight = theme === "light";
-    const bgCol = isLight ? 0xfbfaf8 : 0x1e1e24;
-    const floorCol = isLight ? 0xeeeeee : 0x1a1a20;
-    const gridCol = isLight ? 0xd8d8df : 0x3a3a46;
+    const bgCol = isLight ? 0xf4f7fa : 0x070d19;
+    const floorCol = isLight ? 0xe9f0f5 : 0x0a1226;
+    const gridCol = isLight ? 0xcbd5e1 : 0x1e293b;
 
     app.scene.background.setHex(bgCol);
     if (app.scene.fog) {
@@ -3489,16 +3561,17 @@ ${activeCategory === "kitchen" ? `
       {/* Dynamic CSS Styling Injector */}
       <style dangerouslySetInnerHTML={{ __html: `
         .builder-root-container {
-          --bg: ${theme === "light" ? "#fbfaf8" : "#0c0c0e"};
-          --bg2: ${theme === "light" ? "#f5f3f0" : "#111114"};
-          --bg3: ${theme === "light" ? "#ebe8e2" : "#18181d"};
-          --border: ${theme === "light" ? "rgba(0, 0, 0, 0.08)" : "rgba(255, 255, 255, 0.07)"};
-          --border2: ${theme === "light" ? "rgba(0, 0, 0, 0.13)" : "rgba(255, 255, 255, 0.13)"};
-          --accent: ${theme === "light" ? "#b89553" : "#c8a96e"};
-          --accent2: ${theme === "light" ? "#d4b574" : "#e8c98e"};
-          --text: ${theme === "light" ? "#1c1c1f" : "#f0ede8"};
-          --muted: ${theme === "light" ? "#6b6a65" : "#8a8880"};
-          --muted2: ${theme === "light" ? "#a3a19b" : "#5a5855"};
+          --bg: ${theme === "light" ? "#f4f7fa" : "#070d19"};
+          --bg2: ${theme === "light" ? "#e9f0f5" : "#0a1226"};
+          --bg3: ${theme === "light" ? "#dae5ee" : "#121e36"};
+          --border: ${theme === "light" ? "rgba(15, 23, 42, 0.08)" : "rgba(0, 229, 255, 0.08)"};
+          --border2: ${theme === "light" ? "rgba(0, 155, 180, 0.15)" : "rgba(0, 229, 255, 0.15)"};
+          --accent: ${theme === "light" ? "#009bb4" : "#00e5ff"};
+          --accent2: ${theme === "light" ? "#0077b6" : "#3b82f6"};
+          --text: ${theme === "light" ? "#0f172a" : "#f1f5f9"};
+          --muted: ${theme === "light" ? "#64748b" : "#94a3b8"};
+          --muted2: ${theme === "light" ? "#94a3b8" : "#475569"};
+          --accent-rgb: ${theme === "light" ? "0, 155, 180" : "0, 229, 255"};
           
           background: var(--bg);
           color: var(--text);
@@ -3553,7 +3626,7 @@ ${activeCategory === "kitchen" ? `
         }
 
         .home-btn:hover {
-          background: rgba(200,169,110,0.1);
+          background: rgba(var(--accent-rgb), 0.1);
           color: var(--accent);
           border-color: var(--accent);
         }
@@ -3587,14 +3660,14 @@ ${activeCategory === "kitchen" ? `
 
         .ftype-card:hover {
           border-color: var(--accent);
-          background: rgba(200,169,110,0.08);
+          background: rgba(var(--accent-rgb), 0.08);
           transform: translateY(-1px);
         }
 
         .ftype-card.on {
           border-color: var(--accent);
-          background: rgba(200,169,110,0.14);
-          box-shadow: 0 0 0 2px rgba(200,169,110,0.18);
+          background: rgba(var(--accent-rgb), 0.14);
+          box-shadow: 0 0 0 2px rgba(var(--accent-rgb), 0.18);
         }
 
         .ftype-card .ftype-icon {
@@ -3661,7 +3734,7 @@ ${activeCategory === "kitchen" ? `
 
         .tb.gold {
           background: linear-gradient(135deg, var(--accent), var(--accent2));
-          color: #0c0c0e;
+          color: #070d19;
           border: none;
         }
 
@@ -3685,7 +3758,7 @@ ${activeCategory === "kitchen" ? `
         }
 
         .vb.on {
-          background: rgba(200, 169, 110, 0.15);
+          background: rgba(var(--accent-rgb), 0.15);
           color: var(--accent);
         }
 
@@ -3738,7 +3811,7 @@ ${activeCategory === "kitchen" ? `
         }
 
         .ftype.on {
-          background: rgba(200, 169, 110, 0.1);
+          background: rgba(var(--accent-rgb), 0.1);
           color: var(--accent);
         }
 
@@ -3766,12 +3839,12 @@ ${activeCategory === "kitchen" ? `
         }
 
         .scene-btn:hover {
-          border-color: rgba(200, 169, 110, 0.4);
+          border-color: rgba(var(--accent-rgb), 0.4);
           color: var(--accent);
         }
 
         .scene-btn.on {
-          background: rgba(200, 169, 110, 0.1);
+          background: rgba(var(--accent-rgb), 0.1);
           border-color: var(--accent);
           color: var(--accent);
         }
@@ -3870,7 +3943,7 @@ ${activeCategory === "kitchen" ? `
           border: none;
           border-radius: 9px;
           padding: 9px 18px;
-          color: #0c0c0e;
+          color: #070d19;
           font-weight: 700;
           font-size: .78rem;
           cursor: pointer;
@@ -3906,8 +3979,8 @@ ${activeCategory === "kitchen" ? `
         }
 
         .pbadge {
-          background: rgba(200, 169, 110, 0.08);
-          border: 1px solid rgba(200, 169, 110, 0.2);
+          background: rgba(var(--accent-rgb), 0.08);
+          border: 1px solid rgba(var(--accent-rgb), 0.2);
           border-radius: 8px;
           padding: 7px 12px;
           font-size: .79rem;
@@ -3992,7 +4065,7 @@ ${activeCategory === "kitchen" ? `
         }
 
         .sec-n.on {
-          background: rgba(200, 169, 110, 0.15);
+          background: rgba(var(--accent-rgb), 0.15);
           border-color: var(--accent);
           color: var(--accent);
         }
@@ -4016,12 +4089,12 @@ ${activeCategory === "kitchen" ? `
         }
 
         .chip:hover {
-          border-color: rgba(200, 169, 110, 0.4);
+          border-color: rgba(var(--accent-rgb), 0.4);
           color: var(--text);
         }
 
         .chip.on {
-          background: rgba(200, 169, 110, 0.15);
+          background: rgba(var(--accent-rgb), 0.15);
           border-color: var(--accent);
           color: var(--accent);
         }
@@ -4048,7 +4121,7 @@ ${activeCategory === "kitchen" ? `
 
         .sw.on {
           border-color: var(--accent);
-          box-shadow: 0 0 0 2px rgba(200, 169, 110, 0.2);
+          box-shadow: 0 0 0 2px rgba(var(--accent-rgb), 0.2);
         }
 
         .sw-tip {
@@ -4373,7 +4446,7 @@ ${activeCategory === "kitchen" ? `
           <a href="/" className="logo">Furni AI</a>
         </div>
         <div className="file-name">
-          <span style={{ color: "#c8a96e" }}>📁</span>
+          <span style={{ color: "var(--accent)" }}>📁</span>
           <input defaultValue="Custom Wardrobe — 3D" readOnly />
           <span style={{ color: "var(--muted2)" }}>· Auto-saved</span>
         </div>
