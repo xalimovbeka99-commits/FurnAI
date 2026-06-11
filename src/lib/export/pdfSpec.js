@@ -13,7 +13,7 @@
  * @module lib/export/pdfSpec
  */
 
-import PdfPrinter from "pdfmake";
+import pdfMake from "pdfmake";
 import { join } from "path";
 
 /**
@@ -69,20 +69,13 @@ export async function generateSpecSheet({
     assemblyNotes,
   });
 
-  return new Promise((resolve, reject) => {
-    try {
-      const printer = new PdfPrinter(fonts);
-      const pdfDoc = printer.createPdfKitDocument(docDefinition);
-
-      const chunks = [];
-      pdfDoc.on("data", (chunk) => chunks.push(chunk));
-      pdfDoc.on("end", () => resolve(Buffer.concat(chunks)));
-      pdfDoc.on("error", (err) => reject(err));
-      pdfDoc.end();
-    } catch (err) {
-      reject(new Error(`PDF generation failed: ${err.message}`));
-    }
-  });
+  try {
+    pdfMake.setFonts(fonts);
+    const pdfDoc = pdfMake.createPdf(docDefinition);
+    return await pdfDoc.getBuffer();
+  } catch (err) {
+    throw new Error(`PDF generation failed: ${err.message}`);
+  }
 }
 
 /**
