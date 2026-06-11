@@ -14,17 +14,17 @@
  */
 
 import PdfPrinter from "pdfmake";
+import { join } from "path";
 
 /**
- * Embedded font descriptors for pdfmake (server-side, no browser fonts).
- * Uses Roboto from pdfmake's built-in virtual-fs in Node.
+ * Embedded font descriptors for pdfmake (server-side TTF paths).
  */
 const fonts = {
   Roboto: {
-    normal: "node_modules/pdfmake/build/vfs_fonts.js",
-    bold: "node_modules/pdfmake/build/vfs_fonts.js",
-    italics: "node_modules/pdfmake/build/vfs_fonts.js",
-    bolditalics: "node_modules/pdfmake/build/vfs_fonts.js",
+    normal: join(process.cwd(), "node_modules/pdfmake/fonts/Roboto/Roboto-Regular.ttf"),
+    bold: join(process.cwd(), "node_modules/pdfmake/fonts/Roboto/Roboto-Medium.ttf"),
+    italics: join(process.cwd(), "node_modules/pdfmake/fonts/Roboto/Roboto-Italic.ttf"),
+    bolditalics: join(process.cwd(), "node_modules/pdfmake/fonts/Roboto/Roboto-MediumItalic.ttf"),
   },
 };
 
@@ -71,23 +71,14 @@ export async function generateSpecSheet({
 
   return new Promise((resolve, reject) => {
     try {
-      // pdfmake server-side: use pdfmake/build/pdfmake for creating the doc
-      // We'll use the createPdfKitDocument method with virtual fonts
-      const pdfMakeModule = require("pdfmake/build/pdfmake");
-      const pdfFonts = require("pdfmake/build/vfs_fonts");
+      const printer = new PdfPrinter(fonts);
+      const pdfDoc = printer.createPdfKitDocument(docDefinition);
 
-      // Attach virtual font files
-      if (pdfFonts && pdfFonts.pdfMake && pdfFonts.pdfMake.vfs) {
-        pdfMakeModule.vfs = pdfFonts.pdfMake.vfs;
-      } else if (pdfFonts && pdfFonts.vfs) {
-        pdfMakeModule.vfs = pdfFonts.vfs;
-      }
-
-      const pdfDoc = pdfMakeModule.createPdf(docDefinition);
-
-      pdfDoc.getBuffer((buffer) => {
-        resolve(Buffer.from(buffer));
-      });
+      const chunks = [];
+      pdfDoc.on("data", (chunk) => chunks.push(chunk));
+      pdfDoc.on("end", () => resolve(Buffer.concat(chunks)));
+      pdfDoc.on("error", (err) => reject(err));
+      pdfDoc.end();
     } catch (err) {
       reject(new Error(`PDF generation failed: ${err.message}`));
     }
