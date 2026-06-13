@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "./ThemeProvider";
+import { useAuth } from "@/hooks/useAuth";
+import AuthModal from "@/components/AuthModal";
 
 const links = [
   { href: "/", label: "Home" },
@@ -19,6 +21,23 @@ const links = [
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { theme, toggle } = useTheme();
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const { user, loading, signIn, signUp, signOut } = useAuth();
+
+  const handleAuth = useCallback(
+    async (email, password, mode) => {
+      if (mode === "signup") {
+        await signUp(email, password);
+      } else {
+        await signIn(email, password);
+      }
+    },
+    [signIn, signUp]
+  );
+
+  const truncatedEmail = user?.email
+    ? user.email.split("@")[0].slice(0, 10)
+    : "";
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-white/10">
@@ -67,6 +86,28 @@ export default function Navbar() {
               </svg>
             )}
           </button>
+
+          {/* Auth buttons */}
+          {!loading && (
+            user ? (
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted">{truncatedEmail}</span>
+                <button
+                  onClick={signOut}
+                  className="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-xs font-bold uppercase tracking-wider text-muted hover:text-white hover:bg-white/10 transition-all cursor-pointer"
+                >
+                  Sign Out
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setAuthModalOpen(true)}
+                className="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-xs font-bold uppercase tracking-wider text-muted hover:text-white hover:bg-white/10 transition-all cursor-pointer"
+              >
+                Sign In
+              </button>
+            )
+          )}
 
           <Link href="/builder" className="btn-premium-primary !py-2 !px-5 text-xs">
             <span>Start Designing</span>
@@ -133,6 +174,33 @@ export default function Navbar() {
                   {link.label}
                 </Link>
               ))}
+              {/* Mobile auth buttons */}
+              {!loading && (
+                user ? (
+                  <div className="flex items-center gap-2 px-4 py-3">
+                    <span className="text-xs text-muted">{truncatedEmail}</span>
+                    <button
+                      onClick={() => {
+                        signOut();
+                        setMobileOpen(false);
+                      }}
+                      className="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-xs font-bold uppercase tracking-wider text-muted hover:text-white hover:bg-white/10 transition-all cursor-pointer"
+                    >
+                      Sign Out
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => {
+                      setAuthModalOpen(true);
+                      setMobileOpen(false);
+                    }}
+                    className="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-xs font-bold uppercase tracking-wider text-muted hover:text-white hover:bg-white/10 transition-all cursor-pointer"
+                  >
+                    Sign In
+                  </button>
+                )
+              )}
               <Link
                 href="/builder"
                 onClick={() => setMobileOpen(false)}
@@ -144,6 +212,12 @@ export default function Navbar() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <AuthModal
+        isOpen={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        onAuth={handleAuth}
+      />
     </nav>
   );
 }

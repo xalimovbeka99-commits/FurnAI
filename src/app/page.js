@@ -1,17 +1,9 @@
-"use client";
-
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
-import { useState } from "react";
+import HeroSearch from "../components/HeroSearch";
 
-const fadeUp = {
-  hidden: { opacity: 0, y: 30 },
-  visible: (i = 0) => ({
-    opacity: 1,
-    y: 0,
-    transition: { delay: i * 0.1, duration: 0.6, ease: "easeOut" },
-  }),
+export const metadata = {
+  title: "FurniAI — Parametric 3D Furniture Generator",
+  description: "Create custom wardrobes, kitchen cabinets, office desks, TV walls, beds, bookshelves, and dressing tables with our AI-powered parametric 3D generator. Get instant factory-ready manufacturing specifications.",
 };
 
 const features = [
@@ -65,73 +57,6 @@ const testimonials = [
 ];
 
 export default function HomePage() {
-  const router = useRouter();
-  const [input, setInput] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
-
-  const handleDescribe = async () => {
-    if (!input.trim()) {
-      setError("Please describe your furniture");
-      return;
-    }
-
-    setIsLoading(true);
-    setError("");
-
-    try {
-      const response = await fetch("/api/nlp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ description: input }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to process description");
-      }
-
-      const data = await response.json();
-
-      if (data.success) {
-        const params = new URLSearchParams();
-
-        // Only add params that exist in the response
-        if (data.parameters.furnitureType) params.append("type", data.parameters.furnitureType);
-        if (data.parameters.style) params.append("style", data.parameters.style);
-        if (data.parameters.primaryColor) params.append("color", data.parameters.primaryColor);
-        if (data.parameters.doorType) params.append("doorType", data.parameters.doorType);
-        if (data.parameters.handleStyle) params.append("handleStyle", data.parameters.handleStyle);
-        if (data.parameters.drawerRows !== undefined) params.append("drawerRows", data.parameters.drawerRows);
-        if (data.parameters.hangerRods !== undefined) params.append("hangerRods", data.parameters.hangerRods);
-        if (data.parameters.ledLighting) params.append("ledLighting", data.parameters.ledLighting);
-        if (data.parameters.width) params.append("width", data.parameters.width);
-        if (data.parameters.height) params.append("height", data.parameters.height);
-        if (data.parameters.depth) params.append("depth", data.parameters.depth);
-
-        params.append("description", input);
-
-        // Check if confidence is below 70% for furniture type
-        if (data.parameters.confidence?.furnitureType < 0.7) {
-          router.push(`/disambiguate?${params.toString()}`);
-        } else {
-          router.push(`/builder?${params.toString()}`);
-        }
-      }
-    } catch (err) {
-      console.error("Error:", err);
-      setError("Failed to process your description. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const examplePrompts = [
-    "Luxury walnut wardrobe with mirror doors and LED lighting",
-    "Queen size bed with padded headboard and under-bed storage drawers",
-    "Modern kitchen with oak cabinets and open shelving",
-    "Industrial office desk with black metal frame",
-  ];
-
   return (
     <div className="overflow-hidden">
       {/* Hero Section with background picture and floating console */}
@@ -143,155 +68,65 @@ export default function HomePage() {
         </div>
 
         <div className="relative z-10 max-w-5xl mx-auto px-6 text-center">
-          <motion.div
-            initial="hidden"
-            animate="visible"
-            viewport={{ once: true }}
-            className="glass-pro rounded-3xl p-8 md:p-16 floating-layer-deep relative overflow-hidden border border-white/10"
-          >
+          <div className="glass-pro rounded-3xl p-8 md:p-16 floating-layer-deep relative overflow-hidden border border-white/10 animate-fade-in">
             {/* Background highlights inside floating card */}
             <div className="absolute -right-20 -top-20 w-80 h-80 bg-accent/10 rounded-full blur-[80px] pointer-events-none" />
             <div className="absolute -left-20 -bottom-20 w-80 h-80 bg-cyan-500/10 rounded-full blur-[80px] pointer-events-none" />
 
             <div className="relative z-10">
-              <motion.div variants={fadeUp} custom={0} className="mb-8 flex justify-center">
+              <div className="mb-8 flex justify-center animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
                 <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-black/35 backdrop-blur-md border border-white/10 text-xs text-muted pulse-glow">
                   <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
                   AI-Powered Furniture Design
                 </span>
-              </motion.div>
+              </div>
 
-              <motion.h1
-                variants={fadeUp}
-                custom={1}
-                className="text-4xl sm:text-6xl md:text-7xl font-bold tracking-tight leading-[1.1] mb-6 text-white"
-              >
+              <h1 className="text-4xl sm:text-6xl md:text-7xl font-bold tracking-tight leading-[1.1] mb-6 text-white animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
                 Design Your Dream
                 <br />
                 <span className="gradient-text-warm font-extrabold">Furniture</span> with AI
-              </motion.h1>
+              </h1>
 
-              <motion.p
-                variants={fadeUp}
-                custom={2}
-                className="text-base sm:text-lg md:text-xl text-muted max-w-2xl mx-auto mb-10 leading-relaxed"
-              >
+              <p className="text-base sm:text-lg md:text-xl text-muted max-w-2xl mx-auto mb-10 leading-relaxed animate-fade-in-up" style={{ animationDelay: "0.25s" }}>
                 Describe your furniture in plain language. AI generates a 3D design in seconds.
                 Real-time preview, infinite customization, zero hassle.
-              </motion.p>
+              </p>
 
-              <motion.div variants={fadeUp} custom={3} className="max-w-2xl mx-auto mb-8">
-                <div className="flex flex-col gap-3">
-                  <label className="text-xs font-semibold uppercase tracking-wider text-white/60 block text-left pl-1">
-                    Describe your furniture
-                  </label>
-                  <div className="flex flex-col sm:flex-row gap-3 w-full">
-                    <input
-                      type="text"
-                      value={input}
-                      onChange={(e) => {
-                        setInput(e.target.value);
-                        setError("");
-                      }}
-                      onKeyDown={(e) => e.key === "Enter" && handleDescribe()}
-                      placeholder="e.g., Luxury walnut wardrobe with mirror doors and LED lighting"
-                      className="flex-1 px-4 py-3.5 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-accent/50 focus:bg-white/[0.15] transition-all text-sm shadow-inner"
-                      disabled={isLoading}
-                    />
-                    <button
-                      onClick={handleDescribe}
-                      disabled={isLoading}
-                      className="px-6 py-3.5 rounded-xl bg-accent hover:bg-accent/90 disabled:opacity-50 disabled:cursor-not-allowed text-black font-semibold transition-all w-full sm:w-auto cursor-pointer flex items-center justify-center gap-2 shadow-lg shadow-accent/25 hover:scale-[1.02] active:scale-[0.98]"
-                    >
-                      {isLoading ? (
-                        <>
-                          <span className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
-                          Processing...
-                        </>
-                      ) : (
-                        "Describe"
-                      )}
-                    </button>
-                  </div>
+              <HeroSearch />
 
-                  {error && (
-                    <div className="text-red-400 text-sm text-left pl-1">{error}</div>
-                  )}
-
-                  <div className="flex flex-wrap items-center gap-2 justify-start mt-2">
-                    <span className="text-xs text-white/50">Inspiration:</span>
-                    {examplePrompts.map((prompt, idx) => {
-                      // Extract a neat label from the prompt
-                      let label = prompt;
-                      if (prompt.includes(" wardrobe ")) label = "Luxury Wardrobe";
-                      else if (prompt.includes(" bed ")) label = "Queen Bed";
-                      else if (prompt.includes(" kitchen ")) label = "Modern Kitchen";
-                      else if (prompt.includes(" desk ")) label = "Office Desk";
-
-                      return (
-                        <button
-                          key={idx}
-                          onClick={() => {
-                            setInput(prompt);
-                            setError("");
-                          }}
-                          className="px-3 py-1 rounded-full bg-white/5 hover:bg-accent hover:text-black border border-white/10 hover:border-accent/40 text-white/70 transition-all text-xs cursor-pointer hover:scale-[1.05]"
-                        >
-                          {label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              </motion.div>
-
-              <motion.div variants={fadeUp} custom={4} className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in-up" style={{ animationDelay: "0.4s" }}>
                 <Link href="/gallery" className="btn-premium-secondary w-full sm:w-auto">
                   <span>Browse Gallery</span>
                 </Link>
-              </motion.div>
+              </div>
             </div>
-          </motion.div>
+          </div>
         </div>
 
         {/* Scroll indicator */}
-        <motion.div
-          animate={{ y: [0, 8, 0] }}
-          transition={{ repeat: Infinity, duration: 2 }}
-          className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20"
-        >
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 animate-bounce">
           <div className="w-6 h-10 rounded-full border-2 border-white/20 flex items-start justify-center p-1.5">
             <div className="w-1 h-2 rounded-full bg-white/40" />
           </div>
-        </motion.div>
+        </div>
       </section>
 
       {/* Features Section - floating overlap on the hero */}
       <section className="py-24 relative gradient-bg-section bg-background/50">
         <div className="max-w-7xl mx-auto px-6 relative z-20 -mt-16 md:-mt-24">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            className="text-center mb-16"
-          >
-            <motion.p variants={fadeUp} custom={0} className="text-sm font-semibold tracking-widest uppercase mb-4 gradient-text">
+          <div className="text-center mb-16">
+            <p className="text-sm font-semibold tracking-widest uppercase mb-4 gradient-text">
               Features
-            </motion.p>
-            <motion.h2 variants={fadeUp} custom={1} className="text-3xl md:text-5xl font-bold tracking-tight">
+            </p>
+            <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
               Everything You Need to Design
-            </motion.h2>
-          </motion.div>
+            </h2>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {features.map((feat, i) => (
-              <motion.div
+              <div
                 key={feat.title}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, margin: "-50px" }}
-                variants={fadeUp}
-                custom={i}
                 className="glass rounded-3xl p-8 floating-layer transition-all hover:bg-white/[0.08] group cursor-default shimmer relative overflow-hidden border border-white/5"
               >
                 {/* Card glow effect */}
@@ -303,7 +138,7 @@ export default function HomePage() {
                   </h3>
                   <p className="text-sm text-muted leading-relaxed">{feat.desc}</p>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -312,22 +147,17 @@ export default function HomePage() {
       {/* Categories Section */}
       <section className="py-24 relative bg-background/40">
         <div className="max-w-7xl mx-auto px-6 relative z-10">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            className="text-center mb-16"
-          >
-            <motion.p variants={fadeUp} custom={0} className="text-sm font-semibold tracking-widest uppercase mb-4 gradient-text">
+          <div className="text-center mb-16">
+            <p className="text-sm font-semibold tracking-widest uppercase mb-4 gradient-text">
               Catalog
-            </motion.p>
-            <motion.h2 variants={fadeUp} custom={1} className="text-3xl md:text-5xl font-bold tracking-tight text-white">
+            </p>
+            <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-white">
               Explore Design Categories
-            </motion.h2>
-            <motion.p variants={fadeUp} custom={2} className="text-muted max-w-xl mx-auto mt-4 text-sm md:text-base leading-relaxed">
+            </h2>
+            <p className="text-muted max-w-xl mx-auto mt-4 text-sm md:text-base leading-relaxed">
               Select any category template to jump directly into the parametric builder and start configuring.
-            </motion.p>
-          </motion.div>
+            </p>
+          </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {categories.map((cat, i) => (
@@ -370,35 +200,25 @@ export default function HomePage() {
         
         <div className="relative z-10 max-w-6xl mx-auto px-6">
           <div className="glass-pro rounded-3xl p-10 md:p-16 floating-layer border border-white/10">
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-100px" }}
-              className="text-center mb-16"
-            >
-              <motion.p variants={fadeUp} custom={0} className="text-sm font-semibold tracking-widest uppercase mb-4 gradient-text">
+            <div className="text-center mb-16">
+              <p className="text-sm font-semibold tracking-widest uppercase mb-4 gradient-text">
                 How it works
-              </motion.p>
-              <motion.h2 variants={fadeUp} custom={1} className="text-3xl md:text-5xl font-bold tracking-tight text-white">
+              </p>
+              <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-white">
                 Three Simple Steps
-              </motion.h2>
-            </motion.div>
+              </h2>
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
               {steps.map((step, i) => (
-                <motion.div
+                <div
                   key={step.num}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true, margin: "-50px" }}
-                  variants={fadeUp}
-                  custom={i}
                   className="text-center relative group"
                 >
                   <div className="text-7xl font-black gradient-text mb-4 opacity-40 select-none group-hover:scale-110 transition-transform duration-300">{step.num}</div>
                   <h3 className="text-xl font-semibold mb-3 text-white">{step.title}</h3>
                   <p className="text-sm text-muted leading-relaxed max-w-xs mx-auto">{step.desc}</p>
-                </motion.div>
+                </div>
               ))}
             </div>
           </div>
@@ -408,29 +228,19 @@ export default function HomePage() {
       {/* Testimonials */}
       <section className="py-28 relative bg-background/30">
         <div className="max-w-7xl mx-auto px-6">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            className="text-center mb-16"
-          >
-            <motion.p variants={fadeUp} custom={0} className="text-sm font-semibold tracking-widest uppercase mb-4 gradient-text">
+          <div className="text-center mb-16">
+            <p className="text-sm font-semibold tracking-widest uppercase mb-4 gradient-text">
               Testimonials
-            </motion.p>
-            <motion.h2 variants={fadeUp} custom={1} className="text-3xl md:text-5xl font-bold tracking-tight">
+            </p>
+            <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
               Loved by Designers
-            </motion.h2>
-          </motion.div>
+            </h2>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {testimonials.map((t, i) => (
-              <motion.div
+              <div
                 key={t.name}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, margin: "-50px" }}
-                variants={fadeUp}
-                custom={i}
                 className="glass rounded-3xl p-8 floating-layer border border-white/5 hover:bg-white/[0.06] shimmer relative overflow-hidden"
               >
                 <div className="text-accent text-3xl mb-4 font-serif">“</div>
@@ -444,7 +254,7 @@ export default function HomePage() {
                     <p className="text-xs text-muted">{t.role}</p>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -453,30 +263,25 @@ export default function HomePage() {
       {/* CTA Section - floating box style */}
       <section className="py-24 relative bg-background/55">
         <div className="relative z-10 max-w-5xl mx-auto px-6">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            className="glass-pro rounded-3xl p-12 md:p-20 text-center floating-layer-deep border border-white/10 relative overflow-hidden"
-          >
+          <div className="glass-pro rounded-3xl p-12 md:p-20 text-center floating-layer-deep border border-white/10 relative overflow-hidden">
             {/* Colorful overlay inside floating layer */}
             <div className="absolute inset-0 bg-gradient-to-tr from-accent/5 via-transparent to-cyan-500/5" />
             <div className="absolute inset-0 gradient-bg-cta opacity-40" />
             
             <div className="relative z-10">
-              <motion.h2 variants={fadeUp} custom={0} className="text-3xl md:text-5xl font-bold mb-6 tracking-tight text-white">
+              <h2 className="text-3xl md:text-5xl font-bold mb-6 tracking-tight text-white">
                 Ready to Create Something <span className="gradient-text-warm font-extrabold">Amazing</span>?
-              </motion.h2>
-              <motion.p variants={fadeUp} custom={1} className="text-muted text-base md:text-lg mb-10 max-w-xl mx-auto leading-relaxed">
+              </h2>
+              <p className="text-muted text-base md:text-lg mb-10 max-w-xl mx-auto leading-relaxed">
                 Join thousands of designers who use Furni AI to bring their furniture visions to life.
-              </motion.p>
-              <motion.div variants={fadeUp} custom={2}>
+              </p>
+              <div>
                 <Link href="/builder" className="btn-premium-primary">
                   <span>Start Building for Free →</span>
                 </Link>
-              </motion.div>
+              </div>
             </div>
-          </motion.div>
+          </div>
         </div>
       </section>
     </div>

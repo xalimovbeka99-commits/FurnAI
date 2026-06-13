@@ -141,14 +141,9 @@ async function handleCheckoutCompleted(session) {
   const { error } = await supabase
     .from("orders")
     .update({
-      status: "paid",
-      payment_status: "completed",
+      status: "confirmed",
       stripe_session_id: session.id,
-      stripe_payment_intent: session.payment_intent,
-      amount_paid: session.amount_total,
-      currency: session.currency,
-      customer_email: session.customer_details?.email || null,
-      paid_at: new Date().toISOString(),
+      stripe_payment_id: session.payment_intent,
       updated_at: new Date().toISOString(),
     })
     .eq("id", orderId);
@@ -158,12 +153,12 @@ async function handleCheckoutCompleted(session) {
     throw new Error(`Supabase update failed: ${error.message}`);
   }
 
-  console.log(`[webhook] Order ${orderId} marked as paid`);
+  console.log(`[webhook] Order ${orderId} marked as confirmed (paid)`);
 }
 
 /**
  * Handles a failed payment intent.
- * Updates the order status to 'payment_failed' and logs the failure reason.
+ * Updates the order status to 'cancelled' and logs the failure reason.
  *
  * @param {Stripe.PaymentIntent} paymentIntent
  */
@@ -187,9 +182,8 @@ async function handlePaymentFailed(paymentIntent) {
   const { error } = await supabase
     .from("orders")
     .update({
-      status: "payment_failed",
-      payment_status: "failed",
-      payment_failure_reason: failureMessage,
+      status: "cancelled",
+      notes: `Payment failed: ${failureMessage}`,
       updated_at: new Date().toISOString(),
     })
     .eq("id", orderId);

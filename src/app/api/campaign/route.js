@@ -33,9 +33,10 @@ You MUST return a JSON object containing EXACTLY these fields:
 Return ONLY raw JSON. Do not include markdown codeblocks or extra text.`;
 
 export async function POST(request) {
+  let brief, audience, product, tone, channels;
   try {
     const body = await request.json();
-    const { brief, audience, product, tone, channels } = body;
+    ({ brief, audience, product, tone, channels } = body);
 
     // Validation
     if (!brief || !audience || !product || !tone || !channels || channels.length === 0) {
@@ -74,6 +75,8 @@ Generate a campaign based on:
       model: "gpt-4o", // Adjust the text model here
       input: userPrompt,
       instructions: SYSTEM_INSTRUCTIONS
+    }, {
+      timeout: 2500
     });
 
     // Extract text safely from the responses output array or helper property
@@ -153,11 +156,22 @@ Generate a campaign based on:
     });
 
   } catch (error) {
-    console.error("Campaign Concept Studio API error:", error);
-    return NextResponse.json(
-      { error: error.message || "An error occurred while generating your campaign concept." },
-      { status: 500 }
+    console.error("Campaign Concept Studio API error. Falling back to mock campaign generator:", error);
+    
+    // Fallback using already extracted request parameters
+    const mockResult = generateMockCampaign(
+      brief || "Increase product sales",
+      audience || "Target audience",
+      product || "Custom Furniture",
+      tone || "modern",
+      channels || ["Social Media", "Email Marketing"]
     );
+
+    return NextResponse.json({
+      ...mockResult,
+      source: "mock-fallback-after-error",
+      error: error.message
+    });
   }
 }
 

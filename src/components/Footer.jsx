@@ -26,13 +26,17 @@ export default function Footer() {
           <div>
             <h4 className="text-sm font-semibold mb-4 text-white uppercase tracking-wider text-xs">Product</h4>
             <ul className="space-y-2.5">
-              {["Builder", "Gallery", "Pricing"].map((item) => (
-                <li key={item}>
+              {[
+                { label: "Builder", href: "/builder" },
+                { label: "Gallery", href: "/gallery" },
+                { label: "Pricing", href: "/pricing" },
+              ].map((item) => (
+                <li key={item.label}>
                   <Link
-                    href={`/${item.toLowerCase()}`}
+                    href={item.href}
                     className="text-sm text-muted hover:text-white transition-colors hover:translate-x-1 inline-block duration-300"
                   >
-                    {item}
+                    {item.label}
                   </Link>
                 </li>
               ))}
@@ -43,32 +47,41 @@ export default function Footer() {
           <div>
             <h4 className="text-sm font-semibold mb-4 text-white uppercase tracking-wider text-xs">Company</h4>
             <ul className="space-y-2.5">
-              {["About", "Contact", "Careers"].map((item) => (
-                <li key={item}>
+              {[
+                { label: "About", href: "/about" },
+                { label: "Contact", href: "/contact" },
+              ].map((item) => (
+                <li key={item.label}>
                   <Link
-                    href={`/${item.toLowerCase()}`}
+                    href={item.href}
                     className="text-sm text-muted hover:text-white transition-colors hover:translate-x-1 inline-block duration-300"
                   >
-                    {item}
+                    {item.label}
                   </Link>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Legal */}
+          {/* Connect */}
           <div>
-            <h4 className="text-sm font-semibold mb-4 text-white uppercase tracking-wider text-xs">Legal</h4>
+            <h4 className="text-sm font-semibold mb-4 text-white uppercase tracking-wider text-xs">Connect</h4>
             <ul className="space-y-2.5">
-              {["Privacy Policy", "Terms of Service", "Cookie Policy"].map(
-                (item) => (
-                  <li key={item}>
-                    <span className="text-sm text-muted hover:text-white transition-colors hover:translate-x-1 inline-block duration-300 cursor-pointer">
-                      {item}
-                    </span>
-                  </li>
-                )
-              )}
+              {[
+                { label: "GitHub", href: "https://github.com/xalimovbeka99" },
+                { label: "LinkedIn", href: "https://linkedin.com" },
+              ].map((item) => (
+                <li key={item.label}>
+                  <a
+                    href={item.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-muted hover:text-white transition-colors hover:translate-x-1 inline-block duration-300"
+                  >
+                    {item.label} ↗
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
         </div>
@@ -77,16 +90,9 @@ export default function Footer() {
           <p className="text-xs text-muted">
             © {new Date().getFullYear()} Furni AI. All rights reserved.
           </p>
-          <div className="flex items-center gap-4">
-            {["Twitter", "GitHub", "LinkedIn"].map((social) => (
-              <span
-                key={social}
-                className="text-xs text-muted hover:text-white transition-colors cursor-pointer"
-              >
-                {social}
-              </span>
-            ))}
-          </div>
+          <p className="text-xs text-muted">
+            Made with ♥ in UAE
+          </p>
         </div>
       </div>
     </footer>

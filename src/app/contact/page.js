@@ -16,6 +16,8 @@ export default function ContactPage() {
   const [form, setForm] = useState({ name: "", email: "", message: "" });
   const [submitted, setSubmitted] = useState(false);
   const [errors, setErrors] = useState({});
+  const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState(null);
 
   const validate = () => {
     const errs = {};
@@ -26,7 +28,7 @@ export default function ContactPage() {
     return errs;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const errs = validate();
     if (Object.keys(errs).length > 0) {
@@ -34,9 +36,29 @@ export default function ContactPage() {
       return;
     }
     setErrors({});
-    // Mock submit
-    setSubmitted(true);
-    setForm({ name: "", email: "", message: "" });
+    setSending(true);
+    setSendError(null);
+
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to send message");
+      }
+
+      setSubmitted(true);
+      setForm({ name: "", email: "", message: "" });
+    } catch (err) {
+      setSendError(err.message);
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
@@ -133,18 +155,27 @@ export default function ContactPage() {
                 {errors.message && <p className="text-red-400 text-xs mt-1.5">{errors.message}</p>}
               </div>
 
+              {sendError && (
+                <div className="bg-red-500/10 border border-red-500/30 rounded-2xl p-4 text-sm text-red-400">
+                  ⚠ {sendError}
+                </div>
+              )}
+
               <motion.button
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.99 }}
                 type="submit"
-                className="w-full btn-premium-primary py-4 cursor-pointer"
+                disabled={sending}
+                className="w-full btn-premium-primary py-4 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                <span>Send Message →</span>
+                <span>{sending ? "Sending..." : "Send Message →"}</span>
               </motion.button>
 
               <p className="text-xs text-muted text-center pt-2">
                 You can also reach us at{" "}
-                <span className="text-accent-light font-medium">hello@furniai.com</span>
+                <a href="mailto:xalimov.beka99@gmail.com" className="text-accent-light font-medium hover:underline">
+                  xalimov.beka99@gmail.com
+                </a>
               </p>
             </form>
           )}

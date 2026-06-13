@@ -8,7 +8,7 @@ export const metadata = {
   description:
     "Free AI-powered furniture design platform. Create custom wardrobes, sofas, tables, kitchens with real-time 3D preview and factory-ready export.",
   keywords: "furniture design, AI, 3D preview, custom furniture, interior design, kitchen design, factory export",
-  metadataBase: new URL("https://furni-ai.vercel.app"),
+  metadataBase: new URL("https://furn-ai.vercel.app"),
   openGraph: {
     title: "FurniAI — Design Smart Furniture with AI",
     description: "Free AI-powered furniture design platform with real-time 3D preview and factory-ready export.",

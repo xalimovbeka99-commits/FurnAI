@@ -1,26 +1,47 @@
 import { NextResponse } from "next/server";
-import { readFileSync, existsSync, mkdirSync, writeFileSync } from "fs";
-import { join } from "path";
+import { createClient } from "@/lib/supabase/server";
 
-const DATA_DIR = join(process.cwd(), ".data");
-const DESIGNS_FILE = join(DATA_DIR, "designs.json");
-
-// GET /api/designs — list all saved designs
+// GET /api/designs — list designs for authenticated user
 export async function GET() {
   try {
-    if (!existsSync(DATA_DIR)) {
-      mkdirSync(DATA_DIR, { recursive: true });
-    }
-    if (!existsSync(DESIGNS_FILE)) {
-      writeFileSync(DESIGNS_FILE, "[]", "utf-8");
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json([]);
     }
 
-    const raw = readFileSync(DESIGNS_FILE, "utf-8");
-    const designs = JSON.parse(raw);
+    const { data, error } = await supabase
+      .from("designs")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("[designs] Supabase error:", error);
+      return NextResponse.json([]);
+    }
+
+    // Transform to match frontend format
+    const designs = (data || []).map((d) => ({
+      id: d.id,
+      name: d.name,
+      type: d.type,
+      style: d.style || "modern",
+      material: d.params?.material || "wood",
+      color: d.params?.color || "#8B7355",
+      width: d.params?.width || 120,
+      height: d.params?.height || 200,
+      depth: d.params?.depth || 60,
+      prompt: d.params?.prompt || "",
+      kitchen: d.params?.kitchen,
+      savedAt: d.created_at,
+      supabaseId: d.id,
+    }));
 
     return NextResponse.json(designs);
   } catch (error) {
-    console.error("Load designs error:", error);
+    console.error("[designs] Error:", error);
     return NextResponse.json([]);
   }
 }

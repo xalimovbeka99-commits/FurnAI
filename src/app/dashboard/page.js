@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import useFurnitureStore from "@/store/furnitureStore";
+import { useAuth } from "@/hooks/useAuth";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -15,39 +16,110 @@ const fadeUp = {
 };
 
 export default function DashboardPage() {
-  const { savedDesigns, loadDesigns, deleteDesign, renameDesign, loadDesignIntoBuilder } = useFurnitureStore();
-  const [activeTab, setActiveTab] = useState("designs"); // "designs", "orders", "profile"
+  const { savedDesigns, loadDesigns, deleteDesign, renameDesign, loadDesignIntoBuilder, setAuthenticated } = useFurnitureStore();
+  const { user, loading: authLoading, supabase } = useAuth();
+  const [activeTab, setActiveTab] = useState("designs");
   const [editingId, setEditingId] = useState(null);
   const [editName, setEditName] = useState("");
 
   // Orders State
   const [orders, setOrders] = useState([]);
-  
+
   // Profile State
   const [profileName, setProfileName] = useState("");
   const [profileEmail, setProfileEmail] = useState("");
   const [profilePhone, setProfilePhone] = useState("");
   const [profileAddress, setProfileAddress] = useState("");
   const [profileEmirate, setProfileEmirate] = useState("Dubai");
+  const [profileLoading, setProfileLoading] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
+
+  // Sync auth state to store
+  useEffect(() => {
+    setAuthenticated(!!user);
+  }, [user, setAuthenticated]);
 
   useEffect(() => {
     loadDesigns();
-    
-    // Load Orders from localStorage
-    const savedOrders = JSON.parse(localStorage.getItem("furnai-orders") || "[]");
-    // Sort orders from newest to oldest
-    savedOrders.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-    setOrders(savedOrders);
 
-    // Load Profile
-    const savedProfile = JSON.parse(localStorage.getItem("furnai-user") || "{}");
-    setProfileName(savedProfile.name || "Bekzod");
-    setProfileEmail(savedProfile.email || "bekzod@furnai.ae");
-    setProfilePhone(savedProfile.phone || "+971 50 123 4567");
-    setProfileAddress(savedProfile.address || "Marina Heights, Apartment 2402, Dubai Marina");
-    setProfileEmirate(savedProfile.emirate || "Dubai");
-  }, [loadDesigns]);
+    // Load Orders — from Supabase if authenticated, otherwise localStorage
+    const loadOrders = async () => {
+      if (user && supabase) {
+        try {
+          const { data, error } = await supabase
+            .from("orders")
+            .select("*")
+            .eq("user_id", user.id)
+            .order("created_at", { ascending: false });
+
+          if (!error && data) {
+            const formatted = data.map((o) => ({
+              orderId: o.order_number,
+              type: o.production_spec?.type || "furniture",
+              style: o.production_spec?.style || "custom",
+              color: o.production_spec?.color || "#8B7355",
+              dimensions: o.production_spec?.dimensions || { width: 120, height: 200, depth: 60 },
+              totalCost: o.total_price || 0,
+              customer: {
+                name: o.shipping_address?.name || user.user_metadata?.full_name || "",
+                address: o.shipping_address?.address || "",
+                emirate: o.shipping_address?.emirate || "Dubai",
+              },
+              productionTime: 14,
+              timestamp: o.created_at,
+              status: o.status,
+              supabaseId: o.id,
+            }));
+            setOrders(formatted);
+            return;
+          }
+        } catch (err) {
+          console.warn("[dashboard] Cloud orders load failed:", err);
+        }
+      }
+
+      // Fallback to localStorage
+      const savedOrders = JSON.parse(localStorage.getItem("furnai-orders") || "[]");
+      savedOrders.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      setOrders(savedOrders);
+    };
+
+    loadOrders();
+
+    // Load Profile — from Supabase if authenticated, otherwise localStorage
+    const loadProfile = async () => {
+      if (user && supabase) {
+        try {
+          const { data, error } = await supabase
+            .from("profiles")
+            .select("*")
+            .eq("id", user.id)
+            .single();
+
+          if (!error && data) {
+            setProfileName(data.full_name || user.user_metadata?.full_name || "");
+            setProfileEmail(user.email || "");
+            setProfilePhone(data.phone || "");
+            setProfileAddress(data.default_address?.address || "");
+            setProfileEmirate(data.default_address?.emirate || "Dubai");
+            return;
+          }
+        } catch (err) {
+          console.warn("[dashboard] Cloud profile load failed:", err);
+        }
+      }
+
+      // Fallback to localStorage
+      const savedProfile = JSON.parse(localStorage.getItem("furnai-user") || "{}");
+      setProfileName(savedProfile.name || (user?.user_metadata?.full_name) || "");
+      setProfileEmail(savedProfile.email || (user?.email) || "");
+      setProfilePhone(savedProfile.phone || "");
+      setProfileAddress(savedProfile.address || "");
+      setProfileEmirate(savedProfile.emirate || "Dubai");
+    };
+
+    loadProfile();
+  }, [loadDesigns, user, supabase, setAuthenticated]);
 
   // Toast helper
   const triggerToast = (msg) => {
@@ -64,8 +136,10 @@ export default function DashboardPage() {
     }
   };
 
-  const handleSaveProfile = (e) => {
+  const handleSaveProfile = async (e) => {
     e.preventDefault();
+    setProfileLoading(true);
+
     const updatedProfile = {
       name: profileName,
       email: profileEmail,
@@ -73,54 +147,88 @@ export default function DashboardPage() {
       address: profileAddress,
       emirate: profileEmirate,
     };
+
+    // Always save to localStorage
     localStorage.setItem("furnai-user", JSON.stringify(updatedProfile));
+
+    // If authenticated, also save to Supabase
+    if (user && supabase) {
+      try {
+        await supabase
+          .from("profiles")
+          .update({
+            full_name: profileName,
+            phone: profilePhone,
+            default_address: {
+              address: profileAddress,
+              emirate: profileEmirate,
+            },
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", user.id);
+      } catch (err) {
+        console.warn("[dashboard] Cloud profile save failed:", err);
+      }
+    }
+
+    setProfileLoading(false);
     triggerToast("Profile updated successfully!");
   };
 
-  const handleCancelOrder = (orderId) => {
+  const handleCancelOrder = async (orderId) => {
+    const orderToCancel = orders.find((o) => o.orderId === orderId);
     const updatedOrders = orders.filter((o) => o.orderId !== orderId);
     setOrders(updatedOrders);
     localStorage.setItem("furnai-orders", JSON.stringify(updatedOrders));
+
+    // If authenticated and has Supabase ID, cancel in cloud
+    if (user && supabase && orderToCancel?.supabaseId) {
+      try {
+        await supabase
+          .from("orders")
+          .update({ status: "cancelled", updated_at: new Date().toISOString() })
+          .eq("id", orderToCancel.supabaseId);
+      } catch (err) {
+        console.warn("[dashboard] Cloud order cancel failed:", err);
+      }
+    }
+
     triggerToast(`Order ${orderId} cancelled.`);
   };
 
-  // Live Status Tracker (returns label, active step, and description based on elapsed time)
-  const getOrderStatus = useCallback((timestamp) => {
+  // Live Status Tracker
+  const getOrderStatus = useCallback((timestamp, dbStatus) => {
+    // If we have a real status from the database, use it
+    if (dbStatus && dbStatus !== "pending") {
+      const statusMap = {
+        confirmed: { label: "Processing", step: 0, note: "Factory verifying specifications." },
+        fabricating: { label: "Fabricating", step: 1, note: "CNC routers cutting panels." },
+        quality_check: { label: "Quality Check", step: 2, note: "Panel tolerance inspections." },
+        shipped: { label: "Shipped", step: 3, note: "In transit on delivery truck." },
+        delivered: { label: "Delivered", step: 4, note: "Successfully delivered." },
+        cancelled: { label: "Cancelled", step: -1, note: "Order was cancelled." },
+      };
+      return statusMap[dbStatus] || statusMap.confirmed;
+    }
+
+    // Fallback to time-based simulation
     const elapsedMs = Date.now() - new Date(timestamp).getTime();
     const elapsedMins = elapsedMs / 60000;
-    
+
     if (elapsedMins < 1.5) {
-      return {
-        label: "Processing",
-        step: 0,
-        note: "Factory verifying specifications and optimizing raw sheets nesting.",
-      };
+      return { label: "Processing", step: 0, note: "Factory verifying specifications and optimizing raw sheets nesting." };
     } else if (elapsedMins < 4.0) {
-      return {
-        label: "Fabricating",
-        step: 1,
-        note: "CNC routers cutting panels to millimeter precision on the factory floor.",
-      };
+      return { label: "Fabricating", step: 1, note: "CNC routers cutting panels to millimeter precision on the factory floor." };
     } else if (elapsedMins < 7.5) {
-      return {
-        label: "Quality Check",
-        step: 2,
-        note: "Applying edge banding and conducting panel tolerance inspections.",
-      };
+      return { label: "Quality Check", step: 2, note: "Applying edge banding and conducting panel tolerance inspections." };
     } else if (elapsedMins < 12.0) {
-      return {
-        label: "Shipped",
-        step: 3,
-        note: "Dispatched from warehouse. In transit on delivery truck.",
-      };
+      return { label: "Shipped", step: 3, note: "Dispatched from warehouse. In transit on delivery truck." };
     } else {
-      return {
-        label: "Delivered",
-        step: 4,
-        note: "Order successfully delivered and handed over at your address.",
-      };
+      return { label: "Delivered", step: 4, note: "Order successfully delivered and handed over at your address." };
     }
   }, []);
+
+  const displayName = profileName || user?.user_metadata?.full_name || "Designer";
 
   return (
     <div className="min-h-screen pt-28 pb-20 bg-img-about relative">
@@ -147,11 +255,20 @@ export default function DashboardPage() {
             Dashboard
           </motion.p>
           <motion.h1 variants={fadeUp} custom={1} className="text-4xl md:text-5xl font-bold mb-4 tracking-tight text-white leading-tight">
-            Welcome Back, {profileName}
+            Welcome Back, {displayName}
           </motion.h1>
           <motion.p variants={fadeUp} custom={2} className="text-muted text-sm md:text-base max-w-xl">
-            Access your custom parametric designs, track active factory shipments, and update your delivery locations.
+            {user
+              ? "Access your custom parametric designs, track active factory shipments, and update your delivery locations."
+              : "Sign in to sync your designs to the cloud. Your local designs are shown below."}
           </motion.p>
+          {!user && !authLoading && (
+            <motion.p variants={fadeUp} custom={3} className="mt-3">
+              <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-400 text-xs font-semibold">
+                ⚡ Local mode — designs saved in your browser only
+              </span>
+            </motion.p>
+          )}
         </motion.div>
 
         {/* Tab Controls */}
@@ -237,6 +354,11 @@ export default function DashboardPage() {
                           opacity: 0.8,
                         }}
                       />
+                      {design.supabaseId && (
+                        <span className="absolute top-3 right-3 px-2 py-0.5 rounded-full bg-accent/10 border border-accent/25 text-accent-light text-[9px] uppercase font-bold tracking-wider">
+                          ☁ Cloud
+                        </span>
+                      )}
                     </div>
 
                     <div className="p-6 relative z-10 bg-black/20 text-left">
@@ -314,7 +436,7 @@ export default function DashboardPage() {
                 </div>
                 <h3 className="text-xl font-bold mb-2 text-white">No active orders</h3>
                 <p className="text-sm text-muted mb-8 max-w-xs mx-auto">
-                  Build your furniture design, click "Send to Production", and submit an order to our UAE factory floor.
+                  Build your furniture design, click &quot;Send to Production&quot;, and submit an order to our UAE factory floor.
                 </p>
                 <Link href="/builder" className="btn-premium-primary">
                   <span>Start Designing →</span>
@@ -325,7 +447,8 @@ export default function DashboardPage() {
             <div className="space-y-6">
               <AnimatePresence>
                 {orders.map((order) => {
-                  const status = getOrderStatus(order.timestamp);
+                  const status = getOrderStatus(order.timestamp, order.status);
+                  if (status.step === -1) return null; // Hide cancelled orders
                   return (
                     <motion.div
                       key={order.orderId}
@@ -455,7 +578,11 @@ export default function DashboardPage() {
             className="glass rounded-3xl p-8 max-w-2xl mx-auto border border-white/10 text-left bg-black/20"
           >
             <h3 className="text-xl font-bold mb-2 text-white">Profile Details</h3>
-            <p className="text-xs text-muted mb-6">Update your personal contact details and default UAE delivery locations.</p>
+            <p className="text-xs text-muted mb-6">
+              {user
+                ? "Your profile syncs to the cloud automatically."
+                : "Update your personal contact details and default UAE delivery locations."}
+            </p>
 
             <form onSubmit={handleSaveProfile} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -466,7 +593,7 @@ export default function DashboardPage() {
                     required
                     value={profileName}
                     onChange={(e) => setProfileName(e.target.value)}
-                    placeholder="Bekzod"
+                    placeholder="Your name"
                     className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/15 text-white placeholder-white/35 focus:outline-none focus:border-accent text-sm transition-all"
                   />
                 </div>
@@ -477,8 +604,9 @@ export default function DashboardPage() {
                     required
                     value={profileEmail}
                     onChange={(e) => setProfileEmail(e.target.value)}
-                    placeholder="bekzod@furnai.ae"
-                    className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/15 text-white placeholder-white/35 focus:outline-none focus:border-accent text-sm transition-all"
+                    placeholder="you@example.com"
+                    disabled={!!user}
+                    className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/15 text-white placeholder-white/35 focus:outline-none focus:border-accent text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                 </div>
               </div>
@@ -528,9 +656,10 @@ export default function DashboardPage() {
               <div className="pt-4 border-t border-white/10 flex justify-end">
                 <button
                   type="submit"
-                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-accent to-accent-light text-black font-bold transition-all cursor-pointer text-xs shadow-md shadow-accent/25 hover:scale-[1.02]"
+                  disabled={profileLoading}
+                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-accent to-accent-light text-black font-bold transition-all cursor-pointer text-xs shadow-md shadow-accent/25 hover:scale-[1.02] disabled:opacity-60"
                 >
-                  Save Profile Settings
+                  {profileLoading ? "Saving..." : "Save Profile Settings"}
                 </button>
               </div>
             </form>

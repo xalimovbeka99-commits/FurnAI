@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatSpecAsPDF, formatSpecAsJSON, formatSpecAsXML } from "@/lib/productionSpec";
 import JSZip from "jszip";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function ProductionModal({ spec, isOpen, onClose }) {
+  const { user, supabase } = useAuth();
   const [view, setView] = useState("spec"); // "spec", "checkout", "success"
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -13,6 +15,37 @@ export default function ProductionModal({ spec, isOpen, onClose }) {
   const [address, setAddress] = useState("");
   const [emirate, setEmirate] = useState("Dubai");
   const [createdOrderId, setCreatedOrderId] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  // Prefill user info if logged in
+  useEffect(() => {
+    if (user && isOpen) {
+      setName(user.user_metadata?.full_name || "");
+      setEmail(user.email || "");
+      
+      const loadProfileData = async () => {
+        try {
+          const { data, error } = await supabase
+            .from("profiles")
+            .select("*")
+            .eq("id", user.id)
+            .single();
+
+          if (!error && data) {
+            if (data.full_name) setName(data.full_name);
+            if (data.phone) setPhone(data.phone);
+            if (data.default_address?.address) setAddress(data.default_address.address);
+            if (data.default_address?.emirate) setEmirate(data.default_address.emirate);
+          }
+        } catch (err) {
+          console.warn("[ProductionModal] Failed to load profile for checkout:", err);
+        }
+      };
+      
+      loadProfileData();
+    }
+  }, [user, isOpen, supabase]);
 
   if (!spec) return null;
 
@@ -92,16 +125,86 @@ M30 ; Program End`;
     }
   };
 
-  const handleOrderSubmit = (e) => {
+  const handleOrderSubmit = async (e) => {
     e.preventDefault();
     if (!name || !email || !phone || !address) {
       alert("Please fill in all required fields.");
       return;
     }
 
-    const orderNum = `FURNI-2026-${Math.floor(100000 + Math.random() * 900000)}`;
-    setCreatedOrderId(orderNum);
+    setSubmitting(true);
+    setErrorMessage("");
 
+    const orderNum = `FURNI-2026-${Math.floor(100000 + Math.random() * 900000)}`;
+
+    // A. If logged in, perform real DB insert + Stripe checkout redirect
+    if (user && supabase) {
+      try {
+        const { data, error } = await supabase
+          .from("orders")
+          .insert({
+            user_id: user.id,
+            design_id: (spec.id && spec.id.length === 36) ? spec.id : null,
+            order_number: orderNum,
+            status: "pending",
+            production_spec: spec,
+            total_price: spec.costs.total,
+            currency: "AED",
+            shipping_address: { name, email, phone, address, emirate },
+          })
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        // Create Stripe checkout session
+        const response = await fetch("/api/payments/checkout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            designId: spec.id,
+            orderId: data.id,
+            amount: Math.round(spec.costs.total * 100), // in fils
+            currency: "AED",
+            customerEmail: email,
+          }),
+        });
+
+        const resData = await response.json();
+        
+        if (response.ok && resData.sessionUrl) {
+          const localOrder = {
+            orderId: orderNum,
+            designId: spec.id,
+            customer: { name, email, phone, address, emirate },
+            type: spec.design.type,
+            dimensions: spec.design.dimensions,
+            color: spec.design.color,
+            totalCost: spec.costs.total,
+            productionTime: spec.productionTime,
+            status: "pending",
+            timestamp: new Date().toISOString(),
+            supabaseId: data.id,
+          };
+          const orders = JSON.parse(localStorage.getItem("furnai-orders") || "[]");
+          orders.push(localOrder);
+          localStorage.setItem("furnai-orders", JSON.stringify(orders));
+
+          // Redirect to Stripe checkout page
+          window.location.href = resData.sessionUrl;
+          return;
+        } else {
+          throw new Error(resData.error || "Failed to initiate Stripe checkout");
+        }
+      } catch (err) {
+        console.error("Order checkout failed:", err);
+        setErrorMessage(err.message || "Failed to process checkout. Please try again.");
+        setSubmitting(false);
+        return;
+      }
+    }
+
+    // B. If not logged in, fall back to local simulated workflow
     const orderData = {
       orderId: orderNum,
       designId: spec.id,
@@ -111,15 +214,16 @@ M30 ; Program End`;
       color: spec.design.color,
       totalCost: spec.costs.total,
       productionTime: spec.productionTime,
-      status: "Processing",
+      status: "confirmed",
       timestamp: new Date().toISOString(),
     };
 
-    // Save to localStorage for client tracking
     const orders = JSON.parse(localStorage.getItem("furnai-orders") || "[]");
     orders.push(orderData);
     localStorage.setItem("furnai-orders", JSON.stringify(orders));
 
+    setCreatedOrderId(orderNum);
+    setSubmitting(false);
     setView("success");
   };
 
@@ -379,17 +483,25 @@ M30 ; Program End`;
                     </div>
                   </div>
 
+                  {errorMessage && (
+                    <div className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/25 text-red-400 text-xs font-semibold mt-4">
+                      ⚠️ {errorMessage}
+                    </div>
+                  )}
+
                   <div className="flex gap-3 pt-4">
                     <button
                       type="submit"
-                      className="flex-1 px-6 py-3 rounded-lg bg-gradient-to-r from-accent to-accent-light hover:shadow-lg hover:shadow-accent/20 text-black font-bold transition-all cursor-pointer text-sm"
+                      disabled={submitting}
+                      className="flex-1 px-6 py-3 rounded-lg bg-gradient-to-r from-accent to-accent-light hover:shadow-lg hover:shadow-accent/20 text-black font-bold transition-all cursor-pointer text-sm disabled:opacity-50"
                     >
-                      Confirm & Place Order
+                      {submitting ? "Redirecting to Payment..." : "Confirm & Place Order"}
                     </button>
                     <button
                       type="button"
+                      disabled={submitting}
                       onClick={() => setView("spec")}
-                      className="flex-1 px-6 py-3 rounded-lg bg-white/10 hover:bg-white/15 border border-white/20 text-white font-bold transition-all cursor-pointer text-sm"
+                      className="flex-1 px-6 py-3 rounded-lg bg-white/10 hover:bg-white/15 border border-white/20 text-white font-bold transition-all cursor-pointer text-sm disabled:opacity-50"
                     >
                       Back
                     </button>

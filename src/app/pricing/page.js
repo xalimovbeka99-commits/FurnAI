@@ -1,6 +1,4 @@
-"use client";
-
-import { motion } from "framer-motion";
+import React from "react";
 import Link from "next/link";
 
 const plans = [
@@ -63,31 +61,24 @@ export default function PricingPage() {
 
       <div className="relative z-10 max-w-6xl mx-auto">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-20"
-        >
-          <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-6 pulse-glow">
+        <div className="text-center mb-20 animate-fade-in">
+          <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-6 pulse-glow animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
             <span className="text-xs font-semibold text-emerald-400">100% Free & Open</span>
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight text-white">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight text-white animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
             Completely <span className="gradient-text-warm font-extrabold">Free</span>
           </h1>
-          <p className="text-muted max-w-lg mx-auto leading-relaxed text-sm md:text-base">
+          <p className="text-muted max-w-lg mx-auto leading-relaxed text-sm md:text-base animate-fade-in-up" style={{ animationDelay: "0.3s" }}>
             Furni AI is a free platform. No hidden fees, no subscriptions, no limits.
             Design, export, and build your furniture for free.
           </p>
-        </motion.div>
+        </div>
 
         {/* Plans - redesigned as floating cards of varying depths */}
-        <div className="grid md:grid-cols-3 gap-8 items-center">
+        <div className="grid md:grid-cols-3 gap-8 items-center animate-fade-in-up" style={{ animationDelay: "0.4s" }}>
           {plans.map((plan, index) => (
-            <motion.div
+            <div
               key={plan.name}
-              initial={{ opacity: 0, y: 25 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1, duration: 0.5 }}
               className={`rounded-3xl p-8 relative border transition-all duration-500 ${
                 plan.highlight
                   ? "bg-gradient-to-b from-cyan-500/20 via-blue-500/10 to-black/50 border-2 border-cyan-500/50 floating-layer-deep scale-105 z-10"
@@ -111,9 +102,7 @@ export default function PricingPage() {
               </div>
 
               <Link href="/builder" className="block w-full mb-8">
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                <div
                   className={`w-full text-center cursor-pointer ${
                     plan.highlight
                       ? "btn-premium-primary"
@@ -121,7 +110,7 @@ export default function PricingPage() {
                   }`}
                 >
                   <span>Start Designing Free</span>
-                </motion.div>
+                </div>
               </Link>
 
               <ul className="space-y-4">
@@ -132,17 +121,12 @@ export default function PricingPage() {
                   </li>
                 ))}
               </ul>
-            </motion.div>
+            </div>
           ))}
         </div>
 
         {/* FAQ - styled as floating cards */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="mt-28 max-w-3xl mx-auto"
-        >
+        <div className="mt-28 max-w-3xl mx-auto animate-fade-in-up" style={{ animationDelay: "0.5s" }}>
           <h2 className="text-3xl font-bold text-center mb-10 text-white tracking-tight">FAQ</h2>
           <div className="grid md:grid-cols-2 gap-6">
             {[
@@ -157,7 +141,7 @@ export default function PricingPage() {
               </div>
             ))}
           </div>
-        </motion.div>
+        </div>
       </div>
     </div>
   );
