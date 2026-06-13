@@ -86,6 +86,10 @@ function localParseFallback(description) {
   if (desc.includes("gold")) handleStyle = "gold_bar";
   else if (desc.includes("hidden") || desc.includes("push")) handleStyle = "hidden_push";
 
+  const w = desc.includes("kitchen") ? 3.0 : 2.4;
+  const h = desc.includes("kitchen") ? 2.2 : 2.8;
+  const d = desc.includes("kitchen") ? 0.6 : 0.6;
+
   return {
     type,
     style,
@@ -96,10 +100,16 @@ function localParseFallback(description) {
     hasPlinth: true,
     plinthHeight: 0.1,
     dimensions: {
-      width: desc.includes("kitchen") ? 3.0 : 2.4,
-      height: desc.includes("kitchen") ? 2.2 : 2.8,
-      depth: desc.includes("kitchen") ? 0.6 : 0.6
+      width: w,
+      height: h,
+      depth: d
     },
+    // Compatibility properties for old builder URL redirection
+    furnitureType: type,
+    primaryColor: material,
+    width: w * 100, // meters to cm
+    height: h * 100,
+    depth: d * 100,
     modules: [
       { kind: "door", widthRatio: 0.5, doorCount: 1, shelfCount: 2, hingeSide: "left" },
       { kind: "drawerBank", widthRatio: 0.5, drawerRows: 3 }
@@ -161,9 +171,19 @@ export async function POST(request) {
       throw new Error("Failed to parse structured parameters");
     }
 
+    // Map extracted parameters to support both new parametric and old flat formats
+    const parameters = {
+      ...extracted,
+      furnitureType: extracted.type || extracted.furnitureType,
+      primaryColor: extracted.material || extracted.primaryColor,
+      width: extracted.width || (extracted.dimensions?.width ? extracted.dimensions.width * 100 : undefined),
+      height: extracted.height || (extracted.dimensions?.height ? extracted.dimensions.height * 100 : undefined),
+      depth: extracted.depth || (extracted.dimensions?.depth ? extracted.dimensions.depth * 100 : undefined),
+    };
+
     return Response.json({
       success: true,
-      parameters: extracted,
+      parameters,
       rawDescription: description,
       source: "claude-api"
     });
