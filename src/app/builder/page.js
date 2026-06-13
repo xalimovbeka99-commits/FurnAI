@@ -10,6 +10,7 @@ import useFurnitureStore from "@/store/furnitureStore";
 import ProductionModal from "@/components/ProductionModal";
 import AIAssistantPanel from "@/components/builder/AIAssistantPanel";
 import { createDefaultConfig } from "@/lib/furnitureConfig";
+import { generateProductionSpec } from "@/lib/productionSpec";
 
 export default function BuilderPage() {
   const config = useFurnitureStore((s) => s.config);
@@ -59,7 +60,23 @@ export default function BuilderPage() {
   };
 
   const handleExport = () => {
-    setCurrentProductionSpec(config);
+    const flatDesign = {
+      id: config.id || `FURNI-${Date.now()}`,
+      type: config.type,
+      color: config.material,
+      style: config.style || "modern",
+      width: config.dimensions.width,
+      height: config.dimensions.height,
+      depth: config.dimensions.depth,
+      doorType: config.doorType ? config.doorType.split("_")[0] : "solid",
+      handleStyle: config.handleStyle ? config.handleStyle.split("_")[0] : "silver",
+      drawerRows: config.modules ? config.modules.reduce((sum, m) => sum + (m.drawerRows || 0), 0) : 0,
+      ledLighting: config.ledLighting || "off",
+      hangerRods: false,
+    };
+
+    const productionSpec = generateProductionSpec(flatDesign);
+    setCurrentProductionSpec(productionSpec);
     setProductionModalOpen(true);
   };
 
